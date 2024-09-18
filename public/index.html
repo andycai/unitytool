@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Reporting System</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div x-data="logSystem()" class="container mx-auto p-4">
+        <div class="flex">
+            <!-- Left column: Menu -->
+            <div class="w-1/4 bg-white p-4 rounded-lg shadow mr-4">
+                <h2 class="text-xl font-bold mb-4">Menu</h2>
+                <ul>
+                    <li><a href="#" class="text-blue-500 hover:underline">View Logs</a></li>
+                </ul>
+            </div>
+            
+            <!-- Right column: Log list -->
+            <div class="w-3/4 bg-white p-4 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">Log List</h2>
+                
+                <!-- Date selection and delete button -->
+                <div class="mb-4 flex items-center">
+                    <input 
+                        type="date" 
+                        x-model="selectedDate" 
+                        class="p-2 border rounded mr-2"
+                    >
+                    <button 
+                        @click="deleteLogsBefore()" 
+                        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                        Delete Logs Before Selected Date
+                    </button>
+                </div>
+
+                <!-- Search input -->
+                <div class="mb-4">
+                    <input 
+                        type="text" 
+                        x-model="searchQuery" 
+                        @input="debounceSearch()"
+                        placeholder="Search logs..." 
+                        class="w-full p-2 border rounded"
+                    >
+                </div>
+
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left">App ID</th>
+                            <th class="text-left">Package</th>
+                            <th class="text-left">Role Name</th>
+                            <th class="text-left">Device</th>
+                            <th class="text-left">Message</th>
+                            <th class="text-left">Time</th>
+                            <th class="text-left">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="log in logs" :key="log.id">
+                            <tr @click="showLogDetails(log)" class="cursor-pointer hover:bg-gray-100">
+                                <td x-text="log.app_id"></td>
+                                <td x-text="log.package"></td>
+                                <td x-text="log.role_name"></td>
+                                <td x-text="log.device"></td>
+                                <td x-text="log.log_message.substring(0, 50) + '...'"></td>
+                                <td x-text="new Date(log.log_time).toLocaleString()"></td>
+                                <td><a href="#" @click="showLogDetails(log)" class="cursor-pointer hover:bg-gray-100">View</a></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="mt-4 flex justify-between items-center">
+                    <div>
+                        <span x-text="`Showing ${(page - 1) * limit + 1} to ${Math.min(page * limit, total)} of ${total}`"></span>
+                    </div>
+                    <div>
+                        <button 
+                            @click="changePage(page - 1)" 
+                            :disabled="page === 1"
+                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                        >
+                            Previous
+                        </button>
+                        <button 
+                            @click="changePage(page + 1)" 
+                            :disabled="page * limit >= total"
+                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Log details modal -->
+        <div x-show="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" x-cloak>
+            <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900" x-text="selectedLog.app_id"></h3>
+                    <div class="mt-2 px-7 py-3">
+                        <p class="text-sm text-gray-500">
+                            Package: <span x-text="selectedLog.package"></span><br>
+                            Role Name: <span x-text="selectedLog.role_name"></span><br>
+                            Device: <span x-text="selectedLog.device"></span><br>
+                            Log Type: <span x-text="selectedLog.log_type"></span><br>
+                            Time: <span x-text="new Date(selectedLog.log_time).toLocaleString()"></span>
+                        </p>
+                        <div class="mt-4">
+                            <h4 class="font-bold">Message:</h4>
+                            <p x-text="selectedLog.log_message" class="text-sm text-gray-600"></p>
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="font-bold">Stack:</h4>
+                            <pre x-text="selectedLog.log_stack" class="text-sm text-gray-600 whitespace-pre-wrap"></pre>
+                        </div>
+                    </div>
+                    <div class="items-center px-4 py-3">
+                        <button @click="showModal = false" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation modal -->
+        <div x-show="showConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" x-cloak>
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-2">Confirm Deletion</h3>
+                <p class="mb-4">Are you sure you want to delete all logs up to and including <span x-text="selectedDate"></span>?</p>
+                <div class="flex justify-end">
+                    <button @click="showConfirmModal = false" class="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</button>
+                    <button @click="confirmDelete()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logSystem() {
+            return {
+                logs: [],
+                showModal: false,
+                selectedLog: {},
+                page: 1,
+                limit: 10,
+                total: 0,
+                searchQuery: '',
+                searchTimeout: null,
+                selectedDate: '',
+                showConfirmModal: false,
+                
+                init() {
+                    this.fetchLogs();
+                },
+                
+                async fetchLogs() {
+                    const response = await fetch(`/api/logs?page=${this.page}&limit=${this.limit}&search=${this.searchQuery}`);
+                    const data = await response.json();
+                    this.logs = data.logs;
+                    this.total = data.total;
+                    this.page = data.page;
+                    this.limit = data.limit;
+                },
+                
+                showLogDetails(log) {
+                    this.selectedLog = log;
+                    this.showModal = true;
+                },
+
+                changePage(newPage) {
+                    if (newPage >= 1 && newPage <= Math.ceil(this.total / this.limit)) {
+                        this.page = newPage;
+                        this.fetchLogs();
+                    }
+                },
+
+                debounceSearch() {
+                    clearTimeout(this.searchTimeout);
+                    this.searchTimeout = setTimeout(() => {
+                        this.page = 1;
+                        this.fetchLogs();
+                    }, 300);
+                },
+
+                deleteLogsBefore() {
+                    if (!this.selectedDate) {
+                        alert('Please select a date first.');
+                        return;
+                    }
+                    this.showConfirmModal = true;
+                },
+
+                async confirmDelete() {
+                    this.showConfirmModal = false;
+                    try {
+                        const response = await fetch(`/api/logs?date=${this.selectedDate}`, {
+                            method: 'DELETE'
+                        });
+                        const result = await response.json();
+                        if (response.ok) {
+                            alert(`${result.count} logs deleted successfully.`);
+                            this.fetchLogs();
+                        } else {
+                            throw new Error(result.error);
+                        }
+                    } catch (error) {
+                        alert('Failed to delete logs: ' + error.message);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
