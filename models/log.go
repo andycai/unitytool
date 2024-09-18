@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Log struct {
 	ID         int       `json:"id" gorm:"primaryKey"`
@@ -11,5 +15,12 @@ type Log struct {
 	LogType    string    `json:"log_type"`
 	LogMessage string    `json:"log_message"`
 	LogStack   string    `json:"log_stack"`
-	LogTime    time.Time `json:"log_time"`
+	LogTime    time.Time `json:"log_time" gorm:"type:datetime"`
+}
+
+func (l *Log) BeforeCreate(tx *gorm.DB) (err error) {
+	if l.LogTime.IsZero() {
+		l.LogTime = time.Now()
+	}
+	return
 }

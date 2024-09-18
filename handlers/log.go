@@ -69,7 +69,7 @@ func DeleteLogsBefore(c *fiber.Ctx, db *gorm.DB) error {
 	endOfDay := time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 999999999, date.Location())
 
 	// Delete logs before the end of the selected day
-	result := db.Where("log_time < ?", endOfDay).Delete(&models.Log{})
+	result := db.Where("log_time < ?", endOfDay.Format("2006-01-02 15:04:05")).Delete(&models.Log{})
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to delete logs"})
 	}
