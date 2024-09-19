@@ -9,18 +9,22 @@ import (
 	"gorm.io/gorm"
 )
 
+type LogReq struct {
+	Logs []models.Log `json:"list"`
+}
+
 func CreateLog(c *fiber.Ctx, db *gorm.DB) error {
-	log := new(models.Log)
-	if err := c.BodyParser(log); err != nil {
+	logReq := new(LogReq)
+	if err := c.BodyParser(logReq); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid input"})
 	}
 
-	result := db.Create(log)
+	result := db.CreateInBatches(logReq.Logs, len(logReq.Logs))
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to create log"})
 	}
 
-	return c.Status(201).JSON(log)
+	return c.Status(201).JSON(logReq.Logs)
 }
 
 func GetLogs(c *fiber.Ctx, db *gorm.DB) error {
@@ -67,9 +71,11 @@ func DeleteLogsBefore(c *fiber.Ctx, db *gorm.DB) error {
 
 	// Set the time to the end of the day (23:59:59)
 	endOfDay := time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 999999999, date.Location())
+	endOfDayMilli := endOfDay.UnixMilli()
 
 	// Delete logs before the end of the selected day
-	result := db.Where("log_time < ?", endOfDay.Format("2006-01-02 15:04:05")).Delete(&models.Log{})
+	result := db.Where("log_time < ?", endOfDayMilli).Delete(&models.Log{})
+
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to delete logs"})
 	}

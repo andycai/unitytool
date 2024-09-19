@@ -1,16 +1,23 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+
 	"mind.com/log/handlers"
 	"mind.com/log/models"
 
+	"github.com/glebarez/sqlite"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("logs.db"), &gorm.Config{})
+	// 定义命令行参数
+	port := flag.Int("port", 3000, "端口号")
+	flag.Parse()
+
+	db, err := gorm.Open(sqlite.Open("db/logs.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -34,5 +41,6 @@ func main() {
 		return handlers.DeleteLogsBefore(c, db)
 	})
 
-	app.Listen(":3000")
+	// 使用命令行参数设置端口
+	app.Listen(fmt.Sprintf(":%d", *port))
 }
