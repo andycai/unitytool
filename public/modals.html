@@ -1,0 +1,73 @@
+<!-- Log details modal -->
+<div x-show="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" x-cloak>
+    <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+        <!-- Close button -->
+        <button @click="showModal = false" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <div class="mt-3">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" x-text="selectedLog.app_id"></h3>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <p class="text-sm text-gray-500">
+                        <strong>Package:</strong> <span x-text="selectedLog.package"></span>
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        <strong>Role Name:</strong> <span x-text="selectedLog.role_name"></span>
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        <strong>Device:</strong> <span x-text="selectedLog.device"></span>
+                    </p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">
+                        <strong>Log Type:</strong> <span x-text="selectedLog.log_type"></span>
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        <strong>Time:</strong> <span x-text="new Date(selectedLog.log_time).toLocaleString()"></span>
+                    </p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <h4 class="font-bold mb-2">Message:</h4>
+                <p x-text="selectedLog.log_message"
+                    class="text-sm text-gray-600 bg-gray-100 p-2 rounded whitespace-pre-wrap break-words"></p>
+            </div>
+            <div class="mt-4">
+                <h4 class="font-bold mb-2">Stack:</h4>
+                <pre x-html="formatStack(selectedLog.log_stack)"
+                    class="text-sm text-gray-600 bg-gray-100 p-2 rounded whitespace-pre-wrap break-words overflow-x-auto max-h-100"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stat details modal -->
+<div x-show="showStatModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" x-cloak>
+    <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+        <!-- Close button -->
+        <button @click="showStatModal = false" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <div class="mt-3 flex">
+            <div class="w-3/4">
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <p class="text-sm text-gray-500">
+                            <strong>Login ID:</strong> <span x-text="selectedStat.login_id"></span>
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            <strong>App ID:</strong> <span x-text="selectedStat.app_id"></span>
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            <strong>Package:</strong> <span x-text="selectedStat.package"></span>
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            <strong>Role Name:</strong> <span x-text="selectedStat.role_name"></span>
+                        </p>

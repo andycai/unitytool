@@ -1,0 +1,14 @@
+/* 我们可以保留这些自定义样式 */
+.menu-column {
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.content-column {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.max-h-100 {
+    max-height: 32rem;
+}

@@ -22,7 +22,7 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&models.Log{})
+	db.AutoMigrate(&models.Log{}, &models.StatsRecord{}, &models.StatsInfo{})
 
 	app := fiber.New()
 
@@ -39,6 +39,18 @@ func main() {
 
 	app.Delete("/api/logs", func(c *fiber.Ctx) error {
 		return handlers.DeleteLogsBefore(c, db)
+	})
+
+	app.Post("/api/stats", func(c *fiber.Ctx) error {
+		return handlers.CreateStats(c, db)
+	})
+
+	app.Get("/api/stats", func(c *fiber.Ctx) error {
+		return handlers.GetStats(c, db)
+	})
+
+	app.Delete("/api/stats", func(c *fiber.Ctx) error {
+		return handlers.DeleteStatsBefore(c, db)
 	})
 
 	// 使用命令行参数设置端口

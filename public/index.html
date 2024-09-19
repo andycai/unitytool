@@ -4,22 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log Reporting System</title>
-    <script src="/alpine-3.14.1.js" defer></script>
-    <script src="/tailwind-3.4.5.js"></script>
-    <style>
-        /* 我们可以保留这些自定义样式 */
-        .menu-column {
-            width: 200px;
-            flex-shrink: 0;
-        }
-        .content-column {
-            flex-grow: 1;
-            min-width: 0;
-        }
-        .max-h-100 {
-            max-height: 32rem;
-        }
-    </style>
+    <script src="/js/alpine-3.14.1.js" defer></script>
+    <script src="/js/tailwind-3.4.5.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="bg-gray-100">
     <div x-data="logSystem()" class="max-w-[3000px] w-full mx-auto p-4">
@@ -28,12 +16,13 @@
             <div class="menu-column bg-white p-4 rounded-lg shadow mr-4">
                 <h2 class="text-xl font-bold mb-4">Menu</h2>
                 <ul>
-                    <li><a href="#" class="text-blue-500 hover:underline">View Logs</a></li>
+                    <li><a href="#" @click="viewLogs" class="text-blue-500 hover:underline">View Logs</a></li>
+                    <li><a href="#" @click="viewStats" class="text-blue-500 hover:underline">Stats</a></li>
                 </ul>
             </div>
             
             <!-- Right column: Log list -->
-            <div class="content-column bg-white p-4 rounded-lg shadow">
+            <div class="content-column bg-white p-4 rounded-lg shadow" x-show="currentView === 'logs'">
                 <h2 class="text-xl font-bold mb-4">Log List</h2>
                 
                 <!-- Date selection and delete button -->
@@ -112,144 +101,93 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Right column: Stats list -->
+            <div class="content-column bg-white p-4 rounded-lg shadow" x-show="currentView === 'stats'">
+                <h2 class="text-xl font-bold mb-4">Stats List</h2>
+                <div class="mb-4 flex items-center">
+                    <input 
+                        type="date" 
+                        x-model="selectedDate" 
+                        class="p-2 border rounded mr-2"
+                    >
+                    <button 
+                        @click="deleteStatsBefore()" 
+                        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                        Delete Stats Before Selected Date
+                    </button>
+                </div>
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Login ID</th>
+                            <th class="text-left">App ID</th>
+                            <th class="text-left">Package</th>
+                            <th class="text-left">Role Name</th>
+                            <th class="text-left">Device</th>
+                            <th class="text-left">CPU</th>
+                            <th class="text-left">GPU</th>
+                            <th class="text-left">Memory</th>
+                            <th class="text-left">Created At</th>
+                            <th class="text-left">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="stat in stats" :key="stat.id">
+                            <tr @click="showStatDetails(stat)" class="cursor-pointer hover:bg-gray-100">
+                                <td x-text="stat.login_id"></td>
+                                <td x-text="stat.app_id"></td>
+                                <td x-text="stat.package"></td>
+                                <td x-text="stat.role_name"></td>
+                                <td x-text="stat.device"></td>
+                                <td x-text="stat.cpu"></td>
+                                <td x-text="stat.gpu"></td>
+                                <td x-text="stat.memory"></td>
+                                <td x-text="new Date(stat.created_at).toLocaleString()"></td>
+                                <td><a href="#" @click="showStatDetails(stat)" class="cursor-pointer hover:bg-gray-100">View</a></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="mt-4 flex justify-between items-center">
+                    <div>
+                        <span x-text="`Showing ${(statsPage - 1) * statsLimit + 1} to ${Math.min(statsPage * statsLimit, statsTotal)} of ${statsTotal}`"></span>
+                    </div>
+                    <div>
+                        <button 
+                            @click="changeStatsPage(statsPage - 1)" 
+                            :disabled="statsPage === 1"
+                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                        >
+                            Previous
+                        </button>
+                        <button 
+                            @click="changeStatsPage(statsPage + 1)" 
+                            :disabled="statsPage * statsLimit >= statsTotal"
+                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         
-        <!-- Log details modal -->
-        <div x-show="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" x-cloak>
-            <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
-                <!-- Close button -->
-                <button @click="showModal = false" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-
-                <div class="mt-3">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" x-text="selectedLog.app_id"></h3>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <p class="text-sm text-gray-500">
-                                <strong>Package:</strong> <span x-text="selectedLog.package"></span>
-                            </p>
-                            <p class="text-sm text-gray-500">
-                                <strong>Role Name:</strong> <span x-text="selectedLog.role_name"></span>
-                            </p>
-                            <p class="text-sm text-gray-500">
-                                <strong>Device:</strong> <span x-text="selectedLog.device"></span>
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">
-                                <strong>Log Type:</strong> <span x-text="selectedLog.log_type"></span>
-                            </p>
-                            <p class="text-sm text-gray-500">
-                                <strong>Time:</strong> <span x-text="new Date(selectedLog.log_time).toLocaleString()"></span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <h4 class="font-bold mb-2">Message:</h4>
-                        <p x-text="selectedLog.log_message" class="text-sm text-gray-600 bg-gray-100 p-2 rounded whitespace-pre-wrap break-words"></p>
-                    </div>
-                    <div class="mt-4">
-                        <h4 class="font-bold mb-2">Stack:</h4>
-                        <pre x-html="formatStack(selectedLog.log_stack)" class="text-sm text-gray-600 bg-gray-100 p-2 rounded whitespace-pre-wrap break-words overflow-x-auto max-h-100"></pre>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Confirmation modal -->
-        <div x-show="showConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" x-cloak>
-            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-2">Confirm Deletion</h3>
-                <p class="mb-4">Are you sure you want to delete all logs up to and including <span x-text="selectedDate"></span>?</p>
-                <div class="flex justify-end">
-                    <button @click="showConfirmModal = false" class="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</button>
-                    <button @click="confirmDelete()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
-                </div>
-            </div>
-        </div>
+        <!-- Include modals -->
+        <div id="modals"></div>
     </div>
 
+    <script src="/js/app.js"></script>
     <script>
-        function logSystem() {
-            return {
-                logs: [],
-                showModal: false,
-                selectedLog: {},
-                page: 1,
-                limit: 30,
-                total: 0,
-                searchQuery: '',
-                searchTimeout: null,
-                selectedDate: '',
-                showConfirmModal: false,
-                
-                init() {
-                    this.fetchLogs();
-                },
-                
-                async fetchLogs() {
-                    const response = await fetch(`/api/logs?page=${this.page}&limit=${this.limit}&search=${this.searchQuery}`);
-                    const data = await response.json();
-                    this.logs = data.logs;
-                    this.total = data.total;
-                    this.page = data.page;
-                    this.limit = data.limit;
-                },
-                
-                showLogDetails(log) {
-                    this.selectedLog = log;
-                    this.showModal = true;
-                },
-
-                changePage(newPage) {
-                    if (newPage >= 1 && newPage <= Math.ceil(this.total / this.limit)) {
-                        this.page = newPage;
-                        this.fetchLogs();
-                    }
-                },
-
-                debounceSearch() {
-                    clearTimeout(this.searchTimeout);
-                    this.searchTimeout = setTimeout(() => {
-                        this.page = 1;
-                        this.fetchLogs();
-                    }, 300);
-                },
-
-                deleteLogsBefore() {
-                    if (!this.selectedDate) {
-                        alert('Please select a date first.');
-                        return;
-                    }
-                    this.showConfirmModal = true;
-                },
-
-                async confirmDelete() {
-                    this.showConfirmModal = false;
-                    try {
-                        const response = await fetch(`/api/logs?date=${this.selectedDate}`, {
-                            method: 'DELETE'
-                        });
-                        const result = await response.json();
-                        if (response.ok) {
-                            alert(`${result.count} logs deleted successfully.`);
-                            this.fetchLogs();
-                        } else {
-                            throw new Error(result.error);
-                        }
-                    } catch (error) {
-                        alert('Failed to delete logs: ' + error.message);
-                    }
-                },
-                
-                formatStack(stack) {
-                    return stack.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;');
-                }
-            }
-        }
+        // Load modals content
+        fetch('modals.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('modals').innerHTML = data;
+            });
     </script>
 </body>
 </html>
