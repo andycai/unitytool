@@ -3,9 +3,10 @@ function logSystem() {
         logs: [],
         stats: [],
         showModal: false,
-        showStatModal: false,
+        showStatsModal: false,
         selectedLog: {},
-        selectedStat: {},
+        selectedStat: null,
+        performanceChart: null,
         page: 1,
         limit: 30,
         total: 0,
@@ -33,10 +34,12 @@ function logSystem() {
         },
 
         async fetchStats() {
-            const response = await fetch(`/api/stats?page=${this.statsPage}&pageSize=${this.statsLimit}`);
+            const response = await fetch(`/api/stats?page=${this.statsPage}&limit=${this.statsLimit}`);
             const data = await response.json();
             this.stats = data.stats;
             this.statsTotal = data.total;
+            this.statsPage = data.page;
+            this.statsLimit = data.limit;
         },
 
         showLogDetails(log) {
@@ -46,8 +49,49 @@ function logSystem() {
 
         showStatDetails(stat) {
             this.selectedStat = stat;
-            this.showStatModal = true;
-            this.renderChart();
+            this.showStatsModal = true;
+            this.fetchStatDetails(stat.login_id);
+        },
+
+        async fetchStatDetails(loginID) {
+            const response = await fetch(`/api/stats/details?login_id=${loginID}`);
+            const data = await response.json();
+            this.updateStatDetails(data);
+        },
+
+        updateStatDetails(data) {
+            this.selectedStat = { ...this.selectedStat, ...data.statsRecord };
+            this.updatePerformanceChart(data.statsInfo);
+        },
+
+        updatePerformanceChart(statsInfo) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            if (this.performanceChart) {
+                this.performanceChart.destroy();
+            }
+            this.performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: statsInfo.map(info => new Date(info.created_at).toLocaleString()),
+                    datasets: [
+                        { label: 'FPS', data: statsInfo.map(info => info.fps) },
+                        { label: 'Total Memory', data: statsInfo.map(info => info.total_mem) },
+                        // ... add other datasets ...
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        zoom: {
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'xy',
+                            }
+                        }
+                    }
+                }
+            });
         },
 
         changePage(newPage) {
@@ -99,8 +143,20 @@ function logSystem() {
         },
 
         formatStack(stack) {
+            if (stack == undefined || stack == null) return '';
             return stack.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;');
         },
+
+        getPic() {
+            if (this.selectedStat == undefined || this.selectedStat == null) return '';
+            return this.selectedStat.pic;
+        },
+
+        getProcess() {
+            if (this.selectedStat == undefined || this.selectedStat == null) return '';
+            return this.selectedStat.process;
+        },
+
 
         viewLogs() {
             this.currentView = 'logs';
@@ -218,4 +274,3 @@ function logSystem() {
         }
     }
 }
- 

@@ -23,14 +23,19 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 
 func GetStats(c *fiber.Ctx, db *gorm.DB) error {
 	page := c.QueryInt("page", 1)
-	pageSize := c.QueryInt("pageSize", 10)
+	limit := c.QueryInt("limit", 10)
 	var stats []models.StatsRecord
 
-	offset := (page - 1) * pageSize
-	if err := db.Offset(offset).Limit(pageSize).Find(&stats).Error; err != nil {
+	offset := (page - 1) * limit
+	if err := db.Offset(offset).Limit(limit).Find(&stats).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot fetch stats records"})
 	}
-	return c.JSON(stats)
+	return c.JSON(fiber.Map{
+		"stats": stats,
+		"total": len(stats),
+		"page":  page,
+		"limit": limit,
+	})
 }
 
 func DeleteStatsBefore(c *fiber.Ctx, db *gorm.DB) error {
@@ -73,4 +78,26 @@ func DeleteStatsBefore(c *fiber.Ctx, db *gorm.DB) error {
 	}
 
 	return c.JSON(fiber.Map{"message": "records deleted successfully"})
+}
+
+func GetStatDetails(c *fiber.Ctx, db *gorm.DB) error {
+	loginID := c.Query("login_id")
+	if loginID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "login_id is required"})
+	}
+
+	var statsRecord models.StatsRecord
+	if err := db.Where("login_id = ?", loginID).First(&statsRecord).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "stats record not found"})
+	}
+
+	var statsInfo []models.StatsInfo
+	if err := db.Where("login_id = ?", loginID).Find(&statsInfo).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot fetch stats info"})
+	}
+
+	return c.JSON(fiber.Map{
+		"statsRecord": statsRecord,
+		"statsInfo":   statsInfo,
+	})
 }

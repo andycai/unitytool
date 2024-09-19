@@ -53,6 +53,10 @@ func main() {
 		return handlers.DeleteStatsBefore(c, db)
 	})
 
+	app.Get("/api/stats/details", func(c *fiber.Ctx) error {
+		return handlers.GetStatDetails(c, db)
+	})
+
 	// 使用命令行参数设置端口
 	app.Listen(fmt.Sprintf(":%d", *port))
 }
