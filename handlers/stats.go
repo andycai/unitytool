@@ -10,6 +10,7 @@ import (
 	"mind.com/log/models"
 )
 
+// 创建资源占用记录
 func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 	var stats models.StatsRecord
 	if err := c.BodyParser(&stats); err != nil {
@@ -21,13 +22,14 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 	return c.Status(fiber.StatusCreated).JSON(stats)
 }
 
+// 获取资源占用记录
 func GetStats(c *fiber.Ctx, db *gorm.DB) error {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 	var stats []models.StatsRecord
 
 	offset := (page - 1) * limit
-	if err := db.Offset(offset).Limit(limit).Find(&stats).Error; err != nil {
+	if err := db.Offset(offset).Order("created_at desc").Limit(limit).Find(&stats).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot fetch stats records"})
 	}
 	return c.JSON(fiber.Map{
@@ -38,6 +40,7 @@ func GetStats(c *fiber.Ctx, db *gorm.DB) error {
 	})
 }
 
+// 删除资源占用记录
 func DeleteStatsBefore(c *fiber.Ctx, db *gorm.DB) error {
 	dateStr := c.Query("date")
 	if dateStr == "" {
@@ -80,6 +83,7 @@ func DeleteStatsBefore(c *fiber.Ctx, db *gorm.DB) error {
 	return c.JSON(fiber.Map{"message": "records deleted successfully"})
 }
 
+// 获取资源占用详情
 func GetStatDetails(c *fiber.Ctx, db *gorm.DB) error {
 	loginID := c.Query("login_id")
 	if loginID == "" {

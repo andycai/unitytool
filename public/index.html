@@ -4,35 +4,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Reporting System</title>
+    <title>游戏开发辅助工具</title>
     <script src="/js/alpine-3.14.1.js" defer></script>
     <script src="/js/tailwind-3.4.5.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/chart-4.4.4.js"></script>
+    <script src="/js/chartjs-plugin-zoom.min.js"></script>
+    <script src="/js/chartjs-adapter-date-fns.bundle.min.js"></script>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
 
 <body class="bg-gray-100">
-    <div x-data="logSystem()" class="max-w-[3000px] w-full mx-auto p-4">
+    <div x-data="logSystem()" class="max-w-[3600px] w-full mx-auto p-4">
         <div class="flex">
             <!-- Left column: Menu -->
             <div class="menu-column bg-white p-4 rounded-lg shadow mr-4">
-                <h2 class="text-xl font-bold mb-4">Menu</h2>
+                <h2 class="text-xl font-bold mb-4">辅助工具</h2>
                 <ul>
-                    <li><a href="#" @click="viewLogs" class="text-blue-500 hover:underline">View Logs</a></li>
-                    <li><a href="#" @click="viewStats" class="text-blue-500 hover:underline">Stats</a></li>
+                    <li><a href="#" @click="viewStats" class="text-blue-500 hover:underline">资源占用</a></li>
+                    <li><a href="#" @click="viewLogs" class="text-blue-500 hover:underline">游戏日志</a></li>
                 </ul>
             </div>
 
             <!-- Right column: Log list -->
-            <div class="content-column bg-white p-4 rounded-lg shadow" x-show="currentView === 'logs'">
-                <h2 class="text-xl font-bold mb-4">Log List</h2>
+            <div class="content-column bg-white p-4 rounded-lg shadow" x-show="currentView === 'logs'" x-cloak>
+                <h2 class="text-xl font-bold mb-4">日志</h2>
 
                 <!-- Date selection and delete button -->
                 <div class="mb-4 flex items-center">
                     <input type="date" x-model="selectedDate" class="p-2 border rounded mr-2">
                     <button @click="deleteLogsBefore()"
                         class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                        Delete Logs Before Selected Date
+                        删除日期前数据
                     </button>
                 </div>
 
@@ -64,7 +69,7 @@
                                 <td x-text="log.log_message.substring(0, 50) + '...'"></td>
                                 <td x-text="new Date(log.log_time).toLocaleString()"></td>
                                 <td><a href="#" @click="showLogDetails(log)"
-                                        class="cursor-pointer hover:bg-gray-100">View</a></td>
+                                        class="cursor-pointer hover:bg-gray-100">查看详情<</a></td>
                             </tr>
                         </template>
                     </tbody>
@@ -74,16 +79,16 @@
                 <div class="mt-4 flex justify-between items-center">
                     <div>
                         <span
-                            x-text="`Showing ${(page - 1) * limit + 1} to ${Math.min(page * limit, total)} of ${total}`"></span>
+                            x-text="`显示 ${(page - 1) * limit + 1} to ${Math.min(page * limit, total)} of ${total}`"></span>
                     </div>
                     <div>
                         <button @click="changePage(page - 1)" :disabled="page === 1"
                             class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
-                            Previous
+                            上一页
                         </button>
                         <button @click="changePage(page + 1)" :disabled="page * limit >= total"
                             class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
-                            Next
+                            下一页
                         </button>
                     </div>
                 </div>
@@ -91,12 +96,12 @@
 
             <!-- Right column: Stats list -->
             <div class="content-column bg-white p-4 rounded-lg shadow" x-show="currentView === 'stats'">
-                <h2 class="text-xl font-bold mb-4">Stats List</h2>
+                <h2 class="text-xl font-bold mb-4">资源占用</h2>
                 <div class="mb-4 flex items-center">
                     <input type="date" x-model="selectedDate" class="p-2 border rounded mr-2">
                     <button @click="deleteStatsBefore()"
                         class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                        Delete Stats Before Selected Date
+                        删除日期前数据
                     </button>
                 </div>
                 <table class="w-full">
@@ -127,7 +132,7 @@
                                 <td x-text="stat.memory"></td>
                                 <td x-text="new Date(stat.created_at).toLocaleString()"></td>
                                 <td><a href="#" @click="showStatDetails(stat)"
-                                        class="cursor-pointer hover:bg-gray-100">View</a></td>
+                                        class="cursor-pointer hover:bg-gray-100">查看详情</a></td>
                             </tr>
                         </template>
                     </tbody>
@@ -137,16 +142,16 @@
                 <div class="mt-4 flex justify-between items-center">
                     <div>
                         <span
-                            x-text="`Showing ${(statsPage - 1) * statsLimit + 1} to ${Math.min(statsPage * statsLimit, statsTotal)} of ${statsTotal}`"></span>
+                            x-text="`显示 ${(statsPage - 1) * statsLimit + 1} to ${Math.min(statsPage * statsLimit, statsTotal)} of ${statsTotal}`"></span>
                     </div>
                     <div>
                         <button @click="changeStatsPage(statsPage - 1)" :disabled="statsPage === 1"
                             class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
-                            Previous
+                            上一页
                         </button>
                         <button @click="changeStatsPage(statsPage + 1)" :disabled="statsPage * statsLimit >= statsTotal"
                             class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
-                            Next
+                            下一页
                         </button>
                     </div>
                 </div>
@@ -154,7 +159,7 @@
         </div>
 
         <!-- Log details modal -->
-        <div x-show="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" x-cloak>
+        <div x-show="showModal" x-cloak class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
             <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
                 <!-- Close button -->
                 <button @click="showModal = false" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">
@@ -203,10 +208,9 @@
         </div>
 
         <!-- Add this modal after the log details modal -->
-        <div x-show="showStatsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"
-            x-cloak>
-            <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
-                <button @click="showStatsModal = false"
+        <div x-show="showStatsModal" x-cloak class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+            <div class="relative top-20 mx-auto p-5 border w-11/12 shadow-lg rounded-md bg-white min-h-[80vh]">
+                <button @click="hideStatDetails()"
                     class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -214,24 +218,36 @@
                     </svg>
                 </button>
 
-                <div class="flex">
-                    <div class="w-3/4 pr-4">
-                        <div class="mb-4">
-                            <!-- Stats Record data display -->
-                            <h3 class="text-lg font-bold mb-2">Stats Record</h3>
-                            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-wrap">
+                    <div class="w-full lg:w-3/4 pr-4">
+                        <div class="mb-4 columns-2">
+                            <div class="grid grid-cols-2 gap-4 border-2">
                                 <!-- Display statsRecord data here -->
+                                <p><strong>Login ID:</strong> <span x-text="selectedStat.login_id"></span></p>
+                                <p><strong>App ID:</strong> <span x-text="selectedStat.app_id"></span></p>
+                                <p><strong>Package:</strong> <span x-text="selectedStat.package"></span></p>
+                                <p><strong>Role Name:</strong> <span x-text="selectedStat.role_name"></span></p>
+                                <p><strong>Device:</strong> <span x-text="selectedStat.device"></span></p>
+                                <p><strong>Created At:</strong> <span x-text="new Date(selectedStat.created_at).toLocaleString()"></span></p>
                             </div>
-                            <img :src="getPic()" alt="Stats Image" class="mt-4 max-w-full h-auto">
+                            <div id="screenshot">
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="text-lg font-bold mb-2">Performance Chart</h3>
-                            <canvas id="performanceChart"></canvas>
+                        <div class="grid grid-cols-1 gap-10">
+                            <div class="h-[25vh]"><canvas id="fpsChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="totalMemChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="usedMemChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="monoUsedMemChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="monoStackMemChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="textureChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="audioChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="textAssetChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="shaderChart"></canvas></div>
                         </div>
                     </div>
-                    <div class="w-1/4">
+                    <div class="w-full lg:w-1/4 mt-4 lg:mt-0">
                         <h3 class="text-lg font-bold mb-2">Process Info</h3>
-                        <pre x-text="getProcess()" class="whitespace-pre-wrap break-words text-sm"></pre>
+                        <pre id="processInfo" class="whitespace-pre-wrap break-words text-sm bg-gray-100 p-2 rounded"></pre>
                     </div>
                 </div>
             </div>
@@ -239,6 +255,16 @@
     </div>
 
     <script src="/js/app.js"></script>
+
+    <!-- 在 body 标签的末尾，在最后的 </div> 之后添加以下代码 -->
+    <div id="enlargedImageContainer" x-show="isEnlargedImageVisible" 
+         @click.away="hideEnlarged()"
+         class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50" style="display: none;">
+        <div class="bg-white p-4 rounded-lg shadow-lg">
+            <img id="enlargedImage" :src="enlargedImageSrc" alt="Enlarged Stats Image" class="max-w-[90vw] max-h-[90vh] rounded">
+        </div>
+    </div>
+
 </body>
 
 </html>

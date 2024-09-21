@@ -13,6 +13,7 @@ type LogReq struct {
 	Logs []models.Log `json:"list"`
 }
 
+// 创建日志记录
 func CreateLog(c *fiber.Ctx, db *gorm.DB) error {
 	logReq := new(LogReq)
 	if err := c.BodyParser(logReq); err != nil {
@@ -27,6 +28,7 @@ func CreateLog(c *fiber.Ctx, db *gorm.DB) error {
 	return c.Status(201).JSON(logReq.Logs)
 }
 
+// 获取日志记录
 func GetLogs(c *fiber.Ctx, db *gorm.DB) error {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
@@ -57,6 +59,7 @@ func GetLogs(c *fiber.Ctx, db *gorm.DB) error {
 	})
 }
 
+// 删除日志记录
 func DeleteLogsBefore(c *fiber.Ctx, db *gorm.DB) error {
 	dateStr := c.Query("date")
 	if dateStr == "" {

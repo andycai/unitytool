@@ -1,3 +1,20 @@
+const zoomOptions = {
+    pan: {
+        enabled: true,
+        mode: 'x',
+        modifierKey: null, // 允许直接拖动，不需要按住修饰键
+    },
+    zoom: {
+        wheel: {
+            enabled: true,
+        },
+        pinch: {
+            enabled: true
+        },
+        mode: 'x'
+    }
+};
+
 function logSystem() {
     return {
         logs: [],
@@ -5,8 +22,7 @@ function logSystem() {
         showModal: false,
         showStatsModal: false,
         selectedLog: {},
-        selectedStat: null,
-        performanceChart: null,
+        selectedStat: {},
         page: 1,
         limit: 30,
         total: 0,
@@ -14,14 +30,25 @@ function logSystem() {
         searchTimeout: null,
         selectedDate: '',
         showConfirmModal: false,
-        currentView: 'logs',
+        currentView: 'stats',
         statsPage: 1,
         statsLimit: 10,
         statsTotal: 0,
+        chartInstances: {}, // 用于存储图表实例
+        isInitialized: false,
+        enlargedImageSrc: '',
+        isEnlargedImageVisible: false,
 
         init() {
-            this.fetchLogs();
-            this.fetchStats();
+            if (!this.isInitialized) {
+                // 只加载 stats 数据
+                this.fetchStats();
+                this.isInitialized = true;
+            }
+            // 确保初始状态下模态框是关闭的
+            this.showModal = false;
+            this.showStatsModal = false;
+            this.clearChartInstances();
         },
 
         async fetchLogs() {
@@ -48,50 +75,195 @@ function logSystem() {
         },
 
         showStatDetails(stat) {
-            this.selectedStat = stat;
-            this.showStatsModal = true;
-            this.fetchStatDetails(stat.login_id);
+            if (this.showStatsModal) {
+                // 如果模态框已经打开，只更新数据
+                this.selectedStat = JSON.parse(JSON.stringify(stat));
+                this.fetchStatDetails(stat.login_id);
+            } else {
+                // 如果模态框未打开，打开模态框并加载数据
+                this.selectedStat = JSON.parse(JSON.stringify(stat));
+                this.showStatsModal = true;
+                this.$nextTick(() => {
+                    this.fetchStatDetails(stat.login_id);
+                });
+            }
+        },
+
+        hideStatDetails() {
+            this.showStatsModal = false;
         },
 
         async fetchStatDetails(loginID) {
-            const response = await fetch(`/api/stats/details?login_id=${loginID}`);
-            const data = await response.json();
-            this.updateStatDetails(data);
+            try {
+                const response = await fetch(`/api/stats/details?login_id=${loginID}`);
+                const data = await response.json();
+                this.updateStatDetails(data);
+            } catch (error) {
+                console.error('Error fetching stat details:', error);
+            }
         },
 
         updateStatDetails(data) {
             this.selectedStat = { ...this.selectedStat, ...data.statsRecord };
-            this.updatePerformanceChart(data.statsInfo);
+            this.$nextTick(() => {
+                this.renderCharts(data.statsInfo);
+            });
         },
 
-        updatePerformanceChart(statsInfo) {
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            if (this.performanceChart) {
-                this.performanceChart.destroy();
+        renderCharts(statsInfo) {
+            if (!statsInfo || !Array.isArray(statsInfo) || statsInfo.length === 0) {
+                console.warn('No stats info available to render charts');
+                return;
             }
-            this.performanceChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: statsInfo.map(info => new Date(info.created_at).toLocaleString()),
-                    datasets: [
-                        { label: 'FPS', data: statsInfo.map(info => info.fps) },
-                        { label: 'Total Memory', data: statsInfo.map(info => info.total_mem) },
-                        // ... add other datasets ...
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        zoom: {
-                            zoom: {
-                                wheel: { enabled: true },
-                                pinch: { enabled: true },
-                                mode: 'xy',
+
+            const chartConfigs = [
+                { id: 'fpsChart', label: 'FPS', dataKey: 'fps', color: 'rgba(75, 192, 192, 1)' },
+                { id: 'totalMemChart', label: 'Total Memory', dataKey: 'total_mem', color: 'rgba(255, 99, 132, 1)' },
+                { id: 'usedMemChart', label: 'Used Memory', dataKey: 'used_mem', color: 'rgba(54, 162, 235, 1)' },
+                { id: 'monoUsedMemChart', label: 'Mono Used Memory', dataKey: 'mono_used_mem', color: 'rgba(255, 206, 86, 1)' },
+                { id: 'monoStackMemChart', label: 'Mono Stack Memory', dataKey: 'mono_stack_mem', color: 'rgba(75, 192, 192, 1)' },
+                { id: 'textureChart', label: 'Texture', dataKey: 'texture', color: 'rgba(153, 102, 255, 1)' },
+                { id: 'audioChart', label: 'Audio', dataKey: 'audio', color: 'rgba(255, 159, 64, 1)' },
+                { id: 'textAssetChart', label: 'Text Asset', dataKey: 'text_asset', color: 'rgba(255, 99, 132, 1)' },
+                { id: 'shaderChart', label: 'Shader', dataKey: 'shader', color: 'rgba(54, 162, 235, 1)' }
+            ];
+
+            chartConfigs.forEach(config => {
+                const canvas = document.getElementById(config.id);
+                if (!canvas) {
+                    console.warn(`Canvas element with id ${config.id} not found`);
+                    return;
+                }
+
+                const ctx = canvas.getContext('2d');
+
+                const chartData = statsInfo.map(info => ({
+                    x: new Date(info.created_at).getTime(),
+                    y: info[config.dataKey]
+                })).filter(point => point.y !== undefined && point.y !== null);
+
+                if (chartData.length === 0) {
+                    console.warn(`No valid data for chart ${config.id}`);
+                    return;
+                }
+
+                if (this.chartInstances[config.id]) {
+                    // 更新现有图表
+                    const chart = this.chartInstances[config.id];
+                    chart.data.datasets[0].data = chartData;
+                    chart.data.datasets[0].pic = statsInfo.map(info => info.pic);
+                    chart.data.datasets[0].process = statsInfo.map(info => info.process);
+                    chart.update('none');
+                } else {
+                    // 创建新的图表实例
+                    this.chartInstances[config.id] = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            datasets: [{
+                                label: config.label,
+                                data: chartData,
+                                borderColor: config.color,
+                                pointStyle: 'circle',
+                                pointRadius: 5,
+                                spanGaps: true,
+                                showLine: true,
+                                pointHoverRadius: 8,
+                                pic: statsInfo.map(info => info.pic),
+                                process: statsInfo.map(info => info.process)
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            spanGaps: true,
+                            showLine: true,
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'second',
+                                        displayFormats: {
+                                            second: 'HH:mm:ss'
+                                        }
+                                    },
+                                    ticks: {
+                                        source: 'auto',
+                                        maxRotation: 0,
+                                        autoSkip: true,
+                                        maxTicksLimit: 10
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            layout: {
+                                padding: {
+                                    top: 20,
+                                    right: 20,
+                                    bottom: 20,
+                                    left: 20
+                                }
+                            },
+                            onClick: (evt, elements) => {
+                                if (elements.length > 0) {
+                                    const index = elements[0].index;
+                                    const datasetIndex = elements[0].datasetIndex;
+                                    const dataset = evt.chart.data.datasets[datasetIndex];
+                                    const pic = dataset.pic[index];
+                                    const process = dataset.process[index];
+                                    this.updateClickedPointInfo(pic, process);
+                                }
+                            },
+                            plugins: {
+                                zoom: zoomOptions,
+                                title: {
+                                    display: true,
+                                    text: config.label
+                                },
+                                tooltip: {
+                                    usePointStyle: true,
+                                    callbacks: {
+                                        title: function(context) {
+                                            let date = new Date(context[0].parsed.x);
+                                            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                        }
+                                    }
+                                },
+                                onHover: (event, chartElement) => {
+                                    event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                                }
                             }
-                        }
-                    }
+                        },
+                        plugins: [ChartZoom]
+                    });
                 }
             });
+        },
+
+        showEnlarged(imgSrc) {
+            const enlargedContainer = document.getElementById('enlargedImageContainer');
+            const enlargedImage = document.getElementById('enlargedImage');
+            enlargedImage.src = imgSrc;
+            enlargedContainer.style.display = 'flex';
+        },
+
+        hideEnlarged() {
+            const enlargedContainer = document.getElementById('enlargedImageContainer');
+            setTimeout(() => {
+                enlargedContainer.style.display = 'none';
+            }, 300); // 与 transition 时间相匹配
+        },
+
+        updateClickedPointInfo(pic, process) {
+            const processElement = document.getElementById('processInfo');
+            processElement.innerHTML = this.formatStack(process);
+            const screenshotElement = document.getElementById('screenshot');
+            screenshotElement.innerHTML = `
+                <img src="${pic}" alt="Stats Image" class="mt-4 h-40 cursor-zoom-in stats-thumbnail" 
+                     @mouseenter="showEnlarged('${pic}')"
+                     @mouseleave="hideEnlarged()">
+            `;
         },
 
         changePage(newPage) {
@@ -144,112 +316,21 @@ function logSystem() {
 
         formatStack(stack) {
             if (stack == undefined || stack == null) return '';
-            return stack.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;');
+            return stack.replace(/\\n/g, '<br>').replace(/ /g, '&nbsp;');
         },
-
-        getPic() {
-            if (this.selectedStat == undefined || this.selectedStat == null) return '';
-            return this.selectedStat.pic;
-        },
-
-        getProcess() {
-            if (this.selectedStat == undefined || this.selectedStat == null) return '';
-            return this.selectedStat.process;
-        },
-
 
         viewLogs() {
             this.currentView = 'logs';
+            if (this.logs.length === 0) {
+                this.fetchLogs();
+            }
         },
 
         viewStats() {
             this.currentView = 'stats';
-        },
-
-        renderChart() {
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: this.selectedStat.timestamps,
-                    datasets: [
-                        {
-                            label: 'FPS',
-                            data: this.selectedStat.fps,
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        },
-                        {
-                            label: 'Total Memory',
-                            data: this.selectedStat.total_mem,
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        },
-                        {
-                            label: 'Used Memory',
-                            data: this.selectedStat.used_mem,
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        },
-                        {
-                            label: 'Mono Used Memory',
-                            data: this.selectedStat.mono_used_mem,
-                            borderColor: 'rgba(255, 206, 86, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        },
-                        {
-                            label: 'Mono Stack Memory',
-                            data: this.selectedStat.mono_stack_mem,
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        },
-                        {
-                            label: 'Texture',
-                            data: this.selectedStat.texture,
-                            borderColor: 'rgba(153, 102, 255, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        },
-                        {
-                            label: 'Audio',
-                            data: this.selectedStat.audio,
-                            borderColor: 'rgba(255, 159, 64, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        },
-                        {
-                            label: 'Text Asset',
-                            data: this.selectedStat.text_asset,
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        },
-                        {
-                            label: 'Shader',
-                            data: this.selectedStat.shader,
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'minute'
-                            }
-                        }
-                    }
-                }
-            });
+            if (this.stats.length === 0) {
+                this.fetchStats();
+            }
         },
 
         async deleteStatsBefore() {
@@ -271,6 +352,15 @@ function logSystem() {
             } catch (error) {
                 alert('Failed to delete stats: ' + error.message);
             }
+        },
+
+        clearChartInstances() {
+            Object.values(this.chartInstances).forEach(chart => {
+                if (chart) {
+                    chart.destroy();
+                }
+            });
+            this.chartInstances = {};
         }
     }
 }
