@@ -2,10 +2,13 @@ const zoomOptions = {
     pan: {
         enabled: true,
         mode: 'x',
-        modifierKey: null, // 允许直接拖动，不需要按住修饰键
+        modifierKey: "alt",
     },
     zoom: {
         wheel: {
+            enabled: true,
+        },
+        drag: {
             enabled: true,
         },
         pinch: {
@@ -36,8 +39,6 @@ function logSystem() {
         statsTotal: 0,
         chartInstances: {}, // 用于存储图表实例
         isInitialized: false,
-        enlargedImageSrc: '',
-        isEnlargedImageVisible: false,
 
         init() {
             if (!this.isInitialized) {
@@ -156,7 +157,7 @@ function logSystem() {
                     chart.data.datasets[0].data = chartData;
                     chart.data.datasets[0].pic = statsInfo.map(info => info.pic);
                     chart.data.datasets[0].process = statsInfo.map(info => info.process);
-                    chart.update('none');
+                    chart.update();
                 } else {
                     // 创建新的图表实例
                     this.chartInstances[config.id] = new Chart(ctx, {
@@ -167,10 +168,10 @@ function logSystem() {
                                 data: chartData,
                                 borderColor: config.color,
                                 pointStyle: 'circle',
-                                pointRadius: 5,
+                                pointRadius: 8,
                                 spanGaps: true,
                                 showLine: true,
-                                pointHoverRadius: 8,
+                                pointHoverRadius: 10,
                                 pic: statsInfo.map(info => info.pic),
                                 process: statsInfo.map(info => info.process)
                             }]
@@ -232,14 +233,24 @@ function logSystem() {
                                             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                                         }
                                     }
-                                },
-                                onHover: (event, chartElement) => {
+                                }
+                            },
+                            onHover: (event, chartElement) => {
+                                if (event.native) {
                                     event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
                                 }
                             }
                         },
                         plugins: [ChartZoom]
                     });
+                }
+            });
+
+            // 清理不再需要的图表实例
+            Object.keys(this.chartInstances).forEach(key => {
+                if (!chartConfigs.some(config => config.id === key)) {
+                    this.chartInstances[key].destroy();
+                    delete this.chartInstances[key];
                 }
             });
         },
@@ -255,7 +266,7 @@ function logSystem() {
             const enlargedContainer = document.getElementById('enlargedImageContainer');
             setTimeout(() => {
                 enlargedContainer.classList.add('hidden');
-            }, 300); // 与 transition 时间相匹配
+            }, 300);
         },
 
         formatProcess(process) {
