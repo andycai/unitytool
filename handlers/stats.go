@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"time"
@@ -12,14 +14,52 @@ import (
 
 // 创建资源占用记录
 func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
-	var stats models.StatsRecord
-	if err := c.BodyParser(&stats); err != nil {
+	var record models.StatsRecord
+	if err := c.BodyParser(&record); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
-	if err := db.Create(&stats).Error; err != nil {
+	if err := db.Create(&record).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot create stats record"})
 	}
-	return c.Status(fiber.StatusCreated).JSON(stats)
+
+	var info models.StatsInfo
+	if err := c.BodyParser(&info); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
+	}
+	tmp, _ := json.Marshal(&info.Process2)
+	info.Process = string(tmp)
+
+	// Handle the pic field
+	if info.Pic != "" {
+		// Decode base64 to image data
+		imgData, err := base64.StdEncoding.DecodeString(info.Pic)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid base64 image data"})
+		}
+
+		// Create directory if it doesn't exist
+		uploadDir := "./public/uploads"
+		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create upload directory"})
+		}
+
+		// Generate a unique filename
+		filename := filepath.Join(uploadDir, time.Now().Format("20060102150405")+".jpg")
+
+		// Save the image file
+		if err := os.WriteFile(filename, imgData, 0644); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to save image file"})
+		}
+
+		// Update the pic field with the file path
+		info.Pic = filename
+	}
+
+	if err := db.Create(&info).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot create stats record"})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(record)
 }
 
 // 获取资源占用记录

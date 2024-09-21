@@ -172,7 +172,7 @@ function logSystem() {
                                 showLine: true,
                                 pointHoverRadius: 8,
                                 pic: statsInfo.map(info => info.pic),
-                                process: statsInfo.map(info => info.list)
+                                process: statsInfo.map(info => info.process)
                             }]
                         },
                         options: {
@@ -258,9 +258,35 @@ function logSystem() {
             }, 300); // 与 transition 时间相匹配
         },
 
+        formatProcess(process) {
+            // 如果 process 是 JSON 格式，尝试解码
+            if (typeof process === 'string') {
+                try {
+                    process = JSON.parse(process);
+                } catch (e) {
+                    // 如果解析失败，保持原样
+                    return 'Failed to parse process as JSON:' + process;
+                }
+            }
+
+            if (process == undefined || process == null || !Array.isArray(process)) return '';
+
+            return process.map(item => {
+                if (item == undefined || item == null) return '';
+
+                var result = '[' + item['name'] + ']<br>';
+                if (item['list'] != null && Array.isArray(item['list'])) {
+                    return result + item['list'].map(subItem => {
+                        return subItem.replace(/\\n/g, '<br>').replace(/ /g, '&nbsp;')
+                    }).join('<br>');
+                }
+                return result.replace(/\\n/g, '<br>').replace(/ /g, '&nbsp;')
+            }).join('<br><br>');
+        },
+
         updateClickedPointInfo(pic, process) {
             const processElement = document.getElementById('processInfo');
-            processElement.innerHTML = this.formatStack(process);
+            processElement.innerHTML = this.formatProcess(process);
             const screenshotElement = document.getElementById('screenshot');
             screenshotElement.innerHTML = `
                 <img src="${pic}" alt="Stats Image" class="h-40 cursor-zoom-in stats-thumbnail" 
