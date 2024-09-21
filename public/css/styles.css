@@ -1,4 +1,9 @@
 /* 我们可以保留这些自定义样式 */
+
+[x-cloak] {
+    display: none !important;
+}
+
 .menu-column {
     width: 200px;
     flex-shrink: 0;

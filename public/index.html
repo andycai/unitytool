@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
     <meta charset="UTF-8">
@@ -11,9 +11,6 @@
     <script src="/js/chartjs-plugin-zoom.min.js"></script>
     <script src="/js/chartjs-adapter-date-fns.bundle.min.js"></script>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
 </head>
 
 <body class="bg-gray-100">
@@ -124,13 +121,13 @@
                             <tr @click="showStatDetails(stat)" class="cursor-pointer hover:bg-gray-100">
                                 <td x-text="stat.login_id"></td>
                                 <td x-text="stat.app_id"></td>
-                                <td x-text="stat.package"></td>
+                                <td x-text="stat.package_name"></td>
                                 <td x-text="stat.role_name"></td>
-                                <td x-text="stat.device"></td>
-                                <td x-text="stat.cpu"></td>
-                                <td x-text="stat.gpu"></td>
-                                <td x-text="stat.memory"></td>
-                                <td x-text="new Date(stat.created_at).toLocaleString()"></td>
+                                <td x-text="stat.device_name"></td>
+                                <td x-text="stat.system_cpu"></td>
+                                <td x-text="stat.graphics_divice"></td>
+                                <td x-text="stat.system_mem"></td>
+                                <td x-text="new Date(stat.mtime).toLocaleString()"></td>
                                 <td><a href="#" @click="showStatDetails(stat)"
                                         class="cursor-pointer hover:bg-gray-100">查看详情</a></td>
                             </tr>
@@ -219,33 +216,41 @@
                 </button>
 
                 <div class="flex flex-wrap">
-                    <div class="w-full lg:w-3/4 pr-4">
-                        <div class="mb-4 columns-2">
-                            <div class="grid grid-cols-2 gap-4 border-2">
+                    <div class="w-full lg:w-3/4 pr-4 border-r-2">
+                        <div class="mb-4 flex flex-wrap">
+                            <div class="w-3/4 grid grid-cols-3 gap-2">
                                 <!-- Display statsRecord data here -->
                                 <p><strong>Login ID:</strong> <span x-text="selectedStat.login_id"></span></p>
                                 <p><strong>App ID:</strong> <span x-text="selectedStat.app_id"></span></p>
-                                <p><strong>Package:</strong> <span x-text="selectedStat.package"></span></p>
+                                <p><strong>包名:</strong> <span x-text="selectedStat.package_name"></span></p>
                                 <p><strong>Role Name:</strong> <span x-text="selectedStat.role_name"></span></p>
-                                <p><strong>Device:</strong> <span x-text="selectedStat.device"></span></p>
-                                <p><strong>Created At:</strong> <span x-text="new Date(selectedStat.created_at).toLocaleString()"></span></p>
+                                <p><strong>产品名称:</strong> <span x-text="selectedStat.product_name"></span></p>
+                                <p><strong>设备名:</strong> <span x-text="selectedStat.device_name"></span></p>
+                                <p><strong>CPU:</strong> <span x-text="selectedStat.system_cpu"></span></p>
+                                <p><strong>系统内存:</strong> <span x-text="selectedStat.system_mem"></span></p>
+                                <p><strong>GPU:</strong> <span x-text="selectedStat.graphics_divice"></span></p>
+                                <p><strong>GPU内存:</strong> <span x-text="selectedStat.graphics_mem"></span></p>
+                                <p><strong>Created At:</strong> <span x-text="new Date(selectedStat.mtime).toLocaleString()"></span></p>
                             </div>
-                            <div id="screenshot">
+                            <div id="screenshot" class="w-1/4">
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 gap-10">
+                        <div class="grid grid-cols-1 gap-4">
                             <div class="h-[25vh]"><canvas id="fpsChart"></canvas></div>
                             <div class="h-[25vh]"><canvas id="totalMemChart"></canvas></div>
                             <div class="h-[25vh]"><canvas id="usedMemChart"></canvas></div>
                             <div class="h-[25vh]"><canvas id="monoUsedMemChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="monoStackMemChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="monoHeapMemChart"></canvas></div>
                             <div class="h-[25vh]"><canvas id="textureChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="meshChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="animationChart"></canvas></div>
                             <div class="h-[25vh]"><canvas id="audioChart"></canvas></div>
+                            <div class="h-[25vh]"><canvas id="fontChart"></canvas></div>
                             <div class="h-[25vh]"><canvas id="textAssetChart"></canvas></div>
                             <div class="h-[25vh]"><canvas id="shaderChart"></canvas></div>
                         </div>
                     </div>
-                    <div class="w-full lg:w-1/4 mt-4 lg:mt-0">
+                    <div class="w-full lg:w-1/4 mt-4 lg:mt-0 px-2">
                         <h3 class="text-lg font-bold mb-2">Process Info</h3>
                         <pre id="processInfo" class="whitespace-pre-wrap break-words text-sm bg-gray-100 p-2 rounded"></pre>
                     </div>
@@ -259,7 +264,7 @@
     <!-- 在 body 标签的末尾，在最后的 </div> 之后添加以下代码 -->
     <div id="enlargedImageContainer" x-show="isEnlargedImageVisible" 
          @click.away="hideEnlarged()"
-         class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50" style="display: none;">
+         class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 hidden">
         <div class="bg-white p-4 rounded-lg shadow-lg">
             <img id="enlargedImage" :src="enlargedImageSrc" alt="Enlarged Stats Image" class="max-w-[90vw] max-h-[90vh] rounded">
         </div>

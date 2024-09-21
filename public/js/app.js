@@ -121,11 +121,14 @@ function logSystem() {
                 { id: 'totalMemChart', label: 'Total Memory', dataKey: 'total_mem', color: 'rgba(255, 99, 132, 1)' },
                 { id: 'usedMemChart', label: 'Used Memory', dataKey: 'used_mem', color: 'rgba(54, 162, 235, 1)' },
                 { id: 'monoUsedMemChart', label: 'Mono Used Memory', dataKey: 'mono_used_mem', color: 'rgba(255, 206, 86, 1)' },
-                { id: 'monoStackMemChart', label: 'Mono Stack Memory', dataKey: 'mono_stack_mem', color: 'rgba(75, 192, 192, 1)' },
-                { id: 'textureChart', label: 'Texture', dataKey: 'texture', color: 'rgba(153, 102, 255, 1)' },
-                { id: 'audioChart', label: 'Audio', dataKey: 'audio', color: 'rgba(255, 159, 64, 1)' },
-                { id: 'textAssetChart', label: 'Text Asset', dataKey: 'text_asset', color: 'rgba(255, 99, 132, 1)' },
-                { id: 'shaderChart', label: 'Shader', dataKey: 'shader', color: 'rgba(54, 162, 235, 1)' }
+                { id: 'monoHeapMemChart', label: 'Mono Heap Memory', dataKey: 'mono_heap_mem', color: 'rgba(153, 102, 255, 1)' },
+                { id: 'textureChart', label: 'Texture', dataKey: 'texture', color: 'rgba(255, 159, 64, 1)' },
+                { id: 'meshChart', label: 'Mesh', dataKey: 'mesh', color: 'rgba(255, 99, 71, 1)' },
+                { id: 'animationChart', label: 'Animation', dataKey: 'animation', color: 'rgba(50, 205, 50, 1)' },
+                { id: 'audioChart', label: 'Audio', dataKey: 'audio', color: 'rgba(0, 191, 255, 1)' },
+                { id: 'fontChart', label: 'Font', dataKey: 'font', color: 'rgba(255, 140, 0, 1)' },
+                { id: 'textAssetChart', label: 'Text Asset', dataKey: 'text_asset', color: 'rgba(186, 85, 211, 1)' },
+                { id: 'shaderChart', label: 'Shader', dataKey: 'shader', color: 'rgba(0, 128, 128, 1)' }
             ];
 
             chartConfigs.forEach(config => {
@@ -138,7 +141,7 @@ function logSystem() {
                 const ctx = canvas.getContext('2d');
 
                 const chartData = statsInfo.map(info => ({
-                    x: new Date(info.created_at).getTime(),
+                    x: new Date(info.mtime).getTime(),
                     y: info[config.dataKey]
                 })).filter(point => point.y !== undefined && point.y !== null);
 
@@ -169,7 +172,7 @@ function logSystem() {
                                 showLine: true,
                                 pointHoverRadius: 8,
                                 pic: statsInfo.map(info => info.pic),
-                                process: statsInfo.map(info => info.process)
+                                process: statsInfo.map(info => info.list)
                             }]
                         },
                         options: {
@@ -245,13 +248,13 @@ function logSystem() {
             const enlargedContainer = document.getElementById('enlargedImageContainer');
             const enlargedImage = document.getElementById('enlargedImage');
             enlargedImage.src = imgSrc;
-            enlargedContainer.style.display = 'flex';
+            enlargedContainer.classList.remove('hidden');
         },
 
         hideEnlarged() {
             const enlargedContainer = document.getElementById('enlargedImageContainer');
             setTimeout(() => {
-                enlargedContainer.style.display = 'none';
+                enlargedContainer.classList.add('hidden');
             }, 300); // 与 transition 时间相匹配
         },
 
@@ -260,7 +263,7 @@ function logSystem() {
             processElement.innerHTML = this.formatStack(process);
             const screenshotElement = document.getElementById('screenshot');
             screenshotElement.innerHTML = `
-                <img src="${pic}" alt="Stats Image" class="mt-4 h-40 cursor-zoom-in stats-thumbnail" 
+                <img src="${pic}" alt="Stats Image" class="h-40 cursor-zoom-in stats-thumbnail" 
                      @mouseenter="showEnlarged('${pic}')"
                      @mouseleave="hideEnlarged()">
             `;
