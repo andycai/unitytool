@@ -66,7 +66,7 @@
                                 <td x-text="log.log_message.substring(0, 50) + '...'"></td>
                                 <td x-text="new Date(log.log_time).toLocaleString()"></td>
                                 <td><a href="#" @click="showLogDetails(log)"
-                                        class="cursor-pointer hover:bg-gray-100">查看详情<</a></td>
+                                        class="cursor-pointer hover:bg-gray-100">查看详情</a></td>
                             </tr>
                         </template>
                     </tbody>
@@ -206,7 +206,7 @@
 
         <!-- Add this modal after the log details modal -->
         <div x-show="showStatsModal" x-cloak class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-            <div class="relative top-20 mx-auto p-5 border w-11/12 shadow-lg rounded-md bg-white min-h-[80vh]">
+            <div class="relative top-5 mx-5 p-5 border w-auto shadow-lg rounded-md bg-white min-h-[80vh]">
                 <button @click="hideStatDetails()"
                     class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
