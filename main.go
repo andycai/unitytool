@@ -14,6 +14,7 @@ import (
 
 func main() {
 	// 定义命令行参数
+	host := flag.String("host", "0.0.0.0", "主机地址")
 	port := flag.Int("port", 3000, "端口号")
 	flag.Parse()
 
@@ -58,5 +59,5 @@ func main() {
 	})
 
 	// 使用命令行参数设置端口
-	app.Listen(fmt.Sprintf(":%d", *port))
+	app.Listen(fmt.Sprintf("%s:%d", *host, *port))
 }
