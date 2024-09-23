@@ -10,7 +10,11 @@ import (
 )
 
 type LogReq struct {
-	Logs []models.Log `json:"list"`
+	AppID    string       `json:"app_id"`
+	Package  string       `json:"package"`
+	RoleName string       `json:"role_name"`
+	Device   string       `json:"device"`
+	Logs     []models.Log `json:"list"`
 }
 
 // 创建日志记录
@@ -18,6 +22,14 @@ func CreateLog(c *fiber.Ctx, db *gorm.DB) error {
 	logReq := new(LogReq)
 	if err := c.BodyParser(logReq); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid input"})
+	}
+
+	// Loop through LogReq.Logs and copy appid, package, role_name, device to each log
+	for i := range logReq.Logs {
+		logReq.Logs[i].AppID = logReq.AppID
+		logReq.Logs[i].Package = logReq.Package
+		logReq.Logs[i].RoleName = logReq.RoleName
+		logReq.Logs[i].Device = logReq.Device
 	}
 
 	result := db.CreateInBatches(logReq.Logs, len(logReq.Logs))

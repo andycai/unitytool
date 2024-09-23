@@ -1,5 +1,12 @@
 package models
 
+type LogRecord struct {
+	AppID    string `json:"app_id"`
+	Package  string `json:"package"`
+	RoleName string `json:"role_name"`
+	Device   string `json:"device"`
+}
+
 type Log struct {
 	ID         uint   `json:"id" gorm:"primaryKey"`
 	AppID      string `json:"app_id"`
@@ -14,7 +21,7 @@ type Log struct {
 
 type StatsRecord struct {
 	ID          uint   `json:"id" gorm:"primaryKey"`
-	LoginID     int    `json:"login_id" gorm:"unique"`
+	LoginID     int64  `json:"login_id" gorm:"unique"`
 	AppID       int    `json:"app_id"`
 	Package     string `json:"package_name"`
 	ProductName string `json:"product_name"`
@@ -22,14 +29,14 @@ type StatsRecord struct {
 	Device      string `json:"device_name"`
 	CPU         string `json:"system_cpu"`
 	GPU         string `json:"graphics_divice"`
-	Memory      string `json:"system_mem"`
-	GPUMemory   string `json:"graphics_mem"`
+	Memory      int    `json:"system_mem"`
+	GPUMemory   int    `json:"graphics_mem"`
 	CreatedAt   int64  `json:"mtime"`
 }
 
 type StatsInfo struct {
 	ID          uint                     `json:"id" gorm:"primaryKey"`
-	LoginID     int                      `json:"login_id"`
+	LoginID     int64                    `json:"login_id"`
 	FPS         int                      `json:"fps"`
 	TotalMem    int                      `json:"total_mem"`
 	UsedMem     int                      `json:"used_mem"`

@@ -18,8 +18,12 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 	if err := c.BodyParser(&record); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
-	if err := db.Create(&record).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot create stats record"})
+
+	var existingRecord models.StatsRecord
+	if err := db.Where("login_id = ?", record.LoginID).First(&existingRecord).Error; err != nil {
+		if err := db.Create(&record).Error; err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot create stats record"})
+		}
 	}
 
 	var info models.StatsInfo
@@ -44,15 +48,16 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 		}
 
 		// Generate a unique filename
-		filename := filepath.Join(uploadDir, time.Now().Format("20060102150405")+".jpg")
+		filename := time.Now().Format("20060102150405") + ".jpg"
+		filePath := filepath.Join(uploadDir, filename)
 
 		// Save the image file
-		if err := os.WriteFile(filename, imgData, 0644); err != nil {
+		if err := os.WriteFile(filePath, imgData, 0644); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to save image file"})
 		}
 
 		// Update the pic field with the file path
-		info.Pic = filename
+		info.Pic = filepath.Join("uploads", filename)
 	}
 
 	if err := db.Create(&info).Error; err != nil {
