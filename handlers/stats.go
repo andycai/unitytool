@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -102,30 +103,37 @@ func DeleteStatsBefore(c *fiber.Ctx, db *gorm.DB) error {
 
 	// Delete from stats_record table
 	if err := db.Where("created_at <= ?", timestamp).Delete(&models.StatsRecord{}).Error; err != nil {
+		fmt.Println("err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot delete stats records"})
 	}
 
 	// Fetch stats_info records to delete
 	var statsInfo []models.StatsInfo
 	if err := db.Where("created_at <= ?", timestamp).Find(&statsInfo).Error; err != nil {
+		fmt.Println("err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot fetch stats info records"})
 	}
 
 	// Delete images from file system
 	for _, info := range statsInfo {
+		picPath := filepath.Join("public", info.Pic)
+		fmt.Println("picPath", picPath)
 		if info.Pic != "" {
-			if err := os.Remove(filepath.Join("public", info.Pic)); err != nil {
+			if err := os.Remove(picPath); err != nil {
+				fmt.Println("err", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot delete image file"})
 			}
 		}
 	}
 
 	// Delete from stats_info table
-	if err := db.Where("created_at <= ?", timestamp).Delete(&models.StatsInfo{}).Error; err != nil {
+	result := db.Where("created_at <= ?", timestamp).Delete(&models.StatsInfo{})
+	if result.Error != nil {
+		fmt.Println("err", result.Error)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot delete stats info records"})
 	}
 
-	return c.JSON(fiber.Map{"message": "records deleted successfully"})
+	return c.JSON(fiber.Map{"message": "records deleted successfully", "count": result.RowsAffected})
 }
 
 // 获取资源占用详情

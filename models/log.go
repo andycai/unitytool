@@ -1,12 +1,5 @@
 package models
 
-type LogRecord struct {
-	AppID    string `json:"app_id"`
-	Package  string `json:"package"`
-	RoleName string `json:"role_name"`
-	Device   string `json:"device"`
-}
-
 type Log struct {
 	ID         uint   `json:"id" gorm:"primaryKey"`
 	AppID      string `json:"app_id"`
@@ -21,7 +14,7 @@ type Log struct {
 
 type StatsRecord struct {
 	ID          uint   `json:"id" gorm:"primaryKey"`
-	LoginID     int64  `json:"login_id" gorm:"unique"`
+	LoginID     int64  `json:"login_id" gorm:"uniqueIndex"`
 	AppID       int    `json:"app_id"`
 	Package     string `json:"package_name"`
 	ProductName string `json:"product_name"`
@@ -31,12 +24,12 @@ type StatsRecord struct {
 	GPU         string `json:"graphics_divice"`
 	Memory      int    `json:"system_mem"`
 	GPUMemory   int    `json:"graphics_mem"`
-	CreatedAt   int64  `json:"mtime"`
+	CreatedAt   int64  `json:"mtime" gorm:"index"`
 }
 
 type StatsInfo struct {
 	ID          uint                     `json:"id" gorm:"primaryKey"`
-	LoginID     int64                    `json:"login_id"`
+	LoginID     int64                    `json:"login_id" gorm:"index"`
 	FPS         int                      `json:"fps"`
 	TotalMem    int                      `json:"total_mem"`
 	UsedMem     int                      `json:"used_mem"`
@@ -52,7 +45,7 @@ type StatsInfo struct {
 	Pic         string                   `json:"pic"`
 	Process2    []map[string]interface{} `json:"list" gorm:"-"`
 	Process     string                   `json:"process"`
-	CreatedAt   int64                    `json:"mtime"`
+	CreatedAt   int64                    `json:"mtime" gorm:"index"`
 }
 
 type ProcessItem struct {
