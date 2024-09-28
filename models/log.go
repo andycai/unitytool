@@ -4,9 +4,9 @@ type Log struct {
 	ID         uint   `json:"id" gorm:"primaryKey"`
 	AppID      string `json:"app_id"`
 	Package    string `json:"package"`
-	RoleName   string `json:"role_name"`
+	RoleName   string `json:"role_name" gorm:"index"`
 	Device     string `json:"device"`
-	LogMessage string `json:"log_message"`
+	LogMessage string `json:"log_message" gorm:"index"`
 	LogTime    int64  `json:"log_time"`
 	LogType    string `json:"log_type"`
 	LogStack   string `json:"log_stack"`

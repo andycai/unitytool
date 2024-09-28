@@ -52,7 +52,7 @@ func GetLogs(c *fiber.Ctx, db *gorm.DB) error {
 	query := db.Model(&models.Log{})
 
 	if search != "" {
-		query = query.Where("log_message LIKE ?", "%"+search+"%")
+		query = query.Where("log_message LIKE ? OR role_name LIKE ?", "%"+search+"%", "%"+search+"%")
 	}
 
 	query.Count(&total)
