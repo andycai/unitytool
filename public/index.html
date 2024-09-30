@@ -44,6 +44,24 @@
                         class="w-full p-2 border rounded">
                 </div>
 
+                <!-- Pagination -->
+                <div class="mt-4 flex justify-between items-center">
+                    <div>
+                        <span
+                            x-text="`显示 ${(page - 1) * limit + 1} to ${Math.min(page * limit, total)} of ${total}`"></span>
+                    </div>
+                    <div>
+                        <button @click="changePage(page - 1)" :disabled="page === 1"
+                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
+                            上一页
+                        </button>
+                        <button @click="changePage(page + 1)" :disabled="page * limit >= total"
+                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
+                            下一页
+                        </button>
+                    </div>
+                </div>
+
                 <table class="w-full">
                     <thead>
                         <tr>
@@ -52,7 +70,8 @@
                             <th class="text-left">Role Name</th>
                             <th class="text-left">Device</th>
                             <th class="text-left">Message</th>
-                            <th class="text-left">Time</th>
+                            <th class="text-left">Log Time</th>
+                            <th class="text-left">Create Time</th>
                             <th class="text-left">Action</th>
                         </tr>
                     </thead>
@@ -65,6 +84,7 @@
                                 <td x-text="log.device"></td>
                                 <td x-text="log.log_message.substring(0, 50) + '...'"></td>
                                 <td x-text="new Date(log.log_time).toLocaleString()"></td>
+                                <td x-text="new Date(log.create_at).toLocaleString()"></td>
                                 <td><a href="#" @click="showLogDetails(log)"
                                         class="cursor-pointer hover:bg-gray-100">查看详情</a></td>
                             </tr>

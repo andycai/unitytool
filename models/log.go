@@ -10,6 +10,7 @@ type Log struct {
 	LogTime    int64  `json:"log_time"`
 	LogType    string `json:"log_type"`
 	LogStack   string `json:"log_stack"`
+	CreateAt   int64  `json:"create_at"`
 }
 
 type StatsRecord struct {

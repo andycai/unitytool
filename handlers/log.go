@@ -30,6 +30,7 @@ func CreateLog(c *fiber.Ctx, db *gorm.DB) error {
 		logReq.Logs[i].Package = logReq.Package
 		logReq.Logs[i].RoleName = logReq.RoleName
 		logReq.Logs[i].Device = logReq.Device
+		logReq.Logs[i].CreateAt = time.Now().UnixMilli()
 	}
 
 	result := db.CreateInBatches(logReq.Logs, len(logReq.Logs))
@@ -58,7 +59,7 @@ func GetLogs(c *fiber.Ctx, db *gorm.DB) error {
 	query.Count(&total)
 
 	offset := (page - 1) * limit
-	result := query.Offset(offset).Order("log_time DESC").Limit(limit).Find(&logs)
+	result := query.Offset(offset).Order("create_at DESC").Limit(limit).Find(&logs)
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch logs"})
 	}

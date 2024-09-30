@@ -27,7 +27,7 @@ function logSystem() {
         selectedLog: {},
         selectedStat: {},
         page: 1,
-        limit: 30,
+        limit: 50,
         total: 0,
         searchQuery: '',
         searchTimeout: null,
@@ -35,7 +35,7 @@ function logSystem() {
         showConfirmModal: false,
         currentView: 'stats',
         statsPage: 1,
-        statsLimit: 10,
+        statsLimit: 20,
         statsTotal: 0,
         chartInstances: {}, // 用于存储图表实例
         isInitialized: false,
