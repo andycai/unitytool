@@ -299,9 +299,10 @@ function logSystem() {
             const processElement = document.getElementById('processInfo');
             processElement.innerHTML = this.formatProcess(process);
             const screenshotElement = document.getElementById('screenshot');
+            const picPath = pic.replace(/\\/g, '/');
             screenshotElement.innerHTML = `
-                <img src="${pic}" alt="Stats Image" class="h-40 cursor-zoom-in stats-thumbnail" 
-                     @mouseenter="showEnlarged('${pic}')"
+                <img src="${picPath}" alt="Stats Image" class="h-40 cursor-zoom-in stats-thumbnail" 
+                     @mouseenter="showEnlarged('${picPath}')"
                      @mouseleave="hideEnlarged()">
             `;
         },
