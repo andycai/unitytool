@@ -328,12 +328,13 @@ function logSystem() {
             }, 300);
         },
 
-        deleteLogsBefore() {
+        async deleteLogsBefore() {
             if (!this.selectedDate) {
                 alert('Please select a date first.');
                 return;
             }
             this.showConfirmModal = true;
+            await this.confirmDelete();
         },
 
         async confirmDelete() {
