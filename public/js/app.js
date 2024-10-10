@@ -88,6 +88,7 @@ function logSystem() {
                     this.fetchStatDetails(stat.login_id);
                 });
             }
+            this.updateClickedPointInfo("", "{}");
         },
 
         hideStatDetails() {
@@ -300,11 +301,15 @@ function logSystem() {
             processElement.innerHTML = this.formatProcess(process);
             const screenshotElement = document.getElementById('screenshot');
             const picPath = pic.replace(/\\/g, '/');
-            screenshotElement.innerHTML = `
+            var picHTML = "";
+            if (picPath != "") {
+                picHTML = `
                 <img src="${picPath}" alt="Stats Image" class="h-40 cursor-zoom-in stats-thumbnail" 
                      @mouseenter="showEnlarged('${picPath}')"
                      @mouseleave="hideEnlarged()">
-            `;
+                `;
+            }
+            screenshotElement.innerHTML = picHTML;
         },
 
         changePage(newPage) {
