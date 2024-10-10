@@ -249,9 +249,9 @@
         <!-- Add this modal after the log details modal -->
         <div x-show="showStatsModal" 
              x-cloak 
-             class="modal-container bg-gray-600 bg-opacity-50"
+             class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"
              @click.self="hideStatDetails()">
-            <div class="modal-content relative">
+            <div class="relative top-20 mx-auto p-5 border w-auto shadow-lg rounded-md bg-white">
                 <button @click="hideStatDetails()"
                     class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 z-10">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

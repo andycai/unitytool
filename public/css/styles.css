@@ -8,29 +8,6 @@
     max-height: 32rem;
 }
 
-.modal-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    overflow-y: auto;
-    padding-top: 4rem;
-}
-
-.modal-content {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 95%;
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 2rem;
-}
-
 .sticky-nav {
     position: sticky;
     top: 0;
