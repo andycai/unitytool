@@ -108,6 +108,9 @@ function logSystem() {
         updateStatDetails(data) {
             this.selectedStat = { ...this.selectedStat, ...data.statsRecord };
             this.$nextTick(() => {
+                // 清除所有现有的图表实例
+                this.clearChartInstances();
+                // 重新渲染所有图表
                 this.renderCharts(data.statsInfo);
             });
         },
@@ -525,7 +528,7 @@ function logSystem() {
         },
 
         resetZoom(chartId) {
-            const chart = Chart.getChart(chartId);
+            const chart = this.chartInstances[chartId];
             if (chart) {
                 chart.resetZoom();
             }
