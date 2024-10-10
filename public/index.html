@@ -16,6 +16,29 @@
 
 <body class="bg-gray-100">
     <div x-data="logSystem()" class="max-w-[3600px] w-full mx-auto">
+        <!-- 通知组件 -->
+        <div
+            x-show="notification.show"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform -translate-y-2"
+            x-transition:enter-end="opacity-100 transform translate-y-0"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 transform translate-y-0"
+            x-transition:leave-end="opacity-0 transform -translate-y-2"
+            class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999]"
+        >
+            <div
+                :class="{
+                    'bg-green-500': notification.type === 'success',
+                    'bg-red-500': notification.type === 'error',
+                    'bg-yellow-500': notification.type === 'warning'
+                }"
+                class="rounded-lg shadow-lg p-4 text-white min-w-[200px] text-center"
+            >
+                <p x-text="notification.message"></p>
+            </div>
+        </div>
+
         <!-- 顶部导航菜单 -->
         <nav class="sticky-nav bg-white shadow-md">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -354,7 +377,7 @@
     <!-- 在 body 标签的末尾，在最后的 </div> 之后添加以下代码 -->
     <div id="enlargedImageContainer" x-show="isEnlargedImageVisible" 
          @click.away="hideEnlarged()"
-         class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 hidden">
+         class="fixed inset-0 flex items-center justify-center z-[9999] bg-black bg-opacity-50 hidden">
         <div class="bg-white p-4 rounded-lg shadow-lg">
             <img id="enlargedImage" :src="enlargedImageSrc" alt="Enlarged Stats Image" class="max-w-[90vw] max-h-[90vh] rounded">
         </div>

@@ -39,6 +39,11 @@ function logSystem() {
         statsTotal: 0,
         chartInstances: {}, // 用于存储图表实例
         isInitialized: false,
+        notification: {
+            show: false,
+            message: '',
+            type: 'success', // 'success', 'error', or 'warning'
+        },
 
         init() {
             if (!this.isInitialized) {
@@ -461,49 +466,42 @@ function logSystem() {
 
         async deleteLogsBefore() {
             if (!this.selectedDate) {
-                alert('请先选择一个日期！');
+                this.showNotification('请先选择一个日期！', 'warning');
                 return;
             }
-            this.showConfirmModal = true;
-            await this.confirmDelete();
+            if (confirm('确定要删除选择日期前的日志数据吗？')) {
+                try {
+                    const response = await fetch(`/api/logs/before?date=${this.selectedDate}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.code === 0) {
+                        this.showNotification(`成功删除 ${result.count} 条日志。`, 'success');
+                        this.fetchLogs();
+                    } else {
+                        this.showNotification('删除日志失败: ' + result.error, 'error');
+                    }
+                } catch (error) {
+                    this.showNotification('删除日志失败： ' + error.message, 'error');
+                }
+            }
         },
 
         deleteLog(id) {
-            // if (confirm('确定要删除这条日志吗？')) {
-                fetch(`/api/logs/${id}`, { method: 'DELETE' })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.message === "Log deleted successfully") {
-                            alert('日志已成功删除');
-                            // 刷新日志列表
-                            this.fetchLogs();
-                        } else {
-                            alert('删除日志失败: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('删除日志时发生错误');
-                    });
-            // }
-        },
-
-        async confirmDelete() {
-            this.showConfirmModal = false;
-            try {
-                const response = await fetch(`/api/logs/before?date=${this.selectedDate}`, {
-                    method: 'DELETE'
+            fetch(`/api/logs/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.code === 0) {
+                        this.showNotification('日志已成功删除', 'success');
+                        this.fetchLogs();
+                    } else {
+                        this.showNotification('删除日志失败: ' + result.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.showNotification('删除日志时发生错误', 'error');
                 });
-                const result = await response.json();
-                if (response.ok) {
-                    alert(`成功删除 ${result.count} 条日志。`);
-                    this.fetchLogs();
-                } else {
-                    throw new Error(result.error);
-                }
-            } catch (error) {
-                alert('删除日志失败： ' + error.message);
-            }
         },
 
         formatStack(stack) {
@@ -531,22 +529,24 @@ function logSystem() {
 
         async deleteStatsBefore() {
             if (!this.selectedDate) {
-                alert('P请先选择一个日期！');
+                this.showNotification('请先选择一个日期！', 'warning');
                 return;
             }
-            try {
-                const response = await fetch(`/api/stats/before?date=${this.selectedDate}`, {
-                    method: 'DELETE'
-                });
-                const result = await response.json();
-                if (response.ok) {
-                    alert(`成功删除 ${result.count} 条记录。`);
-                    this.fetchStats();
-                } else {
-                    throw new Error(result.error);
+            if (confirm('确定要删除选择日期前的统计数据吗？')) {
+                try {
+                    const response = await fetch(`/api/stats/before?date=${this.selectedDate}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.code === 0) {
+                        this.showNotification(`成功删除 ${result.count} 条记录。`, 'success');
+                        this.fetchStats();
+                    } else {
+                        this.showNotification('删除统计数据失败: ' + result.error, 'error');
+                    }
+                } catch (error) {
+                    this.showNotification('删除记录失败：' + error.message, 'error');
                 }
-            } catch (error) {
-                alert('删除记录失败：' + error.message);
             }
         },
 
@@ -554,18 +554,17 @@ function logSystem() {
             if (confirm('确定要删除这条统计数据吗？')) {
                 fetch(`/api/stats/${id}`, { method: 'DELETE' })
                     .then(response => response.json())
-                    .then(data => {
-                        if (data.message === "Stat record, associated info, and image files deleted successfully") {
-                            alert('统计数据已成功删除');
-                            // 刷新统计数据列表
+                    .then(result => {
+                        if (result.code === 0) {
+                            this.showNotification('统计数据已成功删除', 'success');
                             this.fetchStats();
                         } else {
-                            alert('删除统计数据失败: ' + data.error);
+                            this.showNotification('删除统计数据失败: ' + result.error, 'error');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('删除统计数据时发生错误');
+                        this.showNotification('删除统计数据时发生错误', 'error');
                     });
             }
         },
@@ -584,7 +583,17 @@ function logSystem() {
             if (chart) {
                 chart.resetZoom();
             }
-        }
+        },
+
+        showNotification(message, type = 'success', duration = 3000) {
+            this.notification.show = true;
+            this.notification.message = message;
+            this.notification.type = type;
+
+            setTimeout(() => {
+                this.notification.show = false;
+            }, duration);
+        },
 
         // end 统计接口
     }

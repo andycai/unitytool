@@ -76,13 +76,13 @@ func GetLogs(c *fiber.Ctx, db *gorm.DB) error {
 func DeleteLogsBefore(c *fiber.Ctx, db *gorm.DB) error {
 	dateStr := c.Query("date")
 	if dateStr == "" {
-		return c.Status(400).JSON(fiber.Map{"error": "Date parameter is required"})
+		return c.Status(400).JSON(fiber.Map{"code": 1, "error": "Date parameter is required"})
 	}
 
 	// Parse the date string to time.Time
 	date, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Invalid date format"})
+		return c.Status(400).JSON(fiber.Map{"code": 2, "error": "Invalid date format"})
 	}
 
 	// Set the time to the end of the day (23:59:59)
@@ -93,27 +93,27 @@ func DeleteLogsBefore(c *fiber.Ctx, db *gorm.DB) error {
 	result := db.Where("create_at < ?", endOfDayMilli).Delete(&models.Log{})
 
 	if result.Error != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to delete logs"})
+		return c.Status(500).JSON(fiber.Map{"code": 3, "error": "Failed to delete logs"})
 	}
 
-	return c.JSON(fiber.Map{"message": "Logs deleted successfully", "count": result.RowsAffected})
+	return c.JSON(fiber.Map{"code": 0, "message": "Logs deleted successfully", "count": result.RowsAffected})
 }
 
 // 删除单条日志记录
 func DeleteLog(c *fiber.Ctx, db *gorm.DB) error {
 	id := c.Params("id")
 	if id == "" {
-		return c.Status(400).JSON(fiber.Map{"error": "Log ID is required"})
+		return c.Status(400).JSON(fiber.Map{"code": 4, "error": "Log ID is required"})
 	}
 
 	result := db.Delete(&models.Log{}, id)
 	if result.Error != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to delete log"})
+		return c.Status(500).JSON(fiber.Map{"code": 5, "error": "Failed to delete log"})
 	}
 
 	if result.RowsAffected == 0 {
-		return c.Status(404).JSON(fiber.Map{"error": "Log not found"})
+		return c.Status(404).JSON(fiber.Map{"code": 6, "error": "Log not found"})
 	}
 
-	return c.JSON(fiber.Map{"message": "Log deleted successfully"})
+	return c.JSON(fiber.Map{"code": 0, "message": "Log deleted successfully"})
 }
