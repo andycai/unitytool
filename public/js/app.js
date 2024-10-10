@@ -76,23 +76,29 @@ function logSystem() {
         },
 
         showStatDetails(stat) {
-            if (this.showStatsModal) {
-                // 如果模态框已经打开，只更新数据
-                this.selectedStat = JSON.parse(JSON.stringify(stat));
+            // if (this.showStatsModal) {
+            //     // 如果模态框已经打开，只更新数据
+            //     this.selectedStat = JSON.parse(JSON.stringify(stat));
+            //     this.fetchStatDetails(stat.login_id);
+            // } else {
+            //     // 如果模态框未打开，打开模态框并加载数据
+            //     this.selectedStat = JSON.parse(JSON.stringify(stat));
+            //     this.showStatsModal = true;
+            //     this.$nextTick(() => {
+            //         this.fetchStatDetails(stat.login_id);
+            //     });
+            // }
+            this.selectedStat = JSON.parse(JSON.stringify(stat));
+            this.showStatsModal = true;
+            this.$nextTick(() => {
                 this.fetchStatDetails(stat.login_id);
-            } else {
-                // 如果模态框未打开，打开模态框并加载数据
-                this.selectedStat = JSON.parse(JSON.stringify(stat));
-                this.showStatsModal = true;
-                this.$nextTick(() => {
-                    this.fetchStatDetails(stat.login_id);
-                });
-            }
+            });
             this.updateClickedPointInfo("", "{}");
         },
 
         hideStatDetails() {
             this.showStatsModal = false;
+            this.clearChartInstances();
         },
 
         async fetchStatDetails(loginID) {
