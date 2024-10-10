@@ -400,7 +400,7 @@ function logSystem() {
                     process = JSON.parse(process);
                 } catch (e) {
                     // 如果解析失败，保持原样
-                    return 'Failed to parse process as JSON:' + process;
+                    return '解析执行统计数据的 JSON 失败：' + process;
                 }
             }
 
@@ -459,7 +459,7 @@ function logSystem() {
 
         async deleteLogsBefore() {
             if (!this.selectedDate) {
-                alert('Please select a date first.');
+                alert('请先选择一个日期！');
                 return;
             }
             this.showConfirmModal = true;
@@ -474,13 +474,13 @@ function logSystem() {
                 });
                 const result = await response.json();
                 if (response.ok) {
-                    alert(`${result.count} logs deleted successfully.`);
+                    alert(`成功删除 ${result.count} 条日志。`);
                     this.fetchLogs();
                 } else {
                     throw new Error(result.error);
                 }
             } catch (error) {
-                alert('Failed to delete logs: ' + error.message);
+                alert('删除日志失败： ' + error.message);
             }
         },
 
@@ -505,7 +505,7 @@ function logSystem() {
 
         async deleteStatsBefore() {
             if (!this.selectedDate) {
-                alert('Please select a date first.');
+                alert('P请先选择一个日期！');
                 return;
             }
             try {
@@ -514,13 +514,13 @@ function logSystem() {
                 });
                 const result = await response.json();
                 if (response.ok) {
-                    alert(`${result.count} stats deleted successfully.`);
+                    alert(`成功删除 ${result.count} 条记录。`);
                     this.fetchStats();
                 } else {
                     throw new Error(result.error);
                 }
             } catch (error) {
-                alert('Failed to delete stats: ' + error.message);
+                alert('删除记录失败：' + error.message);
             }
         },
 
