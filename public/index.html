@@ -89,7 +89,6 @@
                             <th class="text-left">Message</th>
                             <th class="text-left">Log Time</th>
                             <th class="text-left">Create Time</th>
-                            <th class="text-left">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,11 +98,9 @@
                                 <td x-text="log.package"></td>
                                 <td x-text="log.role_name"></td>
                                 <td x-text="log.device"></td>
-                                <td x-text="log.log_message.substring(0, 50) + '...'"></td>
+                                <td x-text="log.log_message.substring(0, 70) + '...'"></td>
                                 <td x-text="new Date(log.log_time).toLocaleString()"></td>
                                 <td x-text="new Date(log.create_at).toLocaleString()"></td>
-                                <td><a href="#" @click="showLogDetails(log)"
-                                        class="cursor-pointer hover:bg-gray-100">查看详情</a></td>
                             </tr>
                         </template>
                     </tbody>
@@ -149,7 +146,6 @@
                             <th class="text-left">GPU</th>
                             <th class="text-left">Memory</th>
                             <th class="text-left">Created At</th>
-                            <th class="text-left">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -164,8 +160,6 @@
                                 <td x-text="stat.graphics_divice"></td>
                                 <td x-text="stat.system_mem"></td>
                                 <td x-text="new Date(stat.mtime).toLocaleString()"></td>
-                                <td><a href="#" @click="showStatDetails(stat)"
-                                        class="cursor-pointer hover:bg-gray-100">查看详情</a></td>
                             </tr>
                         </template>
                     </tbody>
