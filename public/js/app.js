@@ -449,6 +449,8 @@ function logSystem() {
             }
         },
 
+        // begin 日志接口
+
         debounceSearch() {
             clearTimeout(this.searchTimeout);
             this.searchTimeout = setTimeout(() => {
@@ -466,10 +468,30 @@ function logSystem() {
             await this.confirmDelete();
         },
 
+        deleteLog(id) {
+            // if (confirm('确定要删除这条日志吗？')) {
+                fetch(`/api/logs/${id}`, { method: 'DELETE' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === "Log deleted successfully") {
+                            alert('日志已成功删除');
+                            // 刷新日志列表
+                            this.fetchLogs();
+                        } else {
+                            alert('删除日志失败: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('删除日志时发生错误');
+                    });
+            // }
+        },
+
         async confirmDelete() {
             this.showConfirmModal = false;
             try {
-                const response = await fetch(`/api/logs?date=${this.selectedDate}`, {
+                const response = await fetch(`/api/logs/before?date=${this.selectedDate}`, {
                     method: 'DELETE'
                 });
                 const result = await response.json();
@@ -496,6 +518,10 @@ function logSystem() {
             }
         },
 
+        // end 日志接口
+
+        // begin 统计接口
+
         viewStats() {
             this.currentView = 'stats';
             if (this.stats.length === 0) {
@@ -509,7 +535,7 @@ function logSystem() {
                 return;
             }
             try {
-                const response = await fetch(`/api/stats?date=${this.selectedDate}`, {
+                const response = await fetch(`/api/stats/before?date=${this.selectedDate}`, {
                     method: 'DELETE'
                 });
                 const result = await response.json();
@@ -521,6 +547,26 @@ function logSystem() {
                 }
             } catch (error) {
                 alert('删除记录失败：' + error.message);
+            }
+        },
+
+        deleteStat(id) {
+            if (confirm('确定要删除这条统计数据吗？')) {
+                fetch(`/api/stats/${id}`, { method: 'DELETE' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === "Stat record, associated info, and image files deleted successfully") {
+                            alert('统计数据已成功删除');
+                            // 刷新统计数据列表
+                            this.fetchStats();
+                        } else {
+                            alert('删除统计数据失败: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('删除统计数据时发生错误');
+                    });
             }
         },
 
@@ -539,5 +585,7 @@ function logSystem() {
                 chart.resetZoom();
             }
         }
+
+        // end 统计接口
     }
 }

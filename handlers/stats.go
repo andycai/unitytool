@@ -149,7 +149,7 @@ func GetStatDetails(c *fiber.Ctx, db *gorm.DB) error {
 	}
 
 	var statsInfo []models.StatsInfo
-	if err := db.Where("login_id = ?", loginID).Find(&statsInfo).Error; err != nil {
+	if err := db.Where("login_id = ?", loginID).Order("id desc").Limit(1000).Find(&statsInfo).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot fetch stats info"})
 	}
 
@@ -157,4 +157,46 @@ func GetStatDetails(c *fiber.Ctx, db *gorm.DB) error {
 		"statsRecord": statsRecord,
 		"statsInfo":   statsInfo,
 	})
+}
+
+// 删除单条统计记录
+func DeleteStat(c *fiber.Ctx, db *gorm.DB) error {
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "Stat ID is required"})
+	}
+
+	var statsRecord models.StatsRecord
+	if err := db.First(&statsRecord, id).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Stat record not found"})
+	}
+
+	// 获取关联的 StatsInfo 记录
+	var statsInfoList []models.StatsInfo
+	if err := db.Where("login_id = ?", statsRecord.LoginID).Find(&statsInfoList).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch associated stats info"})
+	}
+
+	// 删除关联的图片文件
+	for _, info := range statsInfoList {
+		if info.Pic != "" {
+			picPath := filepath.Join("public", info.Pic)
+			if err := os.Remove(picPath); err != nil {
+				// 如果删除失败，记录错误但继续执行
+				fmt.Printf("Failed to delete image file %s: %v\n", picPath, err)
+			}
+		}
+	}
+
+	// 删除关联的 StatsInfo 记录
+	if err := db.Where("login_id = ?", statsRecord.LoginID).Delete(&models.StatsInfo{}).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to delete associated stats info"})
+	}
+
+	// 删除 StatsRecord
+	if err := db.Delete(&statsRecord).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to delete stat record"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Stat record, associated info, and image files deleted successfully"})
 }

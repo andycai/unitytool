@@ -53,7 +53,7 @@ func GetLogs(c *fiber.Ctx, db *gorm.DB) error {
 	query := db.Model(&models.Log{})
 
 	if search != "" {
-		query = query.Where("log_message LIKE ? OR role_name LIKE ?", "%"+search+"%", "%"+search+"%")
+		query = query.Where("role_name LIKE ? OR log_message LIKE ?", "%"+search+"%", "%"+search+"%")
 	}
 
 	query.Count(&total)
@@ -97,4 +97,23 @@ func DeleteLogsBefore(c *fiber.Ctx, db *gorm.DB) error {
 	}
 
 	return c.JSON(fiber.Map{"message": "Logs deleted successfully", "count": result.RowsAffected})
+}
+
+// 删除单条日志记录
+func DeleteLog(c *fiber.Ctx, db *gorm.DB) error {
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "Log ID is required"})
+	}
+
+	result := db.Delete(&models.Log{}, id)
+	if result.Error != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to delete log"})
+	}
+
+	if result.RowsAffected == 0 {
+		return c.Status(404).JSON(fiber.Map{"error": "Log not found"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Log deleted successfully"})
 }

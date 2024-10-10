@@ -30,6 +30,8 @@ func main() {
 	// Serve static files
 	app.Static("/", "./public")
 
+	// begin 日志接口
+
 	app.Post("/api/logs", func(c *fiber.Ctx) error {
 		return handlers.CreateLog(c, db)
 	})
@@ -38,9 +40,17 @@ func main() {
 		return handlers.GetLogs(c, db)
 	})
 
-	app.Delete("/api/logs", func(c *fiber.Ctx) error {
+	app.Delete("/api/logs/before", func(c *fiber.Ctx) error {
 		return handlers.DeleteLogsBefore(c, db)
 	})
+
+	app.Delete("/api/logs/:id", func(c *fiber.Ctx) error {
+		return handlers.DeleteLog(c, db)
+	})
+
+	// end 日志接口
+
+	// begin 统计接口
 
 	app.Post("/api/stats", func(c *fiber.Ctx) error {
 		return handlers.CreateStats(c, db)
@@ -50,13 +60,19 @@ func main() {
 		return handlers.GetStats(c, db)
 	})
 
-	app.Delete("/api/stats", func(c *fiber.Ctx) error {
+	app.Delete("/api/stats/before", func(c *fiber.Ctx) error {
 		return handlers.DeleteStatsBefore(c, db)
 	})
 
 	app.Get("/api/stats/details", func(c *fiber.Ctx) error {
 		return handlers.GetStatDetails(c, db)
 	})
+
+	app.Delete("/api/stats/:id", func(c *fiber.Ctx) error {
+		return handlers.DeleteStat(c, db)
+	})
+
+	// end 统计接口
 
 	// 使用命令行参数设置端口
 	app.Listen(fmt.Sprintf("%s:%d", *host, *port))

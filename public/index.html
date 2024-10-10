@@ -87,8 +87,9 @@
                             <th class="text-left">Role Name</th>
                             <th class="text-left">Device</th>
                             <th class="text-left">Message</th>
-                            <th class="text-left">Log Time</th>
-                            <th class="text-left">Create Time</th>
+                            <th class="text-left">日志记录时间</th>
+                            <th class="text-left">创建时间</th>
+                            <th class="text-left">操作</th> <!-- New column for delete button -->
                         </tr>
                     </thead>
                     <tbody>
@@ -101,6 +102,11 @@
                                 <td x-text="log.log_message.substring(0, 70) + '...'"></td>
                                 <td x-text="new Date(log.log_time).toLocaleString()"></td>
                                 <td x-text="new Date(log.create_at).toLocaleString()"></td>
+                                <td>
+                                    <button @click.stop="deleteLog(log.id)" class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                                        删除
+                                    </button>
+                                </td>
                             </tr>
                         </template>
                     </tbody>
@@ -144,8 +150,9 @@
                             <th class="text-left">Device</th>
                             <th class="text-left">CPU</th>
                             <th class="text-left">GPU</th>
-                            <th class="text-left">Memory</th>
-                            <th class="text-left">Created At</th>
+                            <th class="text-left">Memory</th>ß
+                            <th class="text-left">创建时间</th>
+                            <th class="text-left">操作</th> <!-- New column for delete button -->
                         </tr>
                     </thead>
                     <tbody>
@@ -160,6 +167,11 @@
                                 <td x-text="stat.graphics_divice"></td>
                                 <td x-text="stat.system_mem"></td>
                                 <td x-text="new Date(stat.mtime).toLocaleString()"></td>
+                                <td>
+                                    <button @click.stop="deleteStat(stat.id)" class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                                        删除
+                                    </button>
+                                </td>
                             </tr>
                         </template>
                     </tbody>
