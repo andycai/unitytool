@@ -257,18 +257,60 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-1 gap-4">
-                            <div class="h-[25vh]"><canvas id="fpsChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="totalMemChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="usedMemChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="monoUsedMemChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="monoHeapMemChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="textureChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="meshChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="animationChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="audioChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="fontChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="textAssetChart"></canvas></div>
-                            <div class="h-[25vh]"><canvas id="shaderChart"></canvas></div>
+                            <div class="h-[35vh]">
+                                <canvas id="fpsChart"></canvas>
+                                <div class="flex justify-end mt-2">
+                                    <button @click="resetZoom('fpsChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
+                                </div>
+                            </div>
+                            <div class="h-[35vh]">
+                                <canvas id="memoryChart"></canvas>
+                                <div class="flex justify-end mt-2">
+                                    <button @click="resetZoom('memoryChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
+                                </div>
+                            </div>
+                            <div class="h-[35vh]">
+                                <canvas id="textureChart"></canvas>
+                                <div class="flex justify-end mt-2">
+                                    <button @click="resetZoom('textureChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
+                                </div>
+                            </div>
+                            <div class="h-[35vh]">
+                                <canvas id="meshChart"></canvas>
+                                <div class="flex justify-end mt-2">
+                                    <button @click="resetZoom('meshChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
+                                </div>
+                            </div>
+                            <div class="h-[35vh]">
+                                <canvas id="animationChart"></canvas>
+                                <div class="flex justify-end mt-2">
+                                    <button @click="resetZoom('animationChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
+                                </div>
+                            </div>
+                            <div class="h-[35vh]">
+                                <canvas id="audioChart"></canvas>
+                                <div class="flex justify-end mt-2">
+                                    <button @click="resetZoom('audioChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
+                                </div>
+                            </div>
+                            <div class="h-[35vh]">
+                                <canvas id="fontChart"></canvas>
+                                <div class="flex justify-end mt-2">
+                                    <button @click="resetZoom('fontChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
+                                </div>
+                            </div>
+                            <div class="h-[35vh]">
+                                <canvas id="textAssetChart"></canvas>
+                                <div class="flex justify-end mt-2">
+                                    <button @click="resetZoom('textAssetChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
+                                </div>
+                            </div>
+                            <div class="h-[35vh]">
+                                <canvas id="shaderChart"></canvas>
+                                <div class="flex justify-end mt-2">
+                                    <button @click="resetZoom('shaderChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="w-full lg:w-1/4 mt-4 lg:mt-0 px-2">

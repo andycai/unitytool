@@ -120,10 +120,17 @@ function logSystem() {
 
             const chartConfigs = [
                 { id: 'fpsChart', label: 'FPS', dataKey: 'fps', color: 'rgba(75, 192, 192, 1)' },
-                { id: 'totalMemChart', label: 'Total Memory', dataKey: 'total_mem', color: 'rgba(255, 99, 132, 1)' },
-                { id: 'usedMemChart', label: 'Used Memory', dataKey: 'used_mem', color: 'rgba(54, 162, 235, 1)' },
-                { id: 'monoUsedMemChart', label: 'Mono Used Memory', dataKey: 'mono_used_mem', color: 'rgba(255, 206, 86, 1)' },
-                { id: 'monoHeapMemChart', label: 'Mono Heap Memory', dataKey: 'mono_heap_mem', color: 'rgba(153, 102, 255, 1)' },
+                { 
+                    id: 'memoryChart', 
+                    label: 'Memory', 
+                    dataKeys: ['total_mem', 'used_mem', 'mono_used_mem', 'mono_heap_mem'],
+                    colors: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ]
+                },
                 { id: 'textureChart', label: 'Texture', dataKey: 'texture', color: 'rgba(255, 159, 64, 1)' },
                 { id: 'meshChart', label: 'Mesh', dataKey: 'mesh', color: 'rgba(255, 99, 71, 1)' },
                 { id: 'animationChart', label: 'Animation', dataKey: 'animation', color: 'rgba(50, 205, 50, 1)' },
@@ -142,108 +149,206 @@ function logSystem() {
 
                 const ctx = canvas.getContext('2d');
 
-                const chartData = statsInfo.map(info => ({
-                    x: new Date(info.mtime).getTime(),
-                    y: info[config.dataKey]
-                })).filter(point => point.y !== undefined && point.y !== null);
+                if (config.id === 'memoryChart') {
+                    // 特殊处理 memoryChart
+                    const datasets = config.dataKeys.map((key, index) => ({
+                        label: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+                        data: statsInfo.map(info => ({
+                            x: new Date(info.mtime).getTime(),
+                            y: info[key]
+                        })).filter(point => point.y !== undefined && point.y !== null),
+                        borderColor: config.colors[index],
+                        pointStyle: 'circle',
+                        pointRadius: 5,
+                        spanGaps: true,
+                        showLine: true,
+                        pointHoverRadius: 7,
+                        pic: statsInfo.map(info => info.pic),
+                        process: statsInfo.map(info => info.process)
+                    }));
 
-                if (chartData.length === 0) {
-                    console.warn(`No valid data for chart ${config.id}`);
-                    return;
-                }
-
-                if (this.chartInstances[config.id]) {
-                    // 更新现有图表
-                    const chart = this.chartInstances[config.id];
-                    chart.data.datasets[0].data = chartData;
-                    chart.data.datasets[0].pic = statsInfo.map(info => info.pic);
-                    chart.data.datasets[0].process = statsInfo.map(info => info.process);
-                    chart.update();
-                } else {
-                    // 创建新的图表实例
-                    this.chartInstances[config.id] = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            datasets: [{
-                                label: config.label,
-                                data: chartData,
-                                borderColor: config.color,
-                                pointStyle: 'circle',
-                                pointRadius: 5,
+                    if (this.chartInstances[config.id]) {
+                        // 更新现有图表
+                        const chart = this.chartInstances[config.id];
+                        chart.data.datasets = datasets;
+                        chart.update();
+                    } else {
+                        // 创建新的图表实例
+                        this.chartInstances[config.id] = new Chart(ctx, {
+                            type: 'line',
+                            data: { datasets },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
                                 spanGaps: true,
                                 showLine: true,
-                                pointHoverRadius: 7,
-                                pic: statsInfo.map(info => info.pic),
-                                process: statsInfo.map(info => info.process)
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            spanGaps: true,
-                            showLine: true,
-                            scales: {
-                                x: {
-                                    type: 'time',
-                                    time: {
-                                        unit: 'second',
-                                        displayFormats: {
-                                            second: 'HH:mm:ss'
+                                scales: {
+                                    x: {
+                                        type: 'time',
+                                        time: {
+                                            unit: 'second',
+                                            displayFormats: {
+                                                second: 'HH:mm:ss'
+                                            }
+                                        },
+                                        ticks: {
+                                            source: 'auto',
+                                            maxRotation: 0,
+                                            autoSkip: true,
+                                            maxTicksLimit: 10
                                         }
                                     },
-                                    ticks: {
-                                        source: 'auto',
-                                        maxRotation: 0,
-                                        autoSkip: true,
-                                        maxTicksLimit: 10
+                                    y: {
+                                        beginAtZero: true
                                     }
                                 },
-                                y: {
-                                    beginAtZero: true
-                                }
-                            },
-                            layout: {
-                                padding: {
-                                    top: 20,
-                                    right: 20,
-                                    bottom: 20,
-                                    left: 20
-                                }
-                            },
-                            onClick: (evt, elements) => {
-                                if (elements.length > 0) {
-                                    const index = elements[0].index;
-                                    const datasetIndex = elements[0].datasetIndex;
-                                    const dataset = evt.chart.data.datasets[datasetIndex];
-                                    const pic = dataset.pic[index];
-                                    const process = dataset.process[index];
-                                    this.updateClickedPointInfo(pic, process);
-                                }
-                            },
-                            plugins: {
-                                zoom: zoomOptions,
-                                title: {
-                                    display: true,
-                                    text: config.label
+                                layout: {
+                                    padding: {
+                                        top: 20,
+                                        right: 20,
+                                        bottom: 20,
+                                        left: 20
+                                    }
                                 },
-                                tooltip: {
-                                    usePointStyle: true,
-                                    callbacks: {
-                                        title: function(context) {
-                                            let date = new Date(context[0].parsed.x);
-                                            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                onClick: (evt, elements) => {
+                                    if (elements.length > 0) {
+                                        const index = elements[0].index;
+                                        const datasetIndex = elements[0].datasetIndex;
+                                        const dataset = evt.chart.data.datasets[datasetIndex];
+                                        const pic = dataset.pic[index];
+                                        const process = dataset.process[index];
+                                        this.updateClickedPointInfo(pic, process);
+                                    }
+                                },
+                                plugins: {
+                                    zoom: zoomOptions,
+                                    title: {
+                                        display: true,
+                                        text: 'Memory Usage'
+                                    },
+                                    tooltip: {
+                                        usePointStyle: true,
+                                        callbacks: {
+                                            title: function(context) {
+                                                let date = new Date(context[0].parsed.x);
+                                                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                            }
                                         }
                                     }
+                                },
+                                onHover: (event, chartElement) => {
+                                    if (event.native) {
+                                        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                                    }
                                 }
                             },
-                            onHover: (event, chartElement) => {
-                                if (event.native) {
-                                    event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                            plugins: [ChartZoom]
+                        });
+                    }
+                } else {
+                    const chartData = statsInfo.map(info => ({
+                        x: new Date(info.mtime).getTime(),
+                        y: info[config.dataKey]
+                    })).filter(point => point.y !== undefined && point.y !== null);
+
+                    if (chartData.length === 0) {
+                        console.warn(`No valid data for chart ${config.id}`);
+                        return;
+                    }
+
+                    if (this.chartInstances[config.id]) {
+                        // 更新现有图表
+                        const chart = this.chartInstances[config.id];
+                        chart.data.datasets[0].data = chartData;
+                        chart.data.datasets[0].pic = statsInfo.map(info => info.pic);
+                        chart.data.datasets[0].process = statsInfo.map(info => info.process);
+                        chart.update();
+                    } else {
+                        // 创建新的图表实例
+                        this.chartInstances[config.id] = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                datasets: [{
+                                    label: config.label,
+                                    data: chartData,
+                                    borderColor: config.color,
+                                    pointStyle: 'circle',
+                                    pointRadius: 5,
+                                    spanGaps: true,
+                                    showLine: true,
+                                    pointHoverRadius: 7,
+                                    pic: statsInfo.map(info => info.pic),
+                                    process: statsInfo.map(info => info.process)
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                spanGaps: true,
+                                showLine: true,
+                                scales: {
+                                    x: {
+                                        type: 'time',
+                                        time: {
+                                            unit: 'second',
+                                            displayFormats: {
+                                                second: 'HH:mm:ss'
+                                            }
+                                        },
+                                        ticks: {
+                                            source: 'auto',
+                                            maxRotation: 0,
+                                            autoSkip: true,
+                                            maxTicksLimit: 10
+                                        }
+                                    },
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                },
+                                layout: {
+                                    padding: {
+                                        top: 20,
+                                        right: 20,
+                                        bottom: 20,
+                                        left: 20
+                                    }
+                                },
+                                onClick: (evt, elements) => {
+                                    if (elements.length > 0) {
+                                        const index = elements[0].index;
+                                        const datasetIndex = elements[0].datasetIndex;
+                                        const dataset = evt.chart.data.datasets[datasetIndex];
+                                        const pic = dataset.pic[index];
+                                        const process = dataset.process[index];
+                                        this.updateClickedPointInfo(pic, process);
+                                    }
+                                },
+                                plugins: {
+                                    zoom: zoomOptions,
+                                    title: {
+                                        display: true,
+                                        text: config.label
+                                    },
+                                    tooltip: {
+                                        usePointStyle: true,
+                                        callbacks: {
+                                            title: function(context) {
+                                                let date = new Date(context[0].parsed.x);
+                                                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                            }
+                                        }
+                                    }
+                                },
+                                onHover: (event, chartElement) => {
+                                    if (event.native) {
+                                        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                                    }
                                 }
-                            }
-                        },
-                        plugins: [ChartZoom]
-                    });
+                            },
+                            plugins: [ChartZoom]
+                        });
+                    }
                 }
             });
 
@@ -252,6 +357,15 @@ function logSystem() {
                 if (!chartConfigs.some(config => config.id === key)) {
                     this.chartInstances[key].destroy();
                     delete this.chartInstances[key];
+                }
+            });
+
+            // 删除不再需要的图表实例
+            const memoryChartIds = ['totalMemChart', 'usedMemChart', 'monoUsedMemChart', 'monoHeapMemChart'];
+            memoryChartIds.forEach(id => {
+                if (this.chartInstances[id]) {
+                    this.chartInstances[id].destroy();
+                    delete this.chartInstances[id];
                 }
             });
         },
@@ -408,6 +522,13 @@ function logSystem() {
                 }
             });
             this.chartInstances = {};
+        },
+
+        resetZoom(chartId) {
+            const chart = Chart.getChart(chartId);
+            if (chart) {
+                chart.resetZoom();
+            }
         }
     }
 }
