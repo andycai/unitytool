@@ -8,6 +8,7 @@
     <script src="/js/alpine-3.14.1.js" defer></script>
     <script src="/js/tailwind-3.4.5.js"></script>
     <script src="/js/chart-4.4.4.js"></script>
+    <script src="/js/hammer-2.0.8.js"></script>
     <script src="/js/chartjs-plugin-zoom.min.js"></script>
     <script src="/js/chartjs-adapter-date-fns.bundle.min.js"></script>
     <link rel="stylesheet" href="css/styles.css">
@@ -27,7 +28,7 @@
 
             <!-- Right column: Log list -->
             <div class="content-column bg-white p-4 rounded-lg shadow" x-show="currentView === 'logs'" x-cloak>
-                <h2 class="text-xl font-bold mb-4">日志</h2>
+                <h2 class="text-xl font-bold mb-4">错误日志</h2>
 
                 <!-- Date selection and delete button -->
                 <div class="mb-4 flex items-center">

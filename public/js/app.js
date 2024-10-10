@@ -2,15 +2,15 @@ const zoomOptions = {
     pan: {
         enabled: true,
         mode: 'x',
-        modifierKey: "alt",
+        // modifierKey: "alt",
     },
     zoom: {
         wheel: {
             enabled: true,
         },
-        drag: {
-            enabled: true,
-        },
+        // drag: {
+        //     enabled: true,
+        // },
         pinch: {
             enabled: true
         },
@@ -169,10 +169,10 @@ function logSystem() {
                                 data: chartData,
                                 borderColor: config.color,
                                 pointStyle: 'circle',
-                                pointRadius: 8,
+                                pointRadius: 5,
                                 spanGaps: true,
                                 showLine: true,
-                                pointHoverRadius: 10,
+                                pointHoverRadius: 7,
                                 pic: statsInfo.map(info => info.pic),
                                 process: statsInfo.map(info => info.process)
                             }]
