@@ -124,8 +124,8 @@
                                 <td class="p-2 border" x-text="log.role_name"></td>
                                 <td class="p-2 border" x-text="log.device"></td>
                                 <td class="p-2 border" x-text="log.log_message.substring(0, 70) + '...'"></td>
-                                <td class="p-2 border" x-text="new Date(log.log_time).toLocaleString()"></td>
-                                <td class="p-2 border" x-text="new Date(log.create_at).toLocaleString()"></td>
+                                <td class="p-2 border" x-text="formatDate(log.log_time)"></td>
+                                <td class="p-2 border" x-text="formatDate(log.create_at)"></td>
                                 <td class="p-2 border">
                                     <button @click.stop="deleteLog(log.id)" class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">
                                         删除
@@ -192,7 +192,7 @@
                                 <td class="p-2 border" x-text="stat.system_cpu"></td>
                                 <td class="p-2 border" x-text="stat.graphics_divice"></td>
                                 <td class="p-2 border" x-text="stat.system_mem"></td>
-                                <td class="p-2 border" x-text="new Date(stat.mtime).toLocaleString()"></td>
+                                <td class="p-2 border" x-text="formatDate(stat.mtime)"></td>
                                 <td class="p-2 border">
                                     <button @click.stop="deleteStat(stat.id)" class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">
                                         删除
@@ -257,7 +257,7 @@
                             </p>
                             <p class="text-sm text-gray-500">
                                 <strong>Time:</strong> <span
-                                    x-text="new Date(selectedLog.log_time).toLocaleString()"></span>
+                                    x-text="formatDate(selectedLog.log_time)"></span>
                             </p>
                         </div>
                     </div>
@@ -304,7 +304,7 @@
                                 <p><strong>系统内存:</strong> <span x-text="selectedStat.system_mem"></span></p>
                                 <p><strong>GPU:</strong> <span x-text="selectedStat.graphics_divice"></span></p>
                                 <p><strong>GPU内存:</strong> <span x-text="selectedStat.graphics_mem"></span></p>
-                                <p><strong>Created At:</strong> <span x-text="new Date(selectedStat.mtime).toLocaleString()"></span></p>
+                                <p><strong>创建时间:</strong> <span x-text="formatDate(selectedStat.mtime)"></span></p>
                             </div>
                             <div id="screenshot" class="w-1/4">
                             </div>
