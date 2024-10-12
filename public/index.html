@@ -234,20 +234,28 @@
              @click.self="showModal = false">
             <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
                 <!-- Close button -->
-                <button @click="showModal = false" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
+                <button @click="showModal = false" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 transition-colors duration-200">
+                    <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </button>
 
-                <!-- Add "Next" button -->
-                <button @click="showNextLog()" class="absolute top-2 right-10 text-blue-600 hover:text-blue-800">
-                    <span class="mr-1">下一条</span>
-                    <svg class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
+                <!-- Navigation buttons -->
+                <div class="absolute top-14 right-2 flex flex-col space-y-2">
+                    <!-- Previous button -->
+                    <button @click="showPreviousLog()" class="text-white bg-blue-500 hover:bg-blue-600 rounded-full p-1 transition-colors duration-200">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                        </svg>
+                    </button>
+
+                    <!-- Next button -->
+                    <button @click="showNextLog()" class="text-white bg-blue-500 hover:bg-blue-600 rounded-full p-1 transition-colors duration-200">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </button>
+                </div>
 
                 <div class="mt-3">
                     <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" x-text="selectedLog.app_id"></h3>
@@ -293,21 +301,30 @@
              class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"
              @click.self="hideStatDetails()">
             <div class="relative top-20 mx-auto p-5 border w-auto shadow-lg rounded-md bg-white">
+                <!-- Close button -->
                 <button @click="hideStatDetails()"
-                    class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 z-10">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
+                    class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 transition-colors duration-200 z-10">
+                    <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </button>
 
-                <!-- Add "Next" button -->
-                <button @click="showNextStat()" class="absolute top-4 right-12 text-blue-600 hover:text-blue-800 z-10">
-                    <span class="mr-1">下一条</span>
-                    <svg class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
+                <!-- Navigation buttons -->
+                <div class="absolute top-14 right-3 flex flex-col space-y-2 z-10">
+                    <!-- Previous button -->
+                    <button @click="showPreviousStat()" class="text-white bg-blue-500 hover:bg-blue-600 rounded-full p-1 transition-colors duration-200">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                        </svg>
+                    </button>
+
+                    <!-- Next button -->
+                    <button @click="showNextStat()" class="text-white bg-blue-500 hover:bg-blue-600 rounded-full p-1 transition-colors duration-200">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </button>
+                </div>
 
                 <div class="flex flex-wrap">
                     <div class="w-full lg:w-3/4 pr-4 border-r-2">

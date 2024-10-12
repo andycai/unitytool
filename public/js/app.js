@@ -617,7 +617,6 @@ function logSystem() {
             if (currentIndex < this.logs.length - 1) {
                 this.selectedLog = this.logs[currentIndex + 1];
             } else {
-                // If it's the last log in the current page, load the next page
                 if (this.page * this.limit < this.total) {
                     this.changePage(this.page + 1).then(() => {
                         this.selectedLog = this.logs[0];
@@ -633,13 +632,42 @@ function logSystem() {
             if (currentIndex < this.stats.length - 1) {
                 this.showStatDetails(this.stats[currentIndex + 1]);
             } else {
-                // If it's the last stat in the current page, load the next page
                 if (this.statsPage * this.statsLimit < this.statsTotal) {
                     this.changeStatsPage(this.statsPage + 1).then(() => {
                         this.showStatDetails(this.stats[0]);
                     });
                 } else {
                     this.showNotification('已经是最后一条统计数据', 'warning');
+                }
+            }
+        },
+
+        showPreviousLog() {
+            const currentIndex = this.logs.findIndex(log => log.id === this.selectedLog.id);
+            if (currentIndex > 0) {
+                this.selectedLog = this.logs[currentIndex - 1];
+            } else {
+                if (this.page > 1) {
+                    this.changePage(this.page - 1).then(() => {
+                        this.selectedLog = this.logs[this.logs.length - 1];
+                    });
+                } else {
+                    this.showNotification('已经是第一条日志', 'warning');
+                }
+            }
+        },
+
+        showPreviousStat() {
+            const currentIndex = this.stats.findIndex(stat => stat.id === this.selectedStat.id);
+            if (currentIndex > 0) {
+                this.showStatDetails(this.stats[currentIndex - 1]);
+            } else {
+                if (this.statsPage > 1) {
+                    this.changeStatsPage(this.statsPage - 1).then(() => {
+                        this.showStatDetails(this.stats[this.stats.length - 1]);
+                    });
+                } else {
+                    this.showNotification('已经是第一条统计数据', 'warning');
                 }
             }
         },
