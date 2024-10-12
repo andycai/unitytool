@@ -348,7 +348,7 @@ function logSystem() {
                                         const process = dataset.process[index];
                                         this.updateClickedPointInfo(pic, process);
                                         
-                                        // 更新当前选择的索引
+                                        // 更��当前选择的索引
                                         this.currentPointIndex[config.id] = index;
                                         
                                         // 高亮显示当前点
@@ -706,14 +706,14 @@ function logSystem() {
 
             let newIndex;
             if (direction === 'nextPoint') {
-                newIndex = this.currentPointIndex[chartId] + 1;
-                if (newIndex >= dataset.data.length) {
+                newIndex = this.currentPointIndex[chartId] - 1;
+                if (newIndex < 0) {
                     this.showNotification('已经是最后一个数据点', 'warning');
                     return;
                 }
             } else {
-                newIndex = this.currentPointIndex[chartId] - 1;
-                if (newIndex < 0) {
+                newIndex = this.currentPointIndex[chartId] + 1;
+                if (newIndex >= dataset.data.length) {
                     this.showNotification('已经是第一个数据点', 'warning');
                     return;
                 }
@@ -732,14 +732,12 @@ function logSystem() {
                 datasetIndex: 0,
                 index: this.currentPointIndex[chartId]
             }]);
-            chart.update();
 
             // 确保视图聚焦到选中的点
-            chart.setActiveElements([{
-                datasetIndex: 0,
-                index: this.currentPointIndex[chartId]
-            }]);
-            chart.update('none');  // 使用 'none' 模式来避免动画
+            chart.update();
+
+            // 滚动到选中的点
+            chart.scrollTo(point.x);
         },
     }
 }
