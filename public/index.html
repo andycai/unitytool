@@ -347,59 +347,185 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-1 gap-4">
-                            <div class="h-[35vh]">
+                            <div class="h-[35vh] relative">
+                                <div class="absolute top-2 right-2 z-10 flex space-x-2">
+                                    <button @click="navigateChartPoint('previousPoint', 'fpsChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="navigateChartPoint('nextPoint', 'fpsChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="resetZoom('fpsChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </div>
                                 <canvas id="fpsChart"></canvas>
-                                <div class="flex justify-end mb-2">
-                                    <button @click="resetZoom('fpsChart')" class="px-2 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
-                                </div>
                             </div>
-                            <div class="h-[35vh]">
+                            <div class="h-[35vh] relative">
+                                <div class="absolute top-2 right-2 z-10 flex space-x-2">
+                                    <button @click="navigateChartPoint('previousPoint', 'memoryChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="navigateChartPoint('nextPoint', 'memoryChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="resetZoom('memoryChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </div>
                                 <canvas id="memoryChart"></canvas>
-                                <div class="flex justify-end mb-2">
-                                    <button @click="resetZoom('memoryChart')" class="px-2 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
-                                </div>
                             </div>
-                            <div class="h-[35vh]">
+                            <div class="h-[35vh] relative">
+                                <div class="absolute top-2 right-2 z-10 flex space-x-2">
+                                    <button @click="navigateChartPoint('previousPoint', 'textureChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="navigateChartPoint('nextPoint', 'textureChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="resetZoom('textureChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </div>
                                 <canvas id="textureChart"></canvas>
-                                <div class="flex justify-end mb-2">
-                                    <button @click="resetZoom('textureChart')" class="px-2 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
-                                </div>
                             </div>
-                            <div class="h-[35vh]">
+                            <div class="h-[35vh] relative">
+                                <div class="absolute top-2 right-2 z-10 flex space-x-2">
+                                    <button @click="navigateChartPoint('previousPoint', 'meshChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="navigateChartPoint('nextPoint', 'meshChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="resetZoom('meshChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </div>
                                 <canvas id="meshChart"></canvas>
-                                <div class="flex justify-end mb-2">
-                                    <button @click="resetZoom('meshChart')" class="px-2 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
-                                </div>
                             </div>
-                            <div class="h-[35vh]">
+                            <div class="h-[35vh] relative">
+                                <div class="absolute top-2 right-2 z-10 flex space-x-2">
+                                    <button @click="navigateChartPoint('previousPoint', 'animationChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="navigateChartPoint('nextPoint', 'animationChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="resetZoom('animationChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </div>
                                 <canvas id="animationChart"></canvas>
-                                <div class="flex justify-end mb-2">
-                                    <button @click="resetZoom('animationChart')" class="px-2 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
-                                </div>
                             </div>
-                            <div class="h-[35vh]">
+                            <div class="h-[35vh] relative">
+                                <div class="absolute top-2 right-2 z-10 flex space-x-2">
+                                    <button @click="navigateChartPoint('previousPoint', 'audioChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="navigateChartPoint('nextPoint', 'audioChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="resetZoom('audioChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </div>
                                 <canvas id="audioChart"></canvas>
-                                <div class="flex justify-end mb-2">
-                                    <button @click="resetZoom('audioChart')" class="px-2 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
-                                </div>
                             </div>
-                            <div class="h-[35vh]">
+                            <div class="h-[35vh] relative">
+                                <div class="absolute top-2 right-2 z-10 flex space-x-2">
+                                    <button @click="navigateChartPoint('previousPoint', 'fontChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="navigateChartPoint('nextPoint', 'fontChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="resetZoom('fontChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </div>
                                 <canvas id="fontChart"></canvas>
-                                <div class="flex justify-end mb-2">
-                                    <button @click="resetZoom('fontChart')" class="px-2 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
-                                </div>
                             </div>
-                            <div class="h-[35vh]">
+                            <div class="h-[35vh] relative">
+                                <div class="absolute top-2 right-2 z-10 flex space-x-2">
+                                    <button @click="navigateChartPoint('previousPoint', 'textAssetChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="navigateChartPoint('nextPoint', 'textAssetChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="resetZoom('textAssetChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </div>
                                 <canvas id="textAssetChart"></canvas>
-                                <div class="flex justify-end mb-2">
-                                    <button @click="resetZoom('textAssetChart')" class="px-2 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
-                                </div>
                             </div>
-                            <div class="h-[35vh]">
-                                <canvas id="shaderChart"></canvas>
-                                <div class="flex justify-end mb-2">
-                                    <button @click="resetZoom('shaderChart')" class="px-2 bg-blue-500 text-white rounded text-sm">Reset Zoom</button>
+                            <div class="h-[35vh] relative">
+                                <div class="absolute top-2 right-2 z-10 flex space-x-2">
+                                    <button @click="navigateChartPoint('previousPoint', 'shaderChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="navigateChartPoint('nextPoint', 'shaderChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="resetZoom('shaderChart')" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">
+                                        <svg class="h-4 w-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
                                 </div>
+                                <canvas id="shaderChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -412,7 +538,7 @@
         </div>
     </div>
 
-    <script src="/js/app.js"></script>
+    <script src="/js/app.js?v=1"></script>
 
     <!-- 在 body 标签的末尾，在最后的 </div> 之后添加以下代码 -->
     <div id="enlargedImageContainer" x-show="isEnlargedImageVisible" 

@@ -44,6 +44,7 @@ function logSystem() {
             message: '',
             type: 'success', // 'success', 'error', or 'warning'
         },
+        currentPointIndex: {},
 
         init() {
             if (!this.isInitialized) {
@@ -232,6 +233,16 @@ function logSystem() {
                                         const pic = dataset.pic[index];
                                         const process = dataset.process[index];
                                         this.updateClickedPointInfo(pic, process);
+                                        
+                                        // 更新当前选择的索引
+                                        this.currentPointIndex[config.id] = index;
+                                        
+                                        // 高亮显示当前点
+                                        evt.chart.setActiveElements([{
+                                            datasetIndex: datasetIndex,
+                                            index: index
+                                        }]);
+                                        evt.chart.update();
                                     }
                                 },
                                 plugins: {
@@ -336,6 +347,16 @@ function logSystem() {
                                         const pic = dataset.pic[index];
                                         const process = dataset.process[index];
                                         this.updateClickedPointInfo(pic, process);
+                                        
+                                        // 更新当前选择的索引
+                                        this.currentPointIndex[config.id] = index;
+                                        
+                                        // 高亮显示当前点
+                                        evt.chart.setActiveElements([{
+                                            datasetIndex: datasetIndex,
+                                            index: index
+                                        }]);
+                                        evt.chart.update();
                                     }
                                 },
                                 plugins: {
@@ -670,6 +691,55 @@ function logSystem() {
                     this.showNotification('已经是第一条统计数据', 'warning');
                 }
             }
+        },
+
+        navigateChartPoint(direction, chartId) {
+            const chart = this.chartInstances[chartId];
+            if (!chart) return;
+
+            const dataset = chart.data.datasets[0];
+            if (!dataset || !dataset.data || dataset.data.length === 0) return;
+
+            if (this.currentPointIndex[chartId] === undefined) {
+                this.currentPointIndex[chartId] = 0;
+            }
+
+            let newIndex;
+            if (direction === 'nextPoint') {
+                newIndex = this.currentPointIndex[chartId] + 1;
+                if (newIndex >= dataset.data.length) {
+                    this.showNotification('已经是最后一个数据点', 'warning');
+                    return;
+                }
+            } else {
+                newIndex = this.currentPointIndex[chartId] - 1;
+                if (newIndex < 0) {
+                    this.showNotification('已经是第一个数据点', 'warning');
+                    return;
+                }
+            }
+
+            this.currentPointIndex[chartId] = newIndex;
+
+            const point = dataset.data[this.currentPointIndex[chartId]];
+            const pic = dataset.pic[this.currentPointIndex[chartId]];
+            const process = dataset.process[this.currentPointIndex[chartId]];
+
+            this.updateClickedPointInfo(pic, process);
+
+            // 高亮显示当前点
+            chart.setActiveElements([{
+                datasetIndex: 0,
+                index: this.currentPointIndex[chartId]
+            }]);
+            chart.update();
+
+            // 确保视图聚焦到选中的点
+            chart.setActiveElements([{
+                datasetIndex: 0,
+                index: this.currentPointIndex[chartId]
+            }]);
+            chart.update('none');  // 使用 'none' 模式来避免动画
         },
     }
 }
