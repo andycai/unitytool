@@ -45,6 +45,8 @@ function logSystem() {
             type: 'success', // 'success', 'error', or 'warning'
         },
         currentPointIndex: {},
+        statsSearchQuery: '',
+        statsSearchTimeout: null,
 
         init() {
             if (!this.isInitialized) {
@@ -58,17 +60,16 @@ function logSystem() {
             this.clearChartInstances();
         },
 
-        async fetchLogs() {
-            const response = await fetch(`/api/logs?page=${this.page}&limit=${this.limit}&search=${this.searchQuery}`);
-            const data = await response.json();
-            this.logs = data.logs;
-            this.total = data.total;
-            this.page = data.page;
-            this.limit = data.limit;
+        debounceStatsSearch() {
+            clearTimeout(this.statsSearchTimeout);
+            this.statsSearchTimeout = setTimeout(() => {
+                this.statsPage = 1;
+                this.fetchStats();
+            }, 300);
         },
 
         async fetchStats() {
-            const response = await fetch(`/api/stats?page=${this.statsPage}&limit=${this.statsLimit}`);
+            const response = await fetch(`/api/stats?page=${this.statsPage}&limit=${this.statsLimit}&search=${this.statsSearchQuery}`);
             const data = await response.json();
             this.stats = data.stats;
             this.statsTotal = data.total;
@@ -483,6 +484,15 @@ function logSystem() {
                 this.page = 1;
                 this.fetchLogs();
             }, 300);
+        },
+
+        async fetchLogs() {
+            const response = await fetch(`/api/logs?page=${this.page}&limit=${this.limit}&search=${this.searchQuery}`);
+            const data = await response.json();
+            this.logs = data.logs;
+            this.total = data.total;
+            this.page = data.page;
+            this.limit = data.limit;
         },
 
         async deleteLogsBefore() {

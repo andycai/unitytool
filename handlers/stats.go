@@ -72,15 +72,35 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 func GetStats(c *fiber.Ctx, db *gorm.DB) error {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
-	var stats []models.StatsRecord
+	searchQuery := c.Query("search", "")
+	dateStr := c.Query("date", "")
 
+	query := db.Model(&models.StatsRecord{})
+
+	if searchQuery != "" {
+		query = query.Where("login_id LIKE ? OR role_name LIKE ?", "%"+searchQuery+"%", "%"+searchQuery+"%")
+	}
+
+	if dateStr != "" {
+		date, err := time.Parse("2006-01-02", dateStr)
+		if err == nil {
+			nextDay := date.AddDate(0, 0, 1)
+			query = query.Where("created_at >= ? AND created_at < ?", date, nextDay)
+		}
+	}
+
+	var total int64
+	query.Count(&total)
+
+	var stats []models.StatsRecord
 	offset := (page - 1) * limit
-	if err := db.Offset(offset).Order("created_at desc").Limit(limit).Find(&stats).Error; err != nil {
+	if err := query.Offset(offset).Order("created_at desc").Limit(limit).Find(&stats).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot fetch stats records"})
 	}
+
 	return c.JSON(fiber.Map{
 		"stats": stats,
-		"total": len(stats),
+		"total": total,
 		"page":  page,
 		"limit": limit,
 	})

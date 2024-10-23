@@ -80,7 +80,7 @@
 
                 <!-- Search input -->
                 <div class="mb-4">
-                    <input type="text" x-model="searchQuery" @input="debounceSearch()" placeholder="Search logs..."
+                    <input type="text" x-model="searchQuery" @input="debounceSearch()" placeholder="搜索标题或角色名..."
                         class="w-full p-2 border rounded">
                 </div>
 
@@ -159,12 +159,20 @@
 
             <!-- Right column: Stats list -->
             <div class="bg-white p-4 rounded-lg shadow" x-show="currentView === 'stats'">
-                <div class="mb-4 flex items-center">
-                    <input type="date" x-model="selectedDate" class="p-2 border rounded mr-2">
-                    <button @click="deleteStatsBefore()"
-                        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                        删除日期前数据
-                    </button>
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input type="date" x-model="selectedDate" class="p-2 border rounded mr-2">
+                        <button @click="deleteStatsBefore()"
+                            class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                            删除日期前数据
+                        </button>
+                    </div>
+                    <!-- 新增：搜索输入框 -->
+                    <div class="w-1/3">
+                        <input type="text" x-model="statsSearchQuery" @input="debounceStatsSearch()" 
+                               placeholder="搜索唯一ID或角色名..." 
+                               class="w-full p-2 border rounded">
+                    </div>
                 </div>
 
                 <!-- 修改统计数据表格 -->
