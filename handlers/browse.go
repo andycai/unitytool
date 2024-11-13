@@ -90,6 +90,9 @@ func handleDirectory(c *fiber.Ctx, path string) error {
         .file { color: #34495e; }
         .size { color: #7f8c8d; margin-left: 10px; }
         .time { color: #95a5a6; margin-left: 10px; }
+        .empty-message { color: #666; text-align: center; padding: 20px; }
+        .pagination { display: none; }
+        .pagination.has-content { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -97,19 +100,31 @@ func handleDirectory(c *fiber.Ctx, path string) error {
     {{if ne .Path "."}}
     <a href="/browse/{{.ParentPath}}">..</a>
     {{end}}
-    <ul class="list">
-    {{range .Files}}
-        <li>
-            {{if .IsDir}}
-            <a class="dir" href="/browse/{{.Path}}">📁 {{.Name}}/</a>
-            {{else}}
-            <a class="file" href="/browse/{{.Path}}">📄 {{.Name}}</a>
-            {{end}}
-            <span class="size">{{if not .IsDir}}{{.Size}} bytes{{end}}</span>
-            <span class="time">{{.ModTime}}</span>
-        </li>
+    
+    {{if len .Files}}
+        <ul class="list">
+        {{range .Files}}
+            <li>
+                {{if .IsDir}}
+                <a class="dir" href="/browse/{{.Path}}">📁 {{.Name}}/</a>
+                {{else}}
+                <a class="file" href="/browse/{{.Path}}">📄 {{.Name}}</a>
+                {{end}}
+                <span class="size">{{if not .IsDir}}{{.Size}} bytes{{end}}</span>
+                <span class="time">{{.ModTime}}</span>
+            </li>
+        {{end}}
+        </ul>
+        <div class="pagination has-content">
+            <div>
+                <span>Total: {{len .Files}} items</span>
+            </div>
+        </div>
+    {{else}}
+        <div class="empty-message">
+            This folder is empty
+        </div>
     {{end}}
-    </ul>
 </body>
 </html>`
 
