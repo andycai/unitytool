@@ -16,6 +16,8 @@ func main() {
 	// 定义命令行参数
 	host := flag.String("host", "0.0.0.0", "主机地址")
 	port := flag.Int("port", 3000, "端口号")
+	output := flag.String("output", "output", "输出目录")
+	scriptPath := flag.String("script_path", "sh", "脚本路径")
 	flag.Parse()
 
 	db, err := gorm.Open(sqlite.Open("db/logs.db"), &gorm.Config{})
@@ -29,6 +31,22 @@ func main() {
 
 	// Serve static files
 	app.Static("/", "./public")
+	// app.Static("/output", fmt.Sprintf("./%s", *output))
+
+	// app.Static("/static", "./static")
+
+	// 处理目录浏览请求
+	app.Get("/browse/*", func(c *fiber.Ctx) error {
+		return handlers.HandleFileServer(c, *output)
+	})
+
+	// begin 脚本命令
+
+	app.Post("/cmd", func(c *fiber.Ctx) error {
+		return handlers.ExecShell(c, *scriptPath)
+	})
+
+	// end
 
 	// begin 日志接口
 
