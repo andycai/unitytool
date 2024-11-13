@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -76,7 +77,9 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 		if fileInfos[i].IsDir != fileInfos[j].IsDir {
 			return fileInfos[i].IsDir
 		}
-		return fileInfos[i].Name < fileInfos[j].Name
+		timeI, _ := time.Parse("2006-01-02 15:04:05", fileInfos[i].ModTime)
+		timeJ, _ := time.Parse("2006-01-02 15:04:05", fileInfos[j].ModTime)
+		return timeI.After(timeJ)
 	})
 
 	html := `<!DOCTYPE html>
