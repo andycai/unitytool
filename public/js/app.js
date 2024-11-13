@@ -35,7 +35,7 @@ function logSystem() {
         showConfirmModal: false,
         currentView: 'stats',
         statsPage: 1,
-        statsLimit: 20,
+        statsLimit: 50,
         statsTotal: 0,
         chartInstances: {}, // 用于存储图表实例
         isInitialized: false,

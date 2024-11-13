@@ -67,7 +67,7 @@
 
         <!-- 主要内容区域 -->
         <div class="p-4">
-            <!-- Right column: Log list -->
+            <!-- 错误日志列表 -->
             <div class="bg-white p-4 rounded-lg shadow" x-show="currentView === 'logs'" x-cloak>
                 <!-- Date selection and delete button -->
                 <div class="mb-4 flex items-center justify-between">
@@ -85,80 +85,96 @@
                     </div>
                 </div>
 
-                <!-- Pagination -->
-                <div class="mt-4 flex justify-between items-center">
-                    <div>
-                        <span
-                            x-text="`显示 ${(page - 1) * limit + 1} to ${Math.min(page * limit, total)} of ${total}`"></span>
+                <!-- 添加条件渲染 -->
+                <template x-if="total > 0">
+                    <!-- Top Pagination -->
+                    <div class="mt-4 flex justify-between items-center">
+                        <div>
+                            <span x-text="`显示 ${(page - 1) * limit + 1} to ${Math.min(page * limit, total)} of ${total}`"></span>
+                        </div>
+                        <div>
+                            <button @click="changePage(page - 1)" :disabled="page === 1"
+                                class="px-2 py-1 bg-blue-500 text-white rounded disabled:opacity-50">
+                                上一页
+                            </button>
+                            <button @click="changePage(page + 1)" :disabled="page * limit >= total"
+                                class="px-2 py-1 bg-blue-500 text-white rounded disabled:opacity-50">
+                                下一页
+                            </button>
+                        </div>
                     </div>
-                    <div>
-                        <button @click="changePage(page - 1)" :disabled="page === 1"
-                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
-                            上一页
-                        </button>
-                        <button @click="changePage(page + 1)" :disabled="page * limit >= total"
-                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
-                            下一页
-                        </button>
-                    </div>
-                </div>
+                </template>
 
-                <!-- 修改日志表格 -->
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="text-left p-2 border">App ID</th>
-                            <th class="text-left p-2 border">包名</th>
-                            <th class="text-left p-2 border">角色</th>
-                            <th class="text-left p-2 border">设备</th>
-                            <th class="text-left p-2 border">标题</th>
-                            <th class="text-left p-2 border">日志时间</th>
-                            <th class="text-left p-2 border">创建时间</th>
-                            <th class="text-left p-2 border">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="log in logs" :key="log.id">
-                            <tr @click="showLogDetails(log)" class="cursor-pointer hover:bg-gray-100">
-                                <td class="p-2 border" x-text="log.app_id"></td>
-                                <td class="p-2 border" x-text="log.package"></td>
-                                <td class="p-2 border" x-text="log.role_name"></td>
-                                <td class="p-2 border" x-text="log.device"></td>
-                                <td class="p-2 border" x-text="log.log_message.substring(0, 70) + '...'"></td>
-                                <td class="p-2 border" x-text="formatDate(log.log_time)"></td>
-                                <td class="p-2 border" x-text="formatDate(log.create_at)"></td>
-                                <td class="p-2 border">
-                                    <button @click.stop="deleteLog(log.id)" class="p-1 text-red-500 hover:text-red-700" title="删除">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                </td>
+                <template x-if="total > 0">
+                    <!-- 日志表格 -->
+                    <table class="w-full border-collapse mt-4">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="text-left p-2 border">App ID</th>
+                                <th class="text-left p-2 border">包名</th>
+                                <th class="text-left p-2 border">角色</th>
+                                <th class="text-left p-2 border">设备</th>
+                                <th class="text-left p-2 border">标题</th>
+                                <th class="text-left p-2 border">日志时间</th>
+                                <th class="text-left p-2 border">创建时间</th>
+                                <th class="text-left p-2 border">操作</th>
                             </tr>
-                        </template>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <template x-for="log in logs" :key="log.id">
+                                <tr @click="showLogDetails(log)" class="cursor-pointer hover:bg-gray-100">
+                                    <td class="p-2 border" x-text="log.app_id"></td>
+                                    <td class="p-2 border" x-text="log.package"></td>
+                                    <td class="p-2 border" x-text="log.role_name"></td>
+                                    <td class="p-2 border" x-text="log.device"></td>
+                                    <td class="p-2 border" x-text="log.log_message.substring(0, 70) + '...'"></td>
+                                    <td class="p-2 border" x-text="formatDate(log.log_time)"></td>
+                                    <td class="p-2 border" x-text="formatDate(log.create_at)"></td>
+                                    <td class="p-2 border">
+                                        <button @click.stop="deleteLog(log.id)" class="p-1 text-red-500 hover:text-red-700" title="删除">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </template>
 
-                <!-- Pagination (底部) -->
-                <div class="mt-4 flex justify-between items-center">
-                    <div>
-                        <span
-                            x-text="`显示 ${(page - 1) * limit + 1} to ${Math.min(page * limit, total)} of ${total}`"></span>
+                <template x-if="total > 0">
+                    <!-- Bottom pagination -->
+                    <div class="mt-4 flex justify-between items-center">
+                        <div>
+                            <span x-text="`显示 ${(page - 1) * limit + 1} to ${Math.min(page * limit, total)} of ${total}`"></span>
+                        </div>
+                        <div>
+                            <button @click="changePage(page - 1)" :disabled="page === 1"
+                                class="px-2 py-1 bg-blue-500 text-white rounded disabled:opacity-50">
+                                上一页
+                            </button>
+                            <button @click="changePage(page + 1)" :disabled="page * limit >= total"
+                                class="px-2 py-1 bg-blue-500 text-white rounded disabled:opacity-50">
+                                下一页
+                            </button>
+                        </div>
                     </div>
-                    <div>
-                        <button @click="changePage(page - 1)" :disabled="page === 1"
-                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
-                            上一页
-                        </button>
-                        <button @click="changePage(page + 1)" :disabled="page * limit >= total"
-                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
-                            下一页
-                        </button>
+                </template>
+
+                <!-- 无数据提示 -->
+                <template x-if="total === 0">
+                    <div class="text-center py-16 text-gray-500">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p class="text-xl">暂无日志记录</p>
+                        <p class="text-sm mt-2">当前查询条件下没有找到任何日志数据</p>
                     </div>
-                </div>
+                </template>
             </div>
 
-            <!-- Right column: Stats list -->
+            <!-- 统计数据列表 -->
             <div class="bg-white p-4 rounded-lg shadow" x-show="currentView === 'stats'">
                 <div class="mb-4 flex items-center justify-between">
                     <div class="flex items-center">
@@ -176,63 +192,98 @@
                     </div>
                 </div>
 
-                <!-- 修改统计数据表格 -->
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="text-left p-2 border">唯一ID</th>
-                            <th class="text-left p-2 border">App ID</th>
-                            <th class="text-left p-2 border">包名</th>
-                            <th class="text-left p-2 border">角色</th>
-                            <th class="text-left p-2 border">设备</th>
-                            <th class="text-left p-2 border">CPU</th>
-                            <th class="text-left p-2 border">GPU</th>
-                            <th class="text-left p-2 border">内存</th>
-                            <th class="text-left p-2 border">创建时间</th>
-                            <th class="text-left p-2 border">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="stat in stats" :key="stat.id">
-                            <tr @click="showStatDetails(stat)" class="cursor-pointer hover:bg-gray-100">
-                                <td class="p-2 border" x-text="stat.login_id"></td>
-                                <td class="p-2 border" x-text="stat.app_id"></td>
-                                <td class="p-2 border" x-text="stat.package_name"></td>
-                                <td class="p-2 border" x-text="stat.role_name"></td>
-                                <td class="p-2 border" x-text="stat.device_name"></td>
-                                <td class="p-2 border" x-text="stat.system_cpu"></td>
-                                <td class="p-2 border" x-text="stat.graphics_divice"></td>
-                                <td class="p-2 border" x-text="stat.system_mem"></td>
-                                <td class="p-2 border" x-text="formatDate(stat.mtime)"></td>
-                                <td class="p-2 border">
-                                    <button @click.stop="deleteStat(stat.id)" class="p-1 text-red-500 hover:text-red-700" title="删除">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
+                <template x-if="statsTotal > 0">
+                    <!-- Pagination -->
+                    <div class="mt-4 flex justify-between items-center">
+                        <div>
+                            <span
+                                x-text="`显示 ${(statsPage - 1) * statsLimit + 1} to ${Math.min(statsPage * statsLimit, statsTotal)} of ${statsTotal}`"></span>
+                        </div>
+                        <div>
+                            <button @click="changeStatsPage(statsPage - 1)" :disabled="statsPage === 1"
+                                class="px-2 py-1 bg-blue-500 text-white rounded disabled:opacity-50">
+                                上一页
+                            </button>
+                            <button @click="changeStatsPage(statsPage + 1)" :disabled="statsPage * statsLimit >= statsTotal"
+                                class="px-2 py-1 bg-blue-500 text-white rounded disabled:opacity-50">
+                                下一页
+                            </button>
+                        </div>
+                    </div>
+                </template>
 
-                <!-- Pagination -->
-                <div class="mt-4 flex justify-between items-center">
-                    <div>
-                        <span
-                            x-text="`显示 ${(statsPage - 1) * statsLimit + 1} to ${Math.min(statsPage * statsLimit, statsTotal)} of ${statsTotal}`"></span>
+                <!-- 添加条件渲染 -->
+                <template x-if="statsTotal > 0">
+                    <!-- 统计数据表格 -->
+                    <table class="w-full border-collapse mt-4">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="text-left p-2 border">唯一ID</th>
+                                <th class="text-left p-2 border">App ID</th>
+                                <th class="text-left p-2 border">包名</th>
+                                <th class="text-left p-2 border">角色</th>
+                                <th class="text-left p-2 border">设备</th>
+                                <th class="text-left p-2 border">CPU</th>
+                                <th class="text-left p-2 border">GPU</th>
+                                <th class="text-left p-2 border">内存</th>
+                                <th class="text-left p-2 border">创建时间</th>
+                                <th class="text-left p-2 border">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="stat in stats" :key="stat.id">
+                                <tr @click="showStatDetails(stat)" class="cursor-pointer hover:bg-gray-100">
+                                    <td class="p-2 border" x-text="stat.login_id"></td>
+                                    <td class="p-2 border" x-text="stat.app_id"></td>
+                                    <td class="p-2 border" x-text="stat.package_name"></td>
+                                    <td class="p-2 border" x-text="stat.role_name"></td>
+                                    <td class="p-2 border" x-text="stat.device_name"></td>
+                                    <td class="p-2 border" x-text="stat.system_cpu"></td>
+                                    <td class="p-2 border" x-text="stat.graphics_divice"></td>
+                                    <td class="p-2 border" x-text="stat.system_mem"></td>
+                                    <td class="p-2 border" x-text="formatDate(stat.mtime)"></td>
+                                    <td class="p-2 border">
+                                        <button @click.stop="deleteStat(stat.id)" class="p-1 text-red-500 hover:text-red-700" title="删除">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </template>
+
+                <template x-if="statsTotal > 0">
+                    <!-- Pagination -->
+                    <div class="mt-4 flex justify-between items-center">
+                        <div>
+                            <span x-text="`显示 ${(statsPage - 1) * statsLimit + 1} to ${Math.min(statsPage * statsLimit, statsTotal)} of ${statsTotal}`"></span>
+                        </div>
+                        <div>
+                            <button @click="changeStatsPage(statsPage - 1)" :disabled="statsPage === 1"
+                                class="px-2 py-1 bg-blue-500 text-white rounded disabled:opacity-50">
+                                上一页
+                            </button>
+                            <button @click="changeStatsPage(statsPage + 1)" :disabled="statsPage * statsLimit >= statsTotal"
+                                class="px-2 py-1 bg-blue-500 text-white rounded disabled:opacity-50">
+                                下一页
+                            </button>
+                        </div>
                     </div>
-                    <div>
-                        <button @click="changeStatsPage(statsPage - 1)" :disabled="statsPage === 1"
-                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
-                            上一页
-                        </button>
-                        <button @click="changeStatsPage(statsPage + 1)" :disabled="statsPage * statsLimit >= statsTotal"
-                            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50">
-                            下一页
-                        </button>
+                </template>
+
+                <!-- 无数据提示 -->
+                <template x-if="statsTotal === 0">
+                    <div class="text-center py-16 text-gray-500">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <p class="text-xl">暂无统计数据</p>
+                        <p class="text-sm mt-2">当前查询条件下没有找到任何统计数据</p>
                     </div>
-                </div>
+                </template>
             </div>
         </div>
 
@@ -547,7 +598,7 @@
         </div>
     </div>
 
-    <script src="/js/app.js?v=1"></script>
+    <script src="/js/app.js?v=2"></script>
 
     <!-- 在 body 标签的末尾，在最后的 </div> 之后添加以下代码 -->
     <div id="enlargedImageContainer" x-show="isEnlargedImageVisible" 
