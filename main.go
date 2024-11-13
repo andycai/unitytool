@@ -42,7 +42,7 @@ func main() {
 
 	// begin 脚本命令
 
-	app.Get("/cmd", func(c *fiber.Ctx) error {
+	app.Post("/cmd", func(c *fiber.Ctx) error {
 		return handlers.ExecShell(c, *scriptPath)
 	})
 

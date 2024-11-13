@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -17,32 +18,42 @@ type ScriptConfig struct {
 	Env  map[string]string // 环境变量
 }
 
+type ScriptForm struct {
+	Name        string              `json:"name"`
+	Repository  string              `json:"repository"`
+	Platform    string              `json:"platform"`
+	PublishType string              `json:"publishType"`
+	Params      string              `json:"params"`
+	Ext         []map[string]string `json:"ext"`
+}
+
 // 执行 shell 脚本
 func ExecShell(c *fiber.Ctx, dir string) error {
-	// 获取 get 参数，包括 name、type、platform、ext
-	name := c.Query("name")
-	typ := c.Query("type")
-	platform := c.Query("platform")
-	ext := c.Query("ext")
-	params := c.Query("params")
-
-	// params 是使用 ｜ 连接的字符串，使用 ｜ 分割 作为动态参数，解析出来放到 args 中
-	args := []string{}
-	if params != "" {
-		arr := strings.Split(params, ",")
-		args = append(args, arr...)
+	var form ScriptForm
+	if err := c.BodyParser(&form); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	scriptPath := fmt.Sprintf("%s/%s", dir, name)
+	scriptPath := filepath.Join(dir, form.Name)
 
 	config := ScriptConfig{
 		Path: scriptPath,
-		Args: []string{name, typ, platform, ext},
+		Args: []string{form.Name, form.Repository, form.Platform, form.PublishType, form.Params},
 		Env:  map[string]string{},
 	}
 
-	// args 加到 config.Args 中
-	config.Args = append(config.Args, args...)
+	config.Env["repository"] = form.Repository
+	config.Env["platform"] = form.Platform
+	config.Env["publishType"] = form.PublishType
+	config.Env["params"] = form.Params
+	ext, err := json.Marshal(form.Ext)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+	// 对 ext 进行转移
+	// ext = bytes.ReplaceAll(ext, []byte("\\"), []byte("\\\\"))
+	str := strings.ReplaceAll(string(ext), "\"", "\\\"")
+	config.Env["ext"] = str
 
 	// 检查文件是否存在
 	if _, err := os.Stat(config.Path); os.IsNotExist(err) {
