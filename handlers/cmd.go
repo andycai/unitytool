@@ -29,7 +29,7 @@ func ExecShell(c *fiber.Ctx, dir string) error {
 	// params 是使用 ｜ 连接的字符串，使用 ｜ 分割 作为动态参数，解析出来放到 args 中
 	args := []string{}
 	if params != "" {
-		arr := strings.Split(params, "｜")
+		arr := strings.Split(params, ",")
 		args = append(args, arr...)
 	}
 
@@ -111,15 +111,10 @@ func ExecShell(c *fiber.Ctx, dir string) error {
 	}
 
 	// 将标准输出和错误输出设置为程序的标准输出
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
 
 	// 执行命令
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("failed to execute script: %v", err)
-	}
-
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to execute script: %v", err)
