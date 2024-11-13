@@ -20,14 +20,16 @@ type FileInfo struct {
 	Path    string
 }
 
+var outputPath string
+
 // HandleFileServer 处理文件服务器请求
 func HandleFileServer(c *fiber.Ctx, output string) error {
 	requestPath := c.Params("*")
 	if requestPath == "" {
 		requestPath = "."
 	}
-
-	requestPath = filepath.Join(output, requestPath)
+	outputPath = output
+	requestPath = filepath.Join(outputPath, requestPath)
 
 	// 获取文件信息
 	fileInfo, err := os.Stat(requestPath)
@@ -57,7 +59,8 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 			continue
 		}
 
-		relativePath := strings.TrimPrefix(filepath.Join(path, entry.Name()), "output/")
+		// 获取相对路径，需要考虑 windows 和 linux 路径分隔符不同的情况
+		relativePath := trimPrefix(filepath.Join(path, entry.Name()))
 
 		fileInfos = append(fileInfos, FileInfo{
 			Name:    entry.Name(),
@@ -130,8 +133,8 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 
 	tmpl := template.Must(template.New("directory").Parse(html))
 
-	relativePath := strings.TrimPrefix(path, "output/")
-	parentPath := filepath.Dir(relativePath)
+	relativePath := trimPrefix(path)
+	parentPath := trimPrefix(filepath.Dir(relativePath))
 	if parentPath == relativePath {
 		parentPath = "."
 	}
@@ -171,8 +174,8 @@ func handleFile(c *fiber.Ctx, path string) error {
 			return c.Status(500).SendString("Error reading file")
 		}
 
-		relativePath := strings.TrimPrefix(path, "output/")
-		relativeDirPath := strings.TrimPrefix(filepath.Dir(path), "output/")
+		relativePath := trimPrefix(path)
+		relativeDirPath := trimPrefix(filepath.Dir(path))
 
 		html := `<!DOCTYPE html>
 <html>
@@ -214,4 +217,8 @@ func handleFile(c *fiber.Ctx, path string) error {
 	}
 
 	return c.SendFile(path)
+}
+
+func trimPrefix(path string) string {
+	return strings.TrimPrefix(filepath.ToSlash(path), outputPath+"/")
 }
