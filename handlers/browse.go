@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"html/template"
 	"os"
 	"path/filepath"
@@ -13,12 +14,13 @@ import (
 
 // FileInfo 存储文件信息的结构体
 type FileInfo struct {
-	Name    string
-	Size    int64
-	Mode    os.FileMode
-	ModTime string
-	IsDir   bool
-	Path    string
+	Name       string
+	Size       int64
+	FormatSize string
+	Mode       os.FileMode
+	ModTime    string
+	IsDir      bool
+	Path       string
 }
 
 var outputPath string
@@ -64,12 +66,13 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 		relativePath := trimPrefix(filepath.Join(path, entry.Name()))
 
 		fileInfos = append(fileInfos, FileInfo{
-			Name:    entry.Name(),
-			Size:    info.Size(),
-			Mode:    info.Mode(),
-			ModTime: info.ModTime().Format("2006-01-02 15:04:05"),
-			IsDir:   entry.IsDir(),
-			Path:    relativePath,
+			Name:       entry.Name(),
+			Size:       info.Size(),
+			FormatSize: formatSize(info.Size()),
+			Mode:       info.Mode(),
+			ModTime:    info.ModTime().Format("2006-01-02 15:04:05"),
+			IsDir:      entry.IsDir(),
+			Path:       relativePath,
 		})
 	}
 
@@ -102,34 +105,28 @@ func handleDirectory(c *fiber.Ctx, path string) error {
     </style>
 </head>
 <body>
-    <h2>Directory listing for {{.Path}}</h2>
-    {{if ne .Path "."}}
-    <a href="/browse/{{.ParentPath}}">..</a>
-    {{end}}
-    
-    {{if len .Files}}
-        <ul class="list">
-        {{range .Files}}
-            <li>
-                {{if .IsDir}}
-                <a class="dir" href="/browse/{{.Path}}">📁 {{.Name}}/</a>
-                {{else}}
-                <a class="file" href="/browse/{{.Path}}">📄 {{.Name}}</a>
-                {{end}}
-                <span class="size">{{if not .IsDir}}{{.Size}} bytes{{end}}</span>
-                <span class="time">{{.ModTime}}</span>
-            </li>
+    <h1>Directory listing for {{.Path}}</h1>
+    {{if .Files}}
+    <ul class="list">
+        {{if ne .Path "."}}
+        <li>
+            <a href="/browse/{{.ParentPath}}" class="dir">..</a>
+        </li>
         {{end}}
-        </ul>
-        <div class="pagination has-content">
-            <div>
-                <span>Total: {{len .Files}} items</span>
-            </div>
-        </div>
+        {{range .Files}}
+        <li>
+            {{if .IsDir}}
+            <a href="/browse/{{.Path}}" class="dir">{{.Name}}/</a>
+            {{else}}
+            <a href="/browse/{{.Path}}" class="file">{{.Name}}</a>
+            <span class="size">{{.FormatSize}}</span>
+            {{end}}
+            <span class="time">{{.ModTime}}</span>
+        </li>
+        {{end}}
+    </ul>
     {{else}}
-        <div class="empty-message">
-            This folder is empty
-        </div>
+    <p class="empty-message">This folder is empty.</p>
     {{end}}
 </body>
 </html>`
@@ -220,6 +217,19 @@ func handleFile(c *fiber.Ctx, path string) error {
 	}
 
 	return c.SendFile(path)
+}
+
+func formatSize(size int64) string {
+	const unit = 1024
+	if size < unit {
+		return fmt.Sprintf("%d B", size)
+	}
+	div, exp := int64(unit), 0
+	for n := size / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(size)/float64(div), "KMG"[exp])
 }
 
 func trimPrefix(path string) string {
