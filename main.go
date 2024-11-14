@@ -48,6 +48,11 @@ func main() {
 
 	// end
 
+	// begin Unity打包接口
+	app.Post("/pack/ab", handlers.HandlePackAB)
+	app.Post("/pack/apk", handlers.HandlePackAPK)
+	// end
+
 	// begin 日志接口
 
 	app.Post("/api/logs", func(c *fiber.Ctx) error {
