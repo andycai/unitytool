@@ -17,6 +17,7 @@ type UnityBuildConfig struct {
 	OutputPath   string
 	BuildTarget  string
 	BuildOptions string
+	LogFilePath  string
 }
 
 // executeSVNOperations 执行SVN操作
@@ -87,6 +88,7 @@ func HandlePackAPK(c *fiber.Ctx) error {
 	config := UnityBuildConfig{
 		ProjectPath:  c.Query("projectPath", ""),
 		OutputPath:   c.Query("outputPath", ""),
+		LogFilePath:  c.Query("logFilePath", ""),
 		BuildMethod:  c.Query("method", "BuildAndroid"),
 		BuildTarget:  "Android",
 		BuildOptions: c.Query("options", ""),
@@ -132,10 +134,13 @@ func executeUnityBuild(config UnityBuildConfig) error {
 		"-quit",
 		"-batchmode",
 		"-nographics",
+		"silent-crashes",
+		"-disable-assembly-updater",
 		"-projectPath", config.ProjectPath,
 		"-executeMethod", config.BuildMethod,
 		"-buildTarget", config.BuildTarget,
 		"-outputPath", config.OutputPath,
+		"-logFile", config.LogFilePath,
 	}
 
 	if config.BuildOptions != "" {
