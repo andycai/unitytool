@@ -184,7 +184,15 @@ func handleFile(c *fiber.Ctx, path string) error {
     <title>File: {{.Path}}</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        pre { background-color: #f5f5f5; padding: 15px; border-radius: 5px; }
+        pre { 
+            background-color: #f5f5f5; 
+            padding: 15px; 
+            border-radius: 5px;
+            white-space: pre-wrap;       /* 保留空格和换行，但允许自动换行 */
+            word-wrap: break-word;       /* 允许在单词内部换行 */
+            overflow-wrap: break-word;   /* 现代浏览器的单词换行 */
+            max-width: 100%;             /* 确保不会超出父容器 */
+        }
         .back { margin-bottom: 20px; }
     </style>
 </head>
