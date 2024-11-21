@@ -20,6 +20,9 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
 
+	// 设置创建时间
+	record.CreatedAt = time.Now().UnixMilli()
+
 	var existingRecord models.StatsRecord
 	if err := db.Where("login_id = ?", record.LoginID).First(&existingRecord).Error; err != nil {
 		if err := db.Create(&record).Error; err != nil {
@@ -31,6 +34,10 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 	if err := c.BodyParser(&info); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
+
+	// 设置创建时间
+	info.CreatedAt = time.Now().UnixMilli()
+
 	tmp, _ := json.Marshal(&info.Process2)
 	info.Process = string(tmp)
 

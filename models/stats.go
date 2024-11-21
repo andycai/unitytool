@@ -12,7 +12,8 @@ type StatsRecord struct {
 	GPU         string `json:"graphics_divice"`
 	Memory      int    `json:"system_mem"`
 	GPUMemory   int    `json:"graphics_mem"`
-	CreatedAt   int64  `json:"mtime" gorm:"index"`
+	StatTime    int64  `json:"mtime" gorm:"index"`
+	CreatedAt   int64  `json:"created_at" gorm:"index"`
 }
 
 type StatsInfo struct {
@@ -33,7 +34,8 @@ type StatsInfo struct {
 	Pic         string                   `json:"pic"`
 	Process2    []map[string]interface{} `json:"list" gorm:"-"`
 	Process     string                   `json:"process"`
-	CreatedAt   int64                    `json:"mtime" gorm:"index"`
+	StatTime    int64                    `json:"mtime" gorm:"index"`
+	CreatedAt   int64                    `json:"created_at" gorm:"index"`
 }
 
 type ProcessItem struct {
