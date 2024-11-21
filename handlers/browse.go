@@ -24,6 +24,15 @@ type FileInfo struct {
 }
 
 var outputPath string
+var templates *template.Template
+
+func init() {
+	// 初始化模板
+	templates = template.Must(template.ParseFiles(
+		"templates/directory.html",
+		"templates/file.html",
+	))
+}
 
 // HandleFileServer 处理文件服务器请求
 func HandleFileServer(c *fiber.Ctx, output string) error {
@@ -62,7 +71,6 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 			continue
 		}
 
-		// 获取相对路径，需要考虑 windows 和 linux 路径分隔符不同的情况
 		relativePath := trimPrefix(filepath.Join(path, entry.Name()))
 
 		fileInfos = append(fileInfos, FileInfo{
@@ -85,54 +93,6 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 		return timeI.After(timeJ)
 	})
 
-	html := `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Directory listing for {{.Path}}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .list { list-style: none; padding: 0; }
-        .list li { padding: 8px; border-bottom: 1px solid #eee; }
-        .list li:hover { background-color: #f5f5f5; }
-        .dir { color: #2c3e50; font-weight: bold; }
-        .file { color: #34495e; }
-        .size { color: #7f8c8d; margin-left: 10px; }
-        .time { color: #95a5a6; margin-left: 10px; }
-        .empty-message { color: #666; text-align: center; padding: 20px; }
-        .pagination { display: none; }
-        .pagination.has-content { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-    </style>
-</head>
-<body>
-    <h1>Directory listing for {{.Path}}</h1>
-    {{if .Files}}
-    <ul class="list">
-        {{if ne .Path "."}}
-        <li>
-            <a href="/browse/{{.ParentPath}}" class="dir">..</a>
-        </li>
-        {{end}}
-        {{range .Files}}
-        <li>
-            {{if .IsDir}}
-            <a href="/browse/{{.Path}}" class="dir">{{.Name}}/</a>
-            {{else}}
-            <a href="/browse/{{.Path}}" class="file">{{.Name}}</a>
-            <span class="size">{{.FormatSize}}</span>
-            {{end}}
-            <span class="time">{{.ModTime}}</span>
-        </li>
-        {{end}}
-    </ul>
-    {{else}}
-    <p class="empty-message">This folder is empty.</p>
-    {{end}}
-</body>
-</html>`
-
-	tmpl := template.Must(template.New("directory").Parse(html))
-
 	relativePath := trimPrefix(path)
 	parentPath := trimPrefix(filepath.Dir(relativePath))
 	if parentPath == relativePath {
@@ -150,7 +110,7 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 	}
 
 	var buf strings.Builder
-	if err := tmpl.Execute(&buf, data); err != nil {
+	if err := templates.ExecuteTemplate(&buf, "directory.html", data); err != nil {
 		return c.Status(500).SendString("Error rendering template")
 	}
 
@@ -177,34 +137,6 @@ func handleFile(c *fiber.Ctx, path string) error {
 		relativePath := trimPrefix(path)
 		relativeDirPath := trimPrefix(filepath.Dir(path))
 
-		html := `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>File: {{.Path}}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        pre { 
-            background-color: #f5f5f5; 
-            padding: 15px; 
-            border-radius: 5px;
-            white-space: pre-wrap;       /* 保留空格和换行，但允许自动换行 */
-            word-wrap: break-word;       /* 允许在单词内部换行 */
-            overflow-wrap: break-word;   /* 现代浏览器的单词换行 */
-            max-width: 100%;             /* 确保不会超出父容器 */
-        }
-        .back { margin-bottom: 20px; }
-    </style>
-</head>
-<body>
-    <div class="back"><a href="/browse/{{.DirPath}}">← Back to directory</a></div>
-    <h2>File: {{.Path}}</h2>
-    <pre>{{.Content}}</pre>
-</body>
-</html>`
-
-		tmpl := template.Must(template.New("file").Parse(html))
-
 		data := struct {
 			Path    string
 			DirPath string
@@ -216,7 +148,7 @@ func handleFile(c *fiber.Ctx, path string) error {
 		}
 
 		var buf strings.Builder
-		if err := tmpl.Execute(&buf, data); err != nil {
+		if err := templates.ExecuteTemplate(&buf, "file.html", data); err != nil {
 			return c.Status(500).SendString("Error rendering template")
 		}
 
