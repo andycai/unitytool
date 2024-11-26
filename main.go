@@ -40,6 +40,11 @@ func main() {
 		return handlers.HandleFileServer(c, *output)
 	})
 
+	// 添加文件删除路由
+	app.Delete("/browse/*", func(c *fiber.Ctx) error {
+		return handlers.HandleFileServer(c, *output)
+	})
+
 	// begin 脚本命令
 
 	app.Post("/cmd", func(c *fiber.Ctx) error {

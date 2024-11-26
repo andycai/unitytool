@@ -6,16 +6,73 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .list { list-style: none; padding: 0; }
-        .list li { padding: 8px; border-bottom: 1px solid #eee; }
+        .list li { 
+            padding: 8px; 
+            border-bottom: 1px solid #eee; 
+            display: flex; 
+            align-items: center;
+            justify-content: space-between;
+        }
         .list li:hover { background-color: #f5f5f5; }
         .dir { color: #2c3e50; font-weight: bold; }
         .file { color: #34495e; }
         .size { color: #7f8c8d; margin-left: 10px; }
         .time { color: #95a5a6; margin-left: 10px; }
         .empty-message { color: #666; text-align: center; padding: 20px; }
-        .pagination { display: none; }
-        .pagination.has-content { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .file-info { 
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        .delete-btn {
+            visibility: hidden;
+            padding: 4px 8px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: background-color 0.2s;
+        }
+        .list li:hover .delete-btn { 
+            visibility: visible; 
+        }
+        .delete-btn:hover { 
+            background-color: #dc2626; 
+        }
+        .delete-btn svg {
+            width: 16px;
+            height: 16px;
+        }
     </style>
+    <script>
+        function deleteFile(path, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            if (!confirm('确定要删除这个文件吗？')) {
+                return;
+            }
+
+            fetch('/browse/' + path, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('删除失败: ' + response.statusText);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('删除失败: ' + error.message);
+            });
+        }
+    </script>
 </head>
 <body>
     <h1>Directory listing for {{.Path}}</h1>
@@ -23,23 +80,37 @@
     <ul class="list">
         {{if ne .Path "."}}
         <li>
-            <a href="/browse/{{.ParentPath}}" class="dir">..</a>
+            <div class="file-info">
+                <a href="/browse/{{.ParentPath}}" class="dir">📁 ..</a>
+            </div>
         </li>
         {{end}}
         {{range .Files}}
         <li>
-            {{if .IsDir}}
-            <a href="/browse/{{.Path}}" class="dir">{{.Name}}/</a>
-            {{else}}
-            <a href="/browse/{{.Path}}" class="file">{{.Name}}</a>
-            <span class="size">{{.FormatSize}}</span>
+            <div class="file-info">
+                {{if .IsDir}}
+                <a href="/browse/{{.Path}}" class="dir">📁 {{.Name}}/</a>
+                {{else}}
+                <a href="/browse/{{.Path}}" class="file">📄 {{.Name}}</a>
+                <span class="size">{{.FormatSize}}</span>
+                {{end}}
+                <span class="time">{{.ModTime}}</span>
+            </div>
+            {{if not .IsDir}}
+            <button onclick="deleteFile('{{.Path}}', event)" class="delete-btn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                    </path>
+                </svg>
+                删除
+            </button>
             {{end}}
-            <span class="time">{{.ModTime}}</span>
         </li>
         {{end}}
     </ul>
     {{else}}
-    <p class="empty-message">This folder is empty.</p>
+    <p class="empty-message">此文件夹为空</p>
     {{end}}
 </body>
 </html> 

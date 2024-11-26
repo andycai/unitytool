@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"html/template"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -40,22 +41,35 @@ func HandleFileServer(c *fiber.Ctx, output string) error {
 	if requestPath == "" {
 		requestPath = "."
 	}
+
+	// URL 解码路径
+	decodedPath, err := url.QueryUnescape(requestPath)
+	if err != nil {
+		return c.Status(400).SendString("Invalid path encoding")
+	}
+
 	outputPath = output
-	requestPath = filepath.Join(outputPath, requestPath)
+
+	// 处理删除请求
+	if c.Method() == "DELETE" {
+		fullPath := filepath.Join(outputPath, decodedPath)
+		return handleDelete(c, fullPath)
+	}
 
 	// 获取文件信息
-	fileInfo, err := os.Stat(requestPath)
+	fullPath := filepath.Join(outputPath, decodedPath)
+	fileInfo, err := os.Stat(fullPath)
 	if err != nil {
-		return c.Status(404).SendString("File or directory not found")
+		return c.Status(404).SendString(fmt.Sprintf("File not found: %s", fullPath))
 	}
 
 	// 如果是目录，显示目录内容
 	if fileInfo.IsDir() {
-		return handleDirectory(c, requestPath)
+		return handleDirectory(c, fullPath)
 	}
 
 	// 如果是文件，显示文件内容
-	return handleFile(c, requestPath)
+	return handleFile(c, fullPath)
 }
 
 func handleDirectory(c *fiber.Ctx, path string) error {
@@ -71,7 +85,9 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 			continue
 		}
 
+		// URL 编码文件名
 		relativePath := trimPrefix(filepath.Join(path, entry.Name()))
+		encodedPath := url.QueryEscape(relativePath)
 
 		fileInfos = append(fileInfos, FileInfo{
 			Name:       entry.Name(),
@@ -80,7 +96,7 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 			Mode:       info.Mode(),
 			ModTime:    info.ModTime().Format("2006-01-02 15:04:05"),
 			IsDir:      entry.IsDir(),
-			Path:       relativePath,
+			Path:       encodedPath, // 使用编码后的路径
 		})
 	}
 
@@ -99,13 +115,16 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 		parentPath = "."
 	}
 
+	// URL 编码父目录路径
+	encodedParentPath := url.QueryEscape(parentPath)
+
 	data := struct {
 		Path       string
 		ParentPath string
 		Files      []FileInfo
 	}{
 		Path:       relativePath,
-		ParentPath: parentPath,
+		ParentPath: encodedParentPath,
 		Files:      fileInfos,
 	}
 
@@ -173,5 +192,34 @@ func formatSize(size int64) string {
 }
 
 func trimPrefix(path string) string {
-	return strings.TrimPrefix(filepath.ToSlash(path), outputPath+"/")
+	path = filepath.ToSlash(path)
+	prefix := filepath.ToSlash(outputPath) + "/"
+	return strings.TrimPrefix(path, prefix)
+}
+
+// 添加处理删除请求的函数
+func handleDelete(c *fiber.Ctx, path string) error {
+	// 添加路径日志，帮助调试
+	fmt.Printf("Attempting to delete file: %s\n", path)
+
+	// 检查文件是否存在
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		fmt.Printf("Error stating file: %v\n", err)
+		return c.Status(404).SendString(fmt.Sprintf("File not found: %s", path))
+	}
+
+	// 只允许删除文件，不允许删除目录
+	if fileInfo.IsDir() {
+		return c.Status(400).SendString("Cannot delete directories")
+	}
+
+	// 删除文件
+	if err := os.Remove(path); err != nil {
+		fmt.Printf("Error deleting file: %v\n", err)
+		return c.Status(500).SendString(fmt.Sprintf("Failed to delete file: %v", err))
+	}
+
+	fmt.Printf("Successfully deleted file: %s\n", path)
+	return c.SendString("File deleted successfully")
 }
