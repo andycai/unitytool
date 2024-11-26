@@ -24,6 +24,12 @@ type FileInfo struct {
 	Path       string
 }
 
+// BreadcrumbPath 存储面包屑路径的结构体
+type BreadcrumbPath struct {
+	Name string
+	Path string
+}
+
 var outputPath string
 var templates *template.Template
 
@@ -85,7 +91,7 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 			continue
 		}
 
-		// URL 编码文件名
+		// 处理相对路径，移除 outputPath 前缀
 		relativePath := trimPrefix(filepath.Join(path, entry.Name()))
 		encodedPath := url.QueryEscape(relativePath)
 
@@ -96,7 +102,7 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 			Mode:       info.Mode(),
 			ModTime:    info.ModTime().Format("2006-01-02 15:04:05"),
 			IsDir:      entry.IsDir(),
-			Path:       encodedPath, // 使用编码后的路径
+			Path:       encodedPath,
 		})
 	}
 
@@ -109,23 +115,33 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 		return timeI.After(timeJ)
 	})
 
-	relativePath := trimPrefix(path)
-	parentPath := trimPrefix(filepath.Dir(relativePath))
-	if parentPath == relativePath {
+	// 处理显示路径
+	displayPath := path
+	if displayPath == outputPath {
+		displayPath = "."
+	} else {
+		displayPath = strings.TrimPrefix(strings.TrimPrefix(displayPath, outputPath), "/")
+		if displayPath == "" {
+			displayPath = "."
+		}
+	}
+
+	// 处理父目录路径
+	parentPath := filepath.Dir(displayPath)
+	if parentPath == "." || parentPath == displayPath {
 		parentPath = "."
 	}
 
-	// URL 编码父目录路径
-	encodedParentPath := url.QueryEscape(parentPath)
-
 	data := struct {
-		Path       string
-		ParentPath string
-		Files      []FileInfo
+		Path            string
+		ParentPath      string
+		Files           []FileInfo
+		BreadcrumbPaths []BreadcrumbPath
 	}{
-		Path:       relativePath,
-		ParentPath: encodedParentPath,
-		Files:      fileInfos,
+		Path:            displayPath,
+		ParentPath:      parentPath,
+		Files:           fileInfos,
+		BreadcrumbPaths: generateBreadcrumbs(path),
 	}
 
 	var buf strings.Builder
@@ -194,7 +210,11 @@ func formatSize(size int64) string {
 func trimPrefix(path string) string {
 	path = filepath.ToSlash(path)
 	prefix := filepath.ToSlash(outputPath) + "/"
-	return strings.TrimPrefix(path, prefix)
+	trimmed := strings.TrimPrefix(path, prefix)
+	if trimmed == "" {
+		return "."
+	}
+	return trimmed
 }
 
 // 添加处理删除请求的函数
@@ -222,4 +242,29 @@ func handleDelete(c *fiber.Ctx, path string) error {
 
 	fmt.Printf("Successfully deleted file: %s\n", path)
 	return c.SendString("File deleted successfully")
+}
+
+// 添加生成面包屑路径的函数
+func generateBreadcrumbs(path string) []BreadcrumbPath {
+	if path == "." || path == outputPath {
+		return []BreadcrumbPath{}
+	}
+
+	// 移除 outputPath 前缀
+	path = strings.TrimPrefix(strings.TrimPrefix(path, outputPath), "/")
+	if path == "" {
+		return []BreadcrumbPath{}
+	}
+
+	parts := strings.Split(path, "/")
+	breadcrumbs := make([]BreadcrumbPath, len(parts))
+
+	for i := 0; i < len(parts); i++ {
+		breadcrumbs[i] = BreadcrumbPath{
+			Name: parts[i],
+			Path: url.QueryEscape(strings.Join(parts[:i+1], "/")),
+		}
+	}
+
+	return breadcrumbs
 }

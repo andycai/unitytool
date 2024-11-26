@@ -47,6 +47,34 @@
             width: 16px;
             height: 16px;
         }
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #eee;
+        }
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+        }
+        .breadcrumb-item a {
+            color: #3b82f6;
+            text-decoration: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .breadcrumb-item a:hover {
+            background-color: #f0f9ff;
+        }
+        .breadcrumb-separator {
+            color: #9ca3af;
+            margin: 0 4px;
+        }
+        .breadcrumb-current {
+            color: #4b5563;
+            padding: 4px 8px;
+        }
     </style>
     <script>
         function deleteFile(path, event) {
@@ -75,6 +103,24 @@
     </script>
 </head>
 <body>
+    <div class="breadcrumb">
+        <div class="breadcrumb-item">
+            <a href="/browse/">根目录</a>
+        </div>
+        {{if ne .Path "."}}
+            {{$paths := .BreadcrumbPaths}}
+            {{range $index, $element := $paths}}
+                <span class="breadcrumb-separator">/</span>
+                <div class="breadcrumb-item">
+                    {{if eq $index (len $paths)}}
+                        <span class="breadcrumb-current">{{$element.Name}}</span>
+                    {{else}}
+                        <a href="/browse/{{$element.Path}}">{{$element.Name}}</a>
+                    {{end}}
+                </div>
+            {{end}}
+        {{end}}
+    </div>
     <h1>Directory listing for {{.Path}}</h1>
     {{if .Files}}
     <ul class="list">
