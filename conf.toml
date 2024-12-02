@@ -6,6 +6,15 @@ script_path = "sh"
 static_path = "./public"
 user_data_path = "./user_data.bin"
 
+[modules]
+logs = true       # 日志模块
+stats = true      # 统计模块
+browse = true     # 文件浏览模块
+ftp = true        # FTP上传模块
+serverconf = true # 服务器配置模块
+cmd = true        # 命令模块
+pack = true       # 打包模块
+
 [database]
 driver = "sqlite"
 dsn = "db/logs.db"
@@ -16,14 +25,13 @@ last_server = "db/lastserver.json"
 server_info = "db/serverinfo.json"
 
 [ftp]
-host = "192.168.200.20" # 外网
-# host = "192.168.200.21"                # 内网
+host = "192.168.200.20"
 port = "21"
-user = "username"
-password = "password"
-# apk_path = "/DQ1-c/out"
-# zip_path = "/DQ1-c/CLIENT_DQ1_DQDQ_CN"
+user = "123456"
+password = "000000"
+# apk_path = "/DQ1/out"
+# zip_path = "/DQ1/CLIENT_DQ1_DQDQ_CN"
 apk_path = "/-=共享你想共享的=-/dqtemp"
 zip_path = "/-=共享你想共享的=-/dqtemp"
-log_dir = "output/logs/ftp"      # 添加 FTP 上传日志目录配置
-max_log_size = 20971520          # 20MB in bytes
+log_dir = "output/logs/ftp"
+max_log_size = 20971520
