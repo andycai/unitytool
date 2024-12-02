@@ -10,6 +10,11 @@ user_data_path = "./user_data.bin"
 driver = "sqlite"
 dsn = "db/logs.db"
 
+[json_paths]
+server_list = "db/serverlist.json"
+last_server = "db/lastserver.json"
+server_info = "db/serverinfo.json"
+
 [ftp]
 host = "192.168.200.20" # 外网
 # host = "192.168.200.21"                # 内网

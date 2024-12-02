@@ -160,6 +160,25 @@ func main() {
 		MaxLogSize: ftpConfig.MaxLogSize,
 	})
 
+	// 初始化 JSON 路径配置
+	jsonPaths := utils.GetJSONPathConfig()
+	handlers.InitJSONPaths(jsonPaths)
+
+	// begin 服务器配置接口
+	app.Get("/server-config", func(c *fiber.Ctx) error {
+		return c.SendFile("templates/server_config.html")
+	})
+
+	app.Get("/api/serverlist", handlers.GetServerList)
+	app.Post("/api/serverlist", handlers.UpdateServerList)
+
+	app.Get("/api/lastserver", handlers.GetLastServer)
+	app.Post("/api/lastserver", handlers.UpdateLastServer)
+
+	app.Get("/api/serverinfo", handlers.GetServerInfo)
+	app.Post("/api/serverinfo", handlers.UpdateServerInfo)
+	// end 服务器配置接口
+
 	// 使用命令行参数设置端口
 	app.Listen(fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port))
 }

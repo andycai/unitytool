@@ -1,0 +1,20 @@
+{
+    "serverlist":[
+        {
+            "server_id":"1",
+            "name":"test",
+            "server_status":"2",
+            "available":"1",
+            "mergeid":"0",
+            "online":"1598131330"
+        },
+        {
+            "server_id":"2",
+            "name":"test2",
+            "server_status":"1",
+            "available":"1",
+            "mergeid":"0",
+            "online":"1598131330"
+        }
+    ]
+}

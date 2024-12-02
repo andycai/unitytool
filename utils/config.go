@@ -5,9 +5,10 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig   `toml:"server"`
-	Database DatabaseConfig `toml:"database"`
-	FTP      FTPConfig      `toml:"ftp"`
+	Server    ServerConfig   `toml:"server"`
+	Database  DatabaseConfig `toml:"database"`
+	JSONPaths JSONPathConfig `toml:"json_paths"`
+	FTP       FTPConfig      `toml:"ftp"`
 }
 
 type ServerConfig struct {
@@ -35,6 +36,12 @@ type FTPConfig struct {
 	MaxLogSize int64  `toml:"max_log_size"`
 }
 
+type JSONPathConfig struct {
+	ServerList string `toml:"server_list"`
+	LastServer string `toml:"last_server"`
+	ServerInfo string `toml:"server_info"`
+}
+
 var config Config
 
 func LoadConfig(path string) error {
@@ -56,6 +63,10 @@ func GetDatabaseConfig() DatabaseConfig {
 
 func GetFTPConfig() FTPConfig {
 	return config.FTP
+}
+
+func GetJSONPathConfig() JSONPathConfig {
+	return config.JSONPaths
 }
 
 func UpdateServerConfig(newConfig ServerConfig) {

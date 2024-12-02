@@ -1,0 +1,14 @@
+{
+    "pfid": 1001,
+    "pfname": "PF001001",
+    "child": 10001,
+    "adKey": "1001",
+    "entryURL": "http://191.168.1.100/100.json",
+    "cdnURL": "http://192.168.1.100/",
+    "cdnVersion": "101",
+    "loginAPI": "http://192.168.1.122",
+    "loginURL": "http://192.168.1.122/login",
+    "serverListURL": "http://192.168.1.122/serverlist",
+    "version": "123",
+    "time": "1"
+}

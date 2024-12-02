@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>服务器配置管理</title>
+    <script src="/js/alpine-3.14.1.js" defer></script>
+    <script src="/js/tailwind-3.4.5.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div x-data="serverConfig()" class="container mx-auto px-4 py-8">
+        <!-- 通知组件 -->
+        <div x-show="notification.show" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform -translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform -translate-y-2"
+             class="fixed top-4 right-4 z-50"
+             x-cloak>
+            <div :class="{
+                'bg-green-500': notification.type === 'success',
+                'bg-red-500': notification.type === 'error'
+            }" class="rounded-lg shadow-lg p-4 text-white">
+                <p x-text="notification.message"></p>
+            </div>
+        </div>
+
+        <!-- 标签页导航 -->
+        <div class="mb-4 border-b border-gray-200">
+            <nav class="flex space-x-4" aria-label="Tabs">
+                <button 
+                    @click="currentTab = 'serverList'"
+                    :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'serverList',
+                            'text-gray-500 hover:text-gray-700': currentTab !== 'serverList'}"
+                    class="py-2 px-4">
+                    服务器列表
+                </button>
+                <button 
+                    @click="currentTab = 'lastServer'"
+                    :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'lastServer',
+                            'text-gray-500 hover:text-gray-700': currentTab !== 'lastServer'}"
+                    class="py-2 px-4">
+                    最后登录服务器
+                </button>
+                <button 
+                    @click="currentTab = 'serverInfo'"
+                    :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'serverInfo',
+                            'text-gray-500 hover:text-gray-700': currentTab !== 'serverInfo'}"
+                    class="py-2 px-4">
+                    服务器信息
+                </button>
+            </nav>
+        </div>
+
+        <!-- 服务器列表 -->
+        <div x-show="currentTab === 'serverList'" x-cloak>
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">服务器列表</h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-6 gap-4 mb-2 font-semibold text-gray-700">
+                        <div>服务器ID</div>
+                        <div>服务器名称</div>
+                        <div>服务器状态</div>
+                        <div>可用状态</div>
+                        <div>合并ID</div>
+                        <div>在线时间</div>
+                    </div>
+                    <template x-for="(server, index) in serverList.serverlist" :key="index">
+                        <div class="grid grid-cols-6 gap-4 items-center">
+                            <input type="text" x-model="server.server_id" placeholder="服务器ID" 
+                                   class="border rounded px-3 py-2">
+                            <input type="text" x-model="server.name" placeholder="服务器名称" 
+                                   class="border rounded px-3 py-2">
+                            <input type="text" x-model="server.server_status" placeholder="服务器状态" 
+                                   class="border rounded px-3 py-2">
+                            <input type="text" x-model="server.available" placeholder="可用状态" 
+                                   class="border rounded px-3 py-2">
+                            <input type="text" x-model="server.mergeid" placeholder="合并ID" 
+                                   class="border rounded px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <input type="text" x-model="server.online" placeholder="在线时间" 
+                                       class="border rounded px-3 py-2 flex-1">
+                                <button @click="removeServer(index)" 
+                                        class="text-red-500 hover:text-red-700 p-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <div class="flex space-x-4">
+                        <button @click="addServer" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            添加服务器
+                        </button>
+                        <button @click="saveServerList" 
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                            保存更改
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最后登录服务器 -->
+        <div x-show="currentTab === 'lastServer'" x-cloak>
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">最后登录服务器</h2>
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">默认服务器</h3>
+                        <div class="grid grid-cols-3 gap-4 mb-2 font-semibold text-gray-700">
+                            <div>服务器ID</div>
+                            <div>服务器名称</div>
+                            <div>服务器状态</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <input type="text" x-model="lastServer.lastserver.deafult_server.server_id" 
+                                   placeholder="服务器ID" class="border rounded px-3 py-2">
+                            <input type="text" x-model="lastServer.lastserver.deafult_server.name" 
+                                   placeholder="服务器名称" class="border rounded px-3 py-2">
+                            <input type="text" x-model="lastServer.lastserver.deafult_server.server_status" 
+                                   placeholder="服务器状态" class="border rounded px-3 py-2">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">服务器列表</h3>
+                        <div class="grid grid-cols-3 gap-4 mb-2 font-semibold text-gray-700">
+                            <div>服务器ID</div>
+                            <div>服务器名称</div>
+                            <div>服务器状态</div>
+                        </div>
+                        <template x-for="(server, index) in lastServer.lastserver.list_server" :key="index">
+                            <div class="grid grid-cols-3 gap-4 mb-2">
+                                <input type="text" x-model="server.server_id" 
+                                       placeholder="服务器ID" class="border rounded px-3 py-2">
+                                <input type="text" x-model="server.name" 
+                                       placeholder="服务器名称" class="border rounded px-3 py-2">
+                                <div class="flex items-center gap-2">
+                                    <input type="text" x-model="server.server_status" 
+                                           placeholder="服务器状态" class="border rounded px-3 py-2 flex-1">
+                                    <button @click="removeLastServerItem(index)" 
+                                            class="text-red-500 hover:text-red-700 p-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                        <button @click="addLastServerItem" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2">
+                            添加服务器
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">参数</label>
+                            <input type="text" x-model="lastServer.params" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">SDK参数</label>
+                            <input type="text" x-model="lastServer.sdkParams" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                    </div>
+
+                    <button @click="saveLastServer" 
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        保存更改
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 服务器信息 -->
+        <div x-show="currentTab === 'serverInfo'" x-cloak>
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">服务器信息</h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">PFID</label>
+                            <input type="number" x-model="serverInfo.pfid" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">PF名称</label>
+                            <input type="text" x-model="serverInfo.pfname" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Child</label>
+                            <input type="number" x-model="serverInfo.child" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">广告Key</label>
+                            <input type="text" x-model="serverInfo.adKey" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">入口URL</label>
+                            <input type="text" x-model="serverInfo.entryURL" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">CDN URL</label>
+                            <input type="text" x-model="serverInfo.cdnURL" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">CDN版本</label>
+                            <input type="text" x-model="serverInfo.cdnVersion" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">登录API</label>
+                            <input type="text" x-model="serverInfo.loginAPI" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">登录URL</label>
+                            <input type="text" x-model="serverInfo.loginURL" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">服务器列表URL</label>
+                            <input type="text" x-model="serverInfo.serverListURL" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">版本</label>
+                            <input type="text" x-model="serverInfo.version" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">时间</label>
+                            <input type="text" x-model="serverInfo.time" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                    </div>
+
+                    <button @click="saveServerInfo" 
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        保存更改
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function serverConfig() {
+            return {
+                currentTab: 'serverList',
+                serverList: { 
+                    serverlist: [] 
+                },
+                lastServer: { 
+                    lastserver: {
+                        deafult_server: {
+                            server_id: '',
+                            name: '',
+                            server_status: ''
+                        },
+                        list_server: []
+                    },
+                    params: '',
+                    sdkParams: ''
+                },
+                serverInfo: {
+                    pfid: 0,
+                    pfname: '',
+                    child: 0,
+                    adKey: '',
+                    entryURL: '',
+                    cdnURL: '',
+                    cdnVersion: '',
+                    loginAPI: '',
+                    loginURL: '',
+                    serverListURL: '',
+                    version: '',
+                    time: ''
+                },
+                notification: {
+                    show: false,
+                    message: '',
+                    type: 'success',
+                    timeout: null
+                },
+
+                init() {
+                    this.loadServerList();
+                    this.loadLastServer();
+                    this.loadServerInfo();
+                },
+
+                showNotification(message, type = 'success') {
+                    if (this.notification.timeout) {
+                        clearTimeout(this.notification.timeout);
+                    }
+                    this.notification.message = message;
+                    this.notification.type = type;
+                    this.notification.show = true;
+                    this.notification.timeout = setTimeout(() => {
+                        this.notification.show = false;
+                    }, 3000);
+                },
+
+                async loadServerList() {
+                    try {
+                        const response = await fetch('/api/serverlist');
+                        if (!response.ok) throw new Error('加载失败');
+                        this.serverList = await response.json();
+                    } catch (error) {
+                        console.error('加载服务器列表失败:', error);
+                        this.showNotification('加载服务器列表失败', 'error');
+                    }
+                },
+
+                async loadLastServer() {
+                    try {
+                        const response = await fetch('/api/lastserver');
+                        if (!response.ok) throw new Error('加载失败');
+                        this.lastServer = await response.json();
+                    } catch (error) {
+                        console.error('加载最后登录服务器失败:', error);
+                        this.showNotification('加载最后登录服务器失败', 'error');
+                    }
+                },
+
+                async loadServerInfo() {
+                    try {
+                        const response = await fetch('/api/serverinfo');
+                        if (!response.ok) throw new Error('加载失败');
+                        this.serverInfo = await response.json();
+                    } catch (error) {
+                        console.error('加载服务器信息失败:', error);
+                        this.showNotification('加载服务器信息失败', 'error');
+                    }
+                },
+
+                addServer() {
+                    this.serverList.serverlist.push({
+                        server_id: '',
+                        name: '',
+                        server_status: '',
+                        available: '1',
+                        mergeid: '0',
+                        online: String(Math.floor(Date.now() / 1000))
+                    });
+                },
+
+                removeServer(index) {
+                    this.serverList.serverlist.splice(index, 1);
+                },
+
+                addLastServerItem() {
+                    this.lastServer.lastserver.list_server.push({
+                        server_id: '',
+                        name: '',
+                        server_status: ''
+                    });
+                },
+
+                removeLastServerItem(index) {
+                    this.lastServer.lastserver.list_server.splice(index, 1);
+                },
+
+                async saveServerList() {
+                    try {
+                        const response = await fetch('/api/serverlist', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.serverList),
+                        });
+                        if (!response.ok) throw new Error('保存失败');
+                        this.showNotification('服务器列表保存成功');
+                    } catch (error) {
+                        console.error('保存服务器列表失败:', error);
+                        this.showNotification('保存服务器列表失败', 'error');
+                    }
+                },
+
+                async saveLastServer() {
+                    try {
+                        const response = await fetch('/api/lastserver', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.lastServer),
+                        });
+                        if (!response.ok) throw new Error('保存失败');
+                        this.showNotification('最后登录服务器保存成功');
+                    } catch (error) {
+                        console.error('保存最后登录服务器失败:', error);
+                        this.showNotification('保存最后登录服务器失败', 'error');
+                    }
+                },
+
+                async saveServerInfo() {
+                    try {
+                        const response = await fetch('/api/serverinfo', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.serverInfo),
+                        });
+                        if (!response.ok) throw new Error('保存失败');
+                        this.showNotification('服务器信息保存成功');
+                    } catch (error) {
+                        console.error('保存服务器信息失败:', error);
+                        this.showNotification('保存服务器信息失败', 'error');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html> 
