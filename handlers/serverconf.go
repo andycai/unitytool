@@ -227,6 +227,11 @@ func UpdateNoticeNum(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
 	}
 
+	// 确保 eject 是 int 类型
+	if noticeNum.Eject < 0 {
+		return c.Status(400).JSON(fiber.Map{"error": "eject 必须是非负整数"})
+	}
+
 	if err := writeJSONFile(jsonPaths.NoticeNum, noticeNum); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}

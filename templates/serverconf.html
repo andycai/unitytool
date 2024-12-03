@@ -353,12 +353,12 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">数量</label>
-                        <input type="number" x-model="noticeNum.noticenum" 
+                        <input type="number" x-model.number="noticeNum.noticenum" 
                                class="mt-1 border rounded px-3 py-2 w-full">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">弹出</label>
-                        <input type="number" x-model="noticeNum.eject" 
+                        <input type="number" x-model.number="noticeNum.eject" 
                                class="mt-1 border rounded px-3 py-2 w-full">
                     </div>
                     <button @click="saveNoticeNum" 
