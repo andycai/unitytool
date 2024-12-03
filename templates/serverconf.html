@@ -343,7 +343,7 @@
                     <div class="grid grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">PFID</label>
-                            <input type="number" x-model="serverInfo.pfid" 
+                            <input type="number" x-model.number="serverInfo.pfid" 
                                    class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                         <div>
@@ -353,7 +353,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Child</label>
-                            <input type="number" x-model="serverInfo.child" 
+                            <input type="number" x-model.number="serverInfo.child" 
                                    class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                         <div>
@@ -516,12 +516,12 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">公告数量</label>
-                            <input type="text" x-model="noticeNum.noticenum" 
+                            <input type="number" x-model.number="noticeNum.noticenum" 
                                    class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">弹出设置</label>
-                            <input type="text" x-model="noticeNum.eject" 
+                            <input type="number" x-model.number="noticeNum.eject" 
                                    class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                     </div>
