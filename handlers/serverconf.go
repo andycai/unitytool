@@ -34,8 +34,8 @@ type LastServer struct {
 }
 
 type LastServerInfo struct {
-	DefaultServer ServerInfo   `json:"deafult_server"`
-	ListServer    []ServerInfo `json:"list_server"`
+	DefaultServer ServerInfo   `json:"default_server"`
+	LastServer    []ServerInfo `json:"last_server"`
 }
 
 type ServerInfo struct {

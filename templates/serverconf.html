@@ -226,23 +226,23 @@
                             <tbody>
                                 <tr class="border-t border-gray-200">
                                     <td class="px-2 py-2">
-                                        <input type="text" x-model="lastServer.lastserver.deafult_server.server_id" 
+                                        <input type="text" x-model="lastServer.lastserver.default_server.server_id" 
                                                placeholder="ID" class="w-20 border rounded px-2 py-1 text-sm">
                                     </td>
                                     <td class="px-2 py-2">
-                                        <input type="text" x-model="lastServer.lastserver.deafult_server.name" 
+                                        <input type="text" x-model="lastServer.lastserver.default_server.name" 
                                                placeholder="名称" class="w-24 border rounded px-2 py-1 text-sm">
                                     </td>
                                     <td class="px-2 py-2">
-                                        <input type="text" x-model="lastServer.lastserver.deafult_server.server_status" 
+                                        <input type="text" x-model="lastServer.lastserver.default_server.server_status" 
                                                placeholder="状态" class="w-16 border rounded px-2 py-1 text-sm">
                                     </td>
                                     <td class="px-2 py-2">
-                                        <input type="text" x-model="lastServer.lastserver.deafult_server.server_port" 
+                                        <input type="text" x-model="lastServer.lastserver.default_server.server_port" 
                                                placeholder="端口" class="w-20 border rounded px-2 py-1 text-sm">
                                     </td>
                                     <td class="px-2 py-2">
-                                        <input type="text" x-model="lastServer.lastserver.deafult_server.server_ip" 
+                                        <input type="text" x-model="lastServer.lastserver.default_server.server_ip" 
                                                placeholder="IP" class="w-28 border rounded px-2 py-1 text-sm">
                                     </td>
                                 </tr>
@@ -267,7 +267,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <template x-for="(server, index) in lastServer.lastserver.list_server" :key="index">
+                                <template x-for="(server, index) in lastServer.lastserver.last_server" :key="index">
                                     <tr class="border-t border-gray-200 hover:bg-gray-50">
                                         <td class="px-2 py-2">
                                             <input type="text" x-model="server.server_id" 
@@ -547,14 +547,14 @@
                 },
                 lastServer: { 
                     lastserver: {
-                        deafult_server: {
+                        default_server: {
                             server_id: '',
                             name: '',
                             server_status: '',
                             server_port: '',
                             server_ip: ''
                         },
-                        list_server: []
+                        last_server: []
                     },
                     params: '',
                     sdkParams: ''
@@ -683,7 +683,7 @@
                 },
 
                 addLastServerItem() {
-                    this.lastServer.lastserver.list_server.push({
+                    this.lastServer.lastserver.last_server.push({
                         server_id: '',
                         name: '',
                         server_status: '',
@@ -693,7 +693,7 @@
                 },
 
                 removeLastServerItem(index) {
-                    this.lastServer.lastserver.list_server.splice(index, 1);
+                    this.lastServer.lastserver.last_server.splice(index, 1);
                 },
 
                 addNotice() {
