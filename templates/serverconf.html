@@ -156,84 +156,126 @@
         <div x-show="currentTab === 'lastServer'" x-cloak>
             <div class="bg-white shadow rounded-lg p-6">
                 <h2 class="text-xl font-bold mb-4">最后登录服务器</h2>
-                <div class="space-y-6">
+                
+                <!-- 默认服务器 -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3">默认服务器</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">ID</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">名称</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">状态</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">端口</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">IP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-t border-gray-200">
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="lastServer.lastserver.deafult_server.server_id" 
+                                               placeholder="ID" class="w-20 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="lastServer.lastserver.deafult_server.name" 
+                                               placeholder="名称" class="w-24 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="lastServer.lastserver.deafult_server.server_status" 
+                                               placeholder="状态" class="w-16 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="lastServer.lastserver.deafult_server.server_port" 
+                                               placeholder="端口" class="w-20 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="lastServer.lastserver.deafult_server.server_ip" 
+                                               placeholder="IP" class="w-28 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 服务器列表 -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3">服器列表</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">ID</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">名称</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">状态</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">端口</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">IP</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(server, index) in lastServer.lastserver.list_server" :key="index">
+                                    <tr class="border-t border-gray-200 hover:bg-gray-50">
+                                        <td class="px-2 py-2">
+                                            <input type="text" x-model="server.server_id" 
+                                                   placeholder="ID" class="w-20 border rounded px-2 py-1 text-sm">
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="text" x-model="server.name" 
+                                                   placeholder="名称" class="w-24 border rounded px-2 py-1 text-sm">
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="text" x-model="server.server_status" 
+                                                   placeholder="状态" class="w-16 border rounded px-2 py-1 text-sm">
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="text" x-model="server.server_port" 
+                                                   placeholder="端口" class="w-20 border rounded px-2 py-1 text-sm">
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="text" x-model="server.server_ip" 
+                                                   placeholder="IP" class="w-28 border rounded px-2 py-1 text-sm">
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <button @click="removeLastServerItem(index)" 
+                                                    class="text-red-500 hover:text-red-700 p-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                    </path>
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 参数设置 -->
+                <div class="space-y-4 mb-6">
                     <div>
-                        <h3 class="text-lg font-semibold mb-2">默认服务器</h3>
-                        <div class="grid grid-cols-5 gap-4 mb-2 font-semibold text-gray-700">
-                            <div>服务器ID</div>
-                            <div>服务器名称</div>
-                            <div>服务器状态</div>
-                            <div>服务器端口</div>
-                            <div>服务器IP</div>
-                        </div>
-                        <div class="grid grid-cols-5 gap-4">
-                            <input type="text" x-model="lastServer.lastserver.deafult_server.server_id" 
-                                   placeholder="服务器ID" class="border rounded px-3 py-2">
-                            <input type="text" x-model="lastServer.lastserver.deafult_server.name" 
-                                   placeholder="服务器名称" class="border rounded px-3 py-2">
-                            <input type="text" x-model="lastServer.lastserver.deafult_server.server_status" 
-                                   placeholder="服务器状态" class="border rounded px-3 py-2">
-                            <input type="text" x-model="lastServer.lastserver.deafult_server.server_port" 
-                                   placeholder="服务器端口" class="border rounded px-3 py-2">
-                            <input type="text" x-model="lastServer.lastserver.deafult_server.server_ip" 
-                                   placeholder="服务器IP" class="border rounded px-3 py-2">
-                        </div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">参数</label>
+                        <input type="text" x-model="lastServer.params" 
+                               class="w-full border rounded px-3 py-2 text-sm">
                     </div>
-
                     <div>
-                        <h3 class="text-lg font-semibold mb-2">服务器列表</h3>
-                        <div class="grid grid-cols-5 gap-4 mb-2 font-semibold text-gray-700">
-                            <div>服务器ID</div>
-                            <div>服务器名称</div>
-                            <div>服务器状态</div>
-                            <div>服务器端口</div>
-                            <div>服务器IP</div>
-                        </div>
-                        <template x-for="(server, index) in lastServer.lastserver.list_server" :key="index">
-                            <div class="grid grid-cols-5 gap-4 mb-2">
-                                <input type="text" x-model="server.server_id" 
-                                       placeholder="服务器ID" class="border rounded px-3 py-2">
-                                <input type="text" x-model="server.name" 
-                                       placeholder="服务器名称" class="border rounded px-3 py-2">
-                                <input type="text" x-model="server.server_status" 
-                                       placeholder="服务器状态" class="border rounded px-3 py-2">
-                                <input type="text" x-model="server.server_port" 
-                                       placeholder="服务器端口" class="border rounded px-3 py-2">
-                                <div class="flex items-center gap-2">
-                                    <input type="text" x-model="server.server_ip" 
-                                           placeholder="服务器IP" class="border rounded px-3 py-2 flex-1">
-                                    <button @click="removeLastServerItem(index)" 
-                                            class="text-red-500 hover:text-red-700 p-2">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </template>
-                        <button @click="addLastServerItem" 
-                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2">
-                            添加服务器
-                        </button>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">SDK参数</label>
+                        <input type="text" x-model="lastServer.sdkParams" 
+                               class="w-full border rounded px-3 py-2 text-sm">
                     </div>
+                </div>
 
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">参数</label>
-                            <input type="text" x-model="lastServer.params" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">SDK参数</label>
-                            <input type="text" x-model="lastServer.sdkParams" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                    </div>
-
+                <!-- 操作按钮 -->
+                <div class="flex space-x-4">
+                    <button @click="addLastServerItem" 
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">
+                        添加服务器
+                    </button>
                     <button @click="saveLastServer" 
-                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm">
                         保存更改
                     </button>
                 </div>
@@ -245,101 +287,115 @@
             <div class="bg-white shadow rounded-lg p-6">
                 <h2 class="text-xl font-bold mb-4">服务器信息</h2>
                 <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
+                    <!-- 基本信息 -->
+                    <div class="grid grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">PFID</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">PFID</label>
                             <input type="number" x-model="serverInfo.pfid" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
+                                   class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">PF名称</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">PF名称</label>
                             <input type="text" x-model="serverInfo.pfname" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
+                                   class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Child</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Child</label>
                             <input type="number" x-model="serverInfo.child" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
+                                   class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">广告Key</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">广告Key</label>
                             <input type="text" x-model="serverInfo.adKey" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
+                                   class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                     </div>
 
-                    <div class="space-y-4">
+                    <!-- URL配置 -->
+                    <div class="grid grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">入口URL</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">入口URL</label>
                             <input type="text" x-model="serverInfo.entryURL" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
+                                   class="w-full border rounded px-3 py-2 text-sm font-mono">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">CDN URL</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">CDN URL</label>
                             <input type="text" x-model="serverInfo.cdnURL" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
+                                   class="w-full border rounded px-3 py-2 text-sm font-mono">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">CDN版本</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">CDN版本</label>
                             <input type="text" x-model="serverInfo.cdnVersion" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
+                                   class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">登录API</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">登录API</label>
                             <input type="text" x-model="serverInfo.loginAPI" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">登录URL</label>
-                            <input type="text" x-model="serverInfo.loginURL" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">服务器列表URL</label>
-                            <input type="text" x-model="serverInfo.serverListURL" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">版本</label>
-                            <input type="text" x-model="serverInfo.version" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">时间</label>
-                            <input type="text" x-model="serverInfo.time" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">服务器区域URL</label>
-                            <input type="text" x-model="serverInfo.serverZoneURL" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">最后登录服务器列表URL</label>
-                            <input type="text" x-model="serverInfo.lastServerListURL" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">公告数量URL</label>
-                            <input type="text" x-model="serverInfo.noticeNumURL" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">公告URL</label>
-                            <input type="text" x-model="serverInfo.noticeURL" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">包版本</label>
-                            <input type="text" x-model="serverInfo.pkgVersion" 
-                                   class="mt-1 border rounded px-3 py-2 w-full">
+                                   class="w-full border rounded px-3 py-2 text-sm font-mono">
                         </div>
                     </div>
 
-                    <button @click="saveServerInfo" 
-                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                        保存更改
-                    </button>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">登录URL</label>
+                            <input type="text" x-model="serverInfo.loginURL" 
+                                   class="w-full border rounded px-3 py-2 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">服务器列表URL</label>
+                            <input type="text" x-model="serverInfo.serverListURL" 
+                                   class="w-full border rounded px-3 py-2 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">服务器区域URL</label>
+                            <input type="text" x-model="serverInfo.serverZoneURL" 
+                                   class="w-full border rounded px-3 py-2 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">最后登录服务器URL</label>
+                            <input type="text" x-model="serverInfo.lastServerListURL" 
+                                   class="w-full border rounded px-3 py-2 text-sm font-mono">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">公告数量URL</label>
+                            <input type="text" x-model="serverInfo.noticeNumURL" 
+                                   class="w-full border rounded px-3 py-2 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">公告URL</label>
+                            <input type="text" x-model="serverInfo.noticeURL" 
+                                   class="w-full border rounded px-3 py-2 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">版本</label>
+                            <input type="text" x-model="serverInfo.version" 
+                                   class="w-full border rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">包版本</label>
+                            <input type="text" x-model="serverInfo.pkgVersion" 
+                                   class="w-full border rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">时间</label>
+                            <input type="text" x-model="serverInfo.time" 
+                                   class="w-full border rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- 保存按钮 -->
+                    <div class="flex justify-end pt-4">
+                        <button @click="saveServerInfo" 
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm">
+                            保存更改
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -349,37 +405,50 @@
             <div class="bg-white shadow rounded-lg p-6">
                 <h2 class="text-xl font-bold mb-4">公告列表</h2>
                 <div class="space-y-4">
-                    <!-- 表头 -->
-                    <div class="grid grid-cols-2 gap-4 mb-2 font-semibold text-gray-700">
-                        <div>标题</div>
-                        <div>内容</div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700 w-1/3">标题</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700 w-2/3">内容</th>
+                                    <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700 w-16">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(notice, index) in noticeList" :key="index">
+                                    <tr class="border-t border-gray-200 hover:bg-gray-50">
+                                        <td class="px-2 py-2">
+                                            <input type="text" x-model="notice.title" placeholder="标题" 
+                                                   class="w-full border rounded px-2 py-1 text-sm">
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <textarea x-model="notice.content" placeholder="内容" 
+                                                    class="w-full border rounded px-2 py-1 text-sm resize-none h-20"></textarea>
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <button @click="removeNotice(index)" 
+                                                    class="text-red-500 hover:text-red-700 p-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                    </path>
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
                     </div>
-                    <!-- 公告列表 -->
-                    <template x-for="(notice, index) in noticeList" :key="index">
-                        <div class="grid grid-cols-2 gap-4 items-center">
-                            <input type="text" x-model="notice.title" placeholder="标题" 
-                                   class="border rounded px-3 py-2">
-                            <div class="flex items-center gap-2">
-                                <textarea x-model="notice.content" placeholder="内容" 
-                                        class="border rounded px-3 py-2 h-20 flex-1"></textarea>
-                                <button @click="removeNotice(index)" 
-                                        class="text-red-500 hover:text-red-700 p-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                        </path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </template>
-                    <div class="flex space-x-4">
+
+                    <!-- 操作按钮 -->
+                    <div class="flex space-x-4 pt-4">
                         <button @click="addNotice" 
-                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">
                             添加公告
                         </button>
                         <button @click="saveNoticeList" 
-                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm">
                             保存更改
                         </button>
                     </div>
@@ -391,21 +460,27 @@
         <div x-show="currentTab === 'noticeNum'" x-cloak>
             <div class="bg-white shadow rounded-lg p-6">
                 <h2 class="text-xl font-bold mb-4">公告数量</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">数量</label>
-                        <input type="number" x-model.number="noticeNum.noticenum" 
-                               class="mt-1 border rounded px-3 py-2 w-full">
+                <div class="max-w-xl space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">公告数量</label>
+                            <input type="text" x-model="noticeNum.noticenum" 
+                                   class="w-full border rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">弹出设置</label>
+                            <input type="text" x-model="noticeNum.eject" 
+                                   class="w-full border rounded px-3 py-2 text-sm">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">弹出</label>
-                        <input type="number" x-model.number="noticeNum.eject" 
-                               class="mt-1 border rounded px-3 py-2 w-full">
+
+                    <!-- 保存按钮 -->
+                    <div class="flex justify-end pt-4">
+                        <button @click="saveNoticeNum" 
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm">
+                            保存更改
+                        </button>
                     </div>
-                    <button @click="saveNoticeNum" 
-                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                        保存更改
-                    </button>
                 </div>
             </div>
         </div>
