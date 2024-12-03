@@ -31,42 +31,94 @@
 
         <!-- 标签页导航 -->
         <div class="mb-4 border-b border-gray-200">
-            <nav class="flex space-x-4" aria-label="Tabs">
-                <button 
-                    @click="currentTab = 'serverList'"
-                    :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'serverList',
-                            'text-gray-500 hover:text-gray-700': currentTab !== 'serverList'}"
-                    class="py-2 px-4">
-                    服务器列表
-                </button>
-                <button 
-                    @click="currentTab = 'lastServer'"
-                    :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'lastServer',
-                            'text-gray-500 hover:text-gray-700': currentTab !== 'lastServer'}"
-                    class="py-2 px-4">
-                    最后登录服务器
-                </button>
-                <button 
-                    @click="currentTab = 'serverInfo'"
-                    :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'serverInfo',
-                            'text-gray-500 hover:text-gray-700': currentTab !== 'serverInfo'}"
-                    class="py-2 px-4">
-                    服务器信息
-                </button>
-                <button 
-                    @click="currentTab = 'noticeList'"
-                    :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'noticeList',
-                            'text-gray-500 hover:text-gray-700': currentTab !== 'noticeList'}"
-                    class="py-2 px-4">
-                    公告列表
-                </button>
-                <button 
-                    @click="currentTab = 'noticeNum'"
-                    :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'noticeNum',
-                            'text-gray-500 hover:text-gray-700': currentTab !== 'noticeNum'}"
-                    class="py-2 px-4">
-                    公告数量
-                </button>
+            <nav class="flex items-center justify-between" aria-label="Tabs">
+                <div class="flex space-x-4">
+                    <!-- 原有的标签按钮 -->
+                    <div class="flex items-center">
+                        <button 
+                            @click="currentTab = 'serverList'"
+                            :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'serverList',
+                                    'text-gray-500 hover:text-gray-700': currentTab !== 'serverList'}"
+                            class="py-2 px-4">
+                            服务器列表
+                        </button>
+                        <a href="/api/serverlist" target="_blank" 
+                           class="ml-1 text-xs text-gray-500 hover:text-blue-500" title="查看API">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="flex items-center">
+                        <button 
+                            @click="currentTab = 'lastServer'"
+                            :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'lastServer',
+                                    'text-gray-500 hover:text-gray-700': currentTab !== 'lastServer'}"
+                            class="py-2 px-4">
+                            最后登录服务器
+                        </button>
+                        <a href="/api/lastserver" target="_blank" 
+                           class="ml-1 text-xs text-gray-500 hover:text-blue-500" title="查看API">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="flex items-center">
+                        <button 
+                            @click="currentTab = 'serverInfo'"
+                            :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'serverInfo',
+                                    'text-gray-500 hover:text-gray-700': currentTab !== 'serverInfo'}"
+                            class="py-2 px-4">
+                            服务器信息
+                        </button>
+                        <a href="/api/serverinfo" target="_blank" 
+                           class="ml-1 text-xs text-gray-500 hover:text-blue-500" title="查看API">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="flex items-center">
+                        <button 
+                            @click="currentTab = 'noticeList'"
+                            :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'noticeList',
+                                    'text-gray-500 hover:text-gray-700': currentTab !== 'noticeList'}"
+                            class="py-2 px-4">
+                            公告列表
+                        </button>
+                        <a href="/api/noticelist" target="_blank" 
+                           class="ml-1 text-xs text-gray-500 hover:text-blue-500" title="查看API">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="flex items-center">
+                        <button 
+                            @click="currentTab = 'noticeNum'"
+                            :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'noticeNum',
+                                    'text-gray-500 hover:text-gray-700': currentTab !== 'noticeNum'}"
+                            class="py-2 px-4">
+                            公告数量
+                        </button>
+                        <a href="/api/noticenum" target="_blank" 
+                           class="ml-1 text-xs text-gray-500 hover:text-blue-500" title="查看API">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
             </nav>
         </div>
 
