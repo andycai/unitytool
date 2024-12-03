@@ -74,51 +74,80 @@
         <div x-show="currentTab === 'serverList'" x-cloak>
             <div class="bg-white shadow rounded-lg p-6">
                 <h2 class="text-xl font-bold mb-4">服务器列表</h2>
-                <div class="space-y-4">
-                    <div class="grid grid-cols-6 gap-4 mb-2 font-semibold text-gray-700">
-                        <div>服务器ID</div>
-                        <div>服务器名称</div>
-                        <div>服务器状态</div>
-                        <div>可用状态</div>
-                        <div>合并ID</div>
-                        <div>在线时间</div>
-                    </div>
-                    <template x-for="(server, index) in serverList.serverlist" :key="index">
-                        <div class="grid grid-cols-6 gap-4 items-center">
-                            <input type="text" x-model="server.server_id" placeholder="服务器ID" 
-                                   class="border rounded px-3 py-2">
-                            <input type="text" x-model="server.name" placeholder="服务器名称" 
-                                   class="border rounded px-3 py-2">
-                            <input type="text" x-model="server.server_status" placeholder="服务器状态" 
-                                   class="border rounded px-3 py-2">
-                            <input type="text" x-model="server.available" placeholder="可用状态" 
-                                   class="border rounded px-3 py-2">
-                            <input type="text" x-model="server.mergeid" placeholder="合并ID" 
-                                   class="border rounded px-3 py-2">
-                            <div class="flex items-center gap-2">
-                                <input type="text" x-model="server.online" placeholder="在线时间" 
-                                       class="border rounded px-3 py-2 flex-1">
-                                <button @click="removeServer(index)" 
-                                        class="text-red-500 hover:text-red-700 p-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                        </path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </template>
-                    <div class="flex space-x-4">
-                        <button @click="addServer" 
-                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            添加服务器
-                        </button>
-                        <button @click="saveServerList" 
-                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                            保存更改
-                        </button>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">ID</th>
+                                <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">名称</th>
+                                <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">状态</th>
+                                <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">可用</th>
+                                <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">合并ID</th>
+                                <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">在线时间</th>
+                                <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">端口</th>
+                                <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">IP</th>
+                                <th class="px-3 py-2 text-left text-sm font-semibold text-gray-700">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="(server, index) in serverList.serverlist" :key="index">
+                                <tr class="border-t border-gray-200 hover:bg-gray-50">
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="server.server_id" placeholder="ID" 
+                                               class="w-20 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="server.name" placeholder="名称" 
+                                               class="w-24 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="server.server_status" placeholder="状态" 
+                                               class="w-16 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="server.available" placeholder="可用" 
+                                               class="w-16 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="server.mergeid" placeholder="合并ID" 
+                                               class="w-16 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="server.online" placeholder="在线时间" 
+                                               class="w-28 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="server.server_port" placeholder="端口" 
+                                               class="w-20 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="text" x-model="server.server_ip" placeholder="IP" 
+                                               class="w-28 border rounded px-2 py-1 text-sm">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <button @click="removeServer(index)" 
+                                                class="text-red-500 hover:text-red-700 p-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex space-x-4 mt-4">
+                    <button @click="addServer" 
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">
+                        添加服务器
+                    </button>
+                    <button @click="saveServerList" 
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm">
+                        保存更改
+                    </button>
                 </div>
             </div>
         </div>
@@ -130,37 +159,49 @@
                 <div class="space-y-6">
                     <div>
                         <h3 class="text-lg font-semibold mb-2">默认服务器</h3>
-                        <div class="grid grid-cols-3 gap-4 mb-2 font-semibold text-gray-700">
+                        <div class="grid grid-cols-5 gap-4 mb-2 font-semibold text-gray-700">
                             <div>服务器ID</div>
                             <div>服务器名称</div>
                             <div>服务器状态</div>
+                            <div>服务器端口</div>
+                            <div>服务器IP</div>
                         </div>
-                        <div class="grid grid-cols-3 gap-4">
+                        <div class="grid grid-cols-5 gap-4">
                             <input type="text" x-model="lastServer.lastserver.deafult_server.server_id" 
                                    placeholder="服务器ID" class="border rounded px-3 py-2">
                             <input type="text" x-model="lastServer.lastserver.deafult_server.name" 
                                    placeholder="服务器名称" class="border rounded px-3 py-2">
                             <input type="text" x-model="lastServer.lastserver.deafult_server.server_status" 
                                    placeholder="服务器状态" class="border rounded px-3 py-2">
+                            <input type="text" x-model="lastServer.lastserver.deafult_server.server_port" 
+                                   placeholder="服务器端口" class="border rounded px-3 py-2">
+                            <input type="text" x-model="lastServer.lastserver.deafult_server.server_ip" 
+                                   placeholder="服务器IP" class="border rounded px-3 py-2">
                         </div>
                     </div>
 
                     <div>
                         <h3 class="text-lg font-semibold mb-2">服务器列表</h3>
-                        <div class="grid grid-cols-3 gap-4 mb-2 font-semibold text-gray-700">
+                        <div class="grid grid-cols-5 gap-4 mb-2 font-semibold text-gray-700">
                             <div>服务器ID</div>
                             <div>服务器名称</div>
                             <div>服务器状态</div>
+                            <div>服务器端口</div>
+                            <div>服务器IP</div>
                         </div>
                         <template x-for="(server, index) in lastServer.lastserver.list_server" :key="index">
-                            <div class="grid grid-cols-3 gap-4 mb-2">
+                            <div class="grid grid-cols-5 gap-4 mb-2">
                                 <input type="text" x-model="server.server_id" 
                                        placeholder="服务器ID" class="border rounded px-3 py-2">
                                 <input type="text" x-model="server.name" 
                                        placeholder="服务器名称" class="border rounded px-3 py-2">
+                                <input type="text" x-model="server.server_status" 
+                                       placeholder="服务器状态" class="border rounded px-3 py-2">
+                                <input type="text" x-model="server.server_port" 
+                                       placeholder="服务器端口" class="border rounded px-3 py-2">
                                 <div class="flex items-center gap-2">
-                                    <input type="text" x-model="server.server_status" 
-                                           placeholder="服务器状态" class="border rounded px-3 py-2 flex-1">
+                                    <input type="text" x-model="server.server_ip" 
+                                           placeholder="服务器IP" class="border rounded px-3 py-2 flex-1">
                                     <button @click="removeLastServerItem(index)" 
                                             class="text-red-500 hover:text-red-700 p-2">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -382,7 +423,9 @@
                         deafult_server: {
                             server_id: '',
                             name: '',
-                            server_status: ''
+                            server_status: '',
+                            server_port: '',
+                            server_ip: ''
                         },
                         list_server: []
                     },
@@ -502,7 +545,9 @@
                         server_status: '',
                         available: '1',
                         mergeid: '0',
-                        online: String(Math.floor(Date.now() / 1000))
+                        online: String(Math.floor(Date.now() / 1000)),
+                        server_port: '',
+                        server_ip: ''
                     });
                 },
 
@@ -514,7 +559,9 @@
                     this.lastServer.lastserver.list_server.push({
                         server_id: '',
                         name: '',
-                        server_status: ''
+                        server_status: '',
+                        server_port: '',
+                        server_ip: ''
                     });
                 },
 

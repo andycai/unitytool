@@ -22,6 +22,8 @@ type ServerListItem struct {
 	Available    string `json:"available"`
 	MergeID      string `json:"mergeid"`
 	Online       string `json:"online"`
+	ServerPort   string `json:"server_port"`
+	ServerIP     string `json:"server_ip"`
 }
 
 // LastServer 结构体
@@ -40,6 +42,8 @@ type ServerInfo struct {
 	ServerID     string `json:"server_id"`
 	Name         string `json:"name"`
 	ServerStatus string `json:"server_status"`
+	ServerPort   string `json:"server_port"`
+	ServerIP     string `json:"server_ip"`
 }
 
 // ServerInfo 结构体
