@@ -1,7 +1,7 @@
 [server]
 host = "0.0.0.0"
 port = 3000
-output = "output"
+output = "../publish/output"
 script_path = "sh"
 static_path = "./public"
 user_data_path = "./user_data.bin"
@@ -27,11 +27,11 @@ server_info = "db/serverinfo.json"
 [ftp]
 host = "192.168.200.20"
 port = "21"
-user = "123456"
-password = "000000"
-# apk_path = "/DQ1/out"
-# zip_path = "/DQ1/CLIENT_DQ1_DQDQ_CN"
+user = "TestDQ"
+password = "135ajdq"
+# apk_path = "/DQ1-c/out"
+# zip_path = "/DQ1-cS/CLIENT_DQ1_DQDQ_CN"
 apk_path = "/-=共享你想共享的=-/dqtemp"
-zip_path = "/-=共享你想共享的=-/dqtemp"
+zip_path = "/PublisherDQ2"
 log_dir = "output/logs/ftp"
 max_log_size = 20971520

@@ -12,6 +12,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jlaffaye/ftp"
+	"mind.com/log/utils"
 )
 
 // FileInfo 存储文件信息的结构体
@@ -125,8 +126,14 @@ func uploadToFTP(localPath string, fileType string) error {
 	}
 	defer conn.Quit()
 
+	username, password, err := utils.ReadFromBinaryFile(utils.GetServerConfig().UserDataPath)
+	if err != nil {
+		writeUploadLog(localPath, fileType, false, fmt.Sprintf("读取用户数据失败: %v", err))
+		return fmt.Errorf("读取用户数据失败: %v", err)
+	}
+
 	// 登录
-	if err := conn.Login(ftpConfig.User, ftpConfig.Password); err != nil {
+	if err := conn.Login(username, password); err != nil {
 		writeUploadLog(localPath, fileType, false, fmt.Sprintf("FTP登录失败: %v", err))
 		return fmt.Errorf("FTP登录失败: %v", err)
 	}
@@ -278,18 +285,18 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 	})
 
 	// 处理显示路径
-	displayPath := path
-	if displayPath == outputPath {
+	displayPath := filepath.ToSlash(path)
+	if displayPath == filepath.ToSlash(outputPath) {
 		displayPath = "."
 	} else {
-		displayPath = strings.TrimPrefix(strings.TrimPrefix(displayPath, outputPath), "/")
+		displayPath = strings.TrimPrefix(strings.TrimPrefix(displayPath, filepath.ToSlash(outputPath)), "/")
 		if displayPath == "" {
 			displayPath = "."
 		}
 	}
 
 	// 处理父目录路径
-	parentPath := filepath.Dir(displayPath)
+	parentPath := filepath.ToSlash(filepath.Dir(displayPath))
 	if parentPath == "." || parentPath == displayPath {
 		parentPath = "."
 	}
@@ -370,6 +377,7 @@ func formatSize(size int64) string {
 }
 
 func trimPrefix(path string) string {
+	// 统一使用斜杠作为分隔符
 	path = filepath.ToSlash(path)
 	prefix := filepath.ToSlash(outputPath) + "/"
 	trimmed := strings.TrimPrefix(path, prefix)
@@ -412,8 +420,14 @@ func generateBreadcrumbs(path string) []BreadcrumbPath {
 		return []BreadcrumbPath{}
 	}
 
+	// 统一使用斜杠作为分隔符
+	path = filepath.ToSlash(path)
+	outputPathSlash := filepath.ToSlash(outputPath)
+
 	// 移除 outputPath 前缀
-	path = strings.TrimPrefix(strings.TrimPrefix(path, outputPath), "/")
+	path = strings.TrimPrefix(path, outputPathSlash)
+	path = strings.TrimPrefix(path, "/")
+
 	if path == "" {
 		return []BreadcrumbPath{}
 	}
@@ -422,9 +436,11 @@ func generateBreadcrumbs(path string) []BreadcrumbPath {
 	breadcrumbs := make([]BreadcrumbPath, len(parts))
 
 	for i := 0; i < len(parts); i++ {
+		// 构建相对路径时也使用斜杠
+		relativePath := strings.Join(parts[:i+1], "/")
 		breadcrumbs[i] = BreadcrumbPath{
 			Name: parts[i],
-			Path: url.QueryEscape(strings.Join(parts[:i+1], "/")),
+			Path: url.QueryEscape(relativePath),
 		}
 	}
 
