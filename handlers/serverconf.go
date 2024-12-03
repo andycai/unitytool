@@ -44,18 +44,37 @@ type ServerInfo struct {
 
 // ServerInfo 结构体
 type ServerInfoConfig struct {
-	PFID          int    `json:"pfid"`
-	PFName        string `json:"pfname"`
-	Child         int    `json:"child"`
-	AdKey         string `json:"adKey"`
-	EntryURL      string `json:"entryURL"`
-	CDNURL        string `json:"cdnURL"`
-	CDNVersion    string `json:"cdnVersion"`
-	LoginAPI      string `json:"loginAPI"`
-	LoginURL      string `json:"loginURL"`
-	ServerListURL string `json:"serverListURL"`
-	Version       string `json:"version"`
-	Time          string `json:"time"`
+	PFID              int    `json:"pfid"`
+	PFName            string `json:"pfname"`
+	Child             int    `json:"child"`
+	AdKey             string `json:"adKey"`
+	EntryURL          string `json:"entryURL"`
+	CDNURL            string `json:"cdnURL"`
+	CDNVersion        string `json:"cdnVersion"`
+	LoginAPI          string `json:"loginAPI"`
+	LoginURL          string `json:"loginURL"`
+	ServerListURL     string `json:"serverListURL"`
+	Version           string `json:"version"`
+	Time              string `json:"time"`
+	ServerZoneURL     string `json:"serverZoneURL"`
+	LastServerListURL string `json:"lastServerListURL"`
+	NoticeNumURL      string `json:"noticeNumURL"`
+	NoticeURL         string `json:"noticeURL"`
+	PkgVersion        string `json:"pkgVersion"`
+}
+
+// 修改公告列表相关结构
+type NoticeList []NoticeItem // 改为切片类型
+
+type NoticeItem struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
+// 添加公告数量相关结构
+type NoticeNum struct {
+	NoticeNum int `json:"noticenum"`
+	Eject     int `json:"eject"`
 }
 
 // 添加在文件开头的包级变量部分
@@ -163,6 +182,52 @@ func UpdateServerInfo(c *fiber.Ctx) error {
 	}
 
 	if err := writeJSONFile(jsonPaths.ServerInfo, serverInfo); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"message": "更新成功"})
+}
+
+// 获取公告列表
+func GetNoticeList(c *fiber.Ctx) error {
+	var noticeList NoticeList
+	if err := readJSONFile(jsonPaths.NoticeList, &noticeList); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(noticeList)
+}
+
+// 更新公告列表
+func UpdateNoticeList(c *fiber.Ctx) error {
+	var noticeList NoticeList
+	if err := c.BodyParser(&noticeList); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
+	}
+
+	if err := writeJSONFile(jsonPaths.NoticeList, noticeList); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"message": "更新成功"})
+}
+
+// 获取公告数量
+func GetNoticeNum(c *fiber.Ctx) error {
+	var noticeNum NoticeNum
+	if err := readJSONFile(jsonPaths.NoticeNum, &noticeNum); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(noticeNum)
+}
+
+// 更新公告数量
+func UpdateNoticeNum(c *fiber.Ctx) error {
+	var noticeNum NoticeNum
+	if err := c.BodyParser(&noticeNum); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
+	}
+
+	if err := writeJSONFile(jsonPaths.NoticeNum, noticeNum); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 

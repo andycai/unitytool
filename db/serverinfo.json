@@ -9,6 +9,11 @@
     "loginAPI": "http://192.168.1.122",
     "loginURL": "http://192.168.1.122/login",
     "serverListURL": "http://192.168.1.122/serverlist",
+    "serverZoneURL": "http://192.168.1.122/serverlist",
+    "lastServerListURL": "http://192.168.1.122/serverlist",
+    "noticeNumURL": "http://192.168.1.122/serverlist",
+    "noticeURL": "http://192.168.1.122/serverlist",
     "version": "123",
+    "pkgVersion": "123",
     "time": "1"
 }

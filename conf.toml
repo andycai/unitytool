@@ -23,6 +23,8 @@ dsn = "db/logs.db"
 server_list = "db/serverlist.json"
 last_server = "db/lastserver.json"
 server_info = "db/serverinfo.json"
+notice_list = "db/noticelist.json"
+notice_num = "db/noticenum.json"
 
 [ftp]
 host = "192.168.200.20"

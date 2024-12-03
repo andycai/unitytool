@@ -37,4 +37,12 @@ func (m *ServerConfModule) RegisterRoutes(app *fiber.App) {
 
 	app.Get("/api/serverinfo", handlers.GetServerInfo)
 	app.Post("/api/serverinfo", handlers.UpdateServerInfo)
+
+	// 添加公告列表路由
+	app.Get("/api/noticelist", handlers.GetNoticeList)
+	app.Post("/api/noticelist", handlers.UpdateNoticeList)
+
+	// 添加公告数量路由
+	app.Get("/api/noticenum", handlers.GetNoticeNum)
+	app.Post("/api/noticenum", handlers.UpdateNoticeNum)
 }

@@ -43,6 +43,8 @@ type JSONPathConfig struct {
 	ServerList string `toml:"server_list"`
 	LastServer string `toml:"last_server"`
 	ServerInfo string `toml:"server_info"`
+	NoticeList string `toml:"notice_list"`
+	NoticeNum  string `toml:"notice_num"`
 }
 
 type ModulesConfig struct {

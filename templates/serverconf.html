@@ -53,6 +53,20 @@
                     class="py-2 px-4">
                     服务器信息
                 </button>
+                <button 
+                    @click="currentTab = 'noticeList'"
+                    :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'noticeList',
+                            'text-gray-500 hover:text-gray-700': currentTab !== 'noticeList'}"
+                    class="py-2 px-4">
+                    公告列表
+                </button>
+                <button 
+                    @click="currentTab = 'noticeNum'"
+                    :class="{'text-blue-600 border-b-2 border-blue-600': currentTab === 'noticeNum',
+                            'text-gray-500 hover:text-gray-700': currentTab !== 'noticeNum'}"
+                    class="py-2 px-4">
+                    公告数量
+                </button>
             </nav>
         </div>
 
@@ -254,9 +268,100 @@
                             <input type="text" x-model="serverInfo.time" 
                                    class="mt-1 border rounded px-3 py-2 w-full">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">服务器区域URL</label>
+                            <input type="text" x-model="serverInfo.serverZoneURL" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">最后登录服务器列表URL</label>
+                            <input type="text" x-model="serverInfo.lastServerListURL" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">公告数量URL</label>
+                            <input type="text" x-model="serverInfo.noticeNumURL" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">公告URL</label>
+                            <input type="text" x-model="serverInfo.noticeURL" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">包版本</label>
+                            <input type="text" x-model="serverInfo.pkgVersion" 
+                                   class="mt-1 border rounded px-3 py-2 w-full">
+                        </div>
                     </div>
 
                     <button @click="saveServerInfo" 
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        保存更改
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 公告列表 -->
+        <div x-show="currentTab === 'noticeList'" x-cloak>
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">公告列表</h2>
+                <div class="space-y-4">
+                    <!-- 表头 -->
+                    <div class="grid grid-cols-2 gap-4 mb-2 font-semibold text-gray-700">
+                        <div>标题</div>
+                        <div>内容</div>
+                    </div>
+                    <!-- 公告列表 -->
+                    <template x-for="(notice, index) in noticeList" :key="index">
+                        <div class="grid grid-cols-2 gap-4 items-center">
+                            <input type="text" x-model="notice.title" placeholder="标题" 
+                                   class="border rounded px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <textarea x-model="notice.content" placeholder="内容" 
+                                        class="border rounded px-3 py-2 h-20 flex-1"></textarea>
+                                <button @click="removeNotice(index)" 
+                                        class="text-red-500 hover:text-red-700 p-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <div class="flex space-x-4">
+                        <button @click="addNotice" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            添加公告
+                        </button>
+                        <button @click="saveNoticeList" 
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                            保存更改
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 公告数量 -->
+        <div x-show="currentTab === 'noticeNum'" x-cloak>
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">公告数量</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">数量</label>
+                        <input type="number" x-model="noticeNum.noticenum" 
+                               class="mt-1 border rounded px-3 py-2 w-full">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">弹出</label>
+                        <input type="number" x-model="noticeNum.eject" 
+                               class="mt-1 border rounded px-3 py-2 w-full">
+                    </div>
+                    <button @click="saveNoticeNum" 
                             class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                         保存更改
                     </button>
@@ -296,7 +401,12 @@
                     loginURL: '',
                     serverListURL: '',
                     version: '',
-                    time: ''
+                    time: '',
+                    serverZoneURL: '',
+                    lastServerListURL: '',
+                    noticeNumURL: '',
+                    noticeURL: '',
+                    pkgVersion: ''
                 },
                 notification: {
                     show: false,
@@ -304,11 +414,18 @@
                     type: 'success',
                     timeout: null
                 },
+                noticeList: [],
+                noticeNum: {
+                    noticenum: 0,
+                    eject: 0
+                },
 
                 init() {
                     this.loadServerList();
                     this.loadLastServer();
                     this.loadServerInfo();
+                    this.loadNoticeList();
+                    this.loadNoticeNum();
                 },
 
                 showNotification(message, type = 'success') {
@@ -356,6 +473,28 @@
                     }
                 },
 
+                async loadNoticeList() {
+                    try {
+                        const response = await fetch('/api/noticelist');
+                        if (!response.ok) throw new Error('加载失败');
+                        this.noticeList = await response.json();
+                    } catch (error) {
+                        console.error('加载公告列表失败:', error);
+                        this.showNotification('加载公告列表失败', 'error');
+                    }
+                },
+
+                async loadNoticeNum() {
+                    try {
+                        const response = await fetch('/api/noticenum');
+                        if (!response.ok) throw new Error('加载失败');
+                        this.noticeNum = await response.json();
+                    } catch (error) {
+                        console.error('加载公告数量失败:', error);
+                        this.showNotification('加载公告数量失败', 'error');
+                    }
+                },
+
                 addServer() {
                     this.serverList.serverlist.push({
                         server_id: '',
@@ -381,6 +520,17 @@
 
                 removeLastServerItem(index) {
                     this.lastServer.lastserver.list_server.splice(index, 1);
+                },
+
+                addNotice() {
+                    this.noticeList.push({
+                        title: '',
+                        content: ''
+                    });
+                },
+
+                removeNotice(index) {
+                    this.noticeList.splice(index, 1);
                 },
 
                 async saveServerList() {
@@ -431,6 +581,40 @@
                     } catch (error) {
                         console.error('保存服务器信息失败:', error);
                         this.showNotification('保存服务器信息失败', 'error');
+                    }
+                },
+
+                async saveNoticeList() {
+                    try {
+                        const response = await fetch('/api/noticelist', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.noticeList),
+                        });
+                        if (!response.ok) throw new Error('保存失败');
+                        this.showNotification('公告列表保存成功');
+                    } catch (error) {
+                        console.error('保存公告列表失败:', error);
+                        this.showNotification('保存公告列表失败', 'error');
+                    }
+                },
+
+                async saveNoticeNum() {
+                    try {
+                        const response = await fetch('/api/noticenum', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.noticeNum),
+                        });
+                        if (!response.ok) throw new Error('保存失败');
+                        this.showNotification('公告数量保存成功');
+                    } catch (error) {
+                        console.error('保存公告数量失败:', error);
+                        this.showNotification('保存公告数量失败', 'error');
                     }
                 }
             }
