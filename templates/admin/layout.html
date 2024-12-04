@@ -43,9 +43,27 @@
     <style>
         [x-cloak] { display: none !important; }
         * {
-            transition-property: color, background-color, border-color;
+            transition-property: color, background-color, border-color, transform, opacity;
             transition-duration: 200ms;
             transition-timing-function: ease-in-out;
+        }
+        .page-enter {
+            opacity: 0;
+            transform: translateY(1rem);
+        }
+        .page-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 300ms ease-out, transform 300ms ease-out;
+        }
+        .menu-item-enter {
+            opacity: 0;
+            transform: translateX(-1rem);
+        }
+        .menu-item-enter-active {
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 300ms ease-out, transform 300ms ease-out;
         }
     </style>
 </head>
@@ -56,68 +74,130 @@
     <div class="flex">
         <!-- 左侧菜单 -->
         <div :class="{'w-56': !collapsed, 'w-16': collapsed}" 
-             class="transition-all duration-300 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+             class="transition-all duration-300 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-screen sticky top-0">
             <!-- 顶部Logo -->
             <div class="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
-                <span x-show="!collapsed" class="text-lg font-bold text-gray-900 dark:text-white">管理后台</span>
+                <div class="flex items-center">
+                    <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span x-show="!collapsed" class="ml-2 text-lg font-bold text-gray-900 dark:text-white">管理后台</span>
+                </div>
                 <button @click="toggleCollapse()" 
-                        class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
-                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path x-show="!collapsed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                        <path x-show="collapsed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                        class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-600">
+                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+                         :class="{'rotate-180': collapsed}"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
                     </svg>
                 </button>
             </div>
 
-            <!-- 菜单 -->
-            <nav class="mt-4">
+            <!-- 菜单项 -->
+            <nav class="flex-1 overflow-y-auto py-4">
                 <template x-for="(item, index) in menuItems" :key="index">
                     <a :href="item.path" 
                        :class="{'px-4': !collapsed, 'px-5': collapsed}"
-                       class="nav-item flex items-center py-2.5 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
-                       :class="{'active': currentPath === item.path}">
+                       class="flex items-center py-3 text-sm transition-all duration-200 relative group"
+                       :class="{
+                           'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50': currentPath !== item.path,
+                           'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20': currentPath === item.path
+                       }">
+                        <!-- 激活指示器 -->
+                        <div :class="{'opacity-100': currentPath === item.path, 'opacity-0 group-hover:opacity-100': currentPath !== item.path}"
+                             class="absolute left-0 top-0 bottom-0 w-0.5 bg-blue-600 dark:bg-blue-400 transition-opacity duration-200">
+                        </div>
                         <div class="flex items-center">
-                            <div x-html="item.icon" class="text-gray-500 dark:text-gray-400"></div>
+                            <div x-html="item.icon" 
+                                 :class="{
+                                     'text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white': currentPath !== item.path,
+                                     'text-blue-600 dark:text-blue-400': currentPath === item.path
+                                 }">
+                            </div>
                             <span x-show="!collapsed" 
-                                  class="ml-3 whitespace-nowrap"
+                                  class="ml-3 whitespace-nowrap transition-colors duration-200"
+                                  :class="{
+                                      'group-hover:text-gray-900 dark:group-hover:text-white': currentPath !== item.path
+                                  }"
                                   x-text="item.name">
                             </span>
                         </div>
                     </a>
                 </template>
             </nav>
+
+            <!-- 底部信息 -->
+            <div class="border-t border-gray-200 dark:border-gray-700 p-4">
+                <div x-show="!collapsed" class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                            <span class="text-sm font-medium text-blue-600 dark:text-blue-400" x-text="user.nickname?.charAt(0) || 'U'"></span>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="user.nickname"></p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="user.username"></p>
+                        </div>
+                    </div>
+                </div>
+                <div x-show="collapsed" class="flex justify-center">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                        <span class="text-sm font-medium text-blue-600 dark:text-blue-400" x-text="user.nickname?.charAt(0) || 'U'"></span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 主要内容区域 -->
         <div class="flex-1 flex flex-col">
             <!-- 顶部导航栏 -->
-            <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-6">
+            <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-6 shadow-sm">
                 <h1 class="text-xl font-semibold text-gray-800 dark:text-white">{{ .Title }}</h1>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-6">
                     <!-- 主题切换开关 -->
                     <div class="flex items-center">
                         <button @click="toggleTheme()" 
-                                class="relative inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                                :class="{'bg-gray-200 dark:bg-gray-700': theme === 'light', 'bg-blue-600': theme === 'dark'}">
-                            <svg x-show="theme === 'light'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                            </svg>
-                            <svg x-show="theme === 'dark'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
-                            </svg>
+                                class="relative inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300"
+                                :class="{
+                                    'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': theme === 'light',
+                                    'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600': theme === 'dark'
+                                }">
+                            <div class="relative w-5 h-5">
+                                <svg x-show="theme === 'light'" 
+                                     x-transition:enter="transition-transform duration-300"
+                                     x-transition:enter-start="rotate-180 scale-0"
+                                     x-transition:enter-end="rotate-0 scale-100"
+                                     x-transition:leave="transition-transform duration-300"
+                                     x-transition:leave-start="rotate-0 scale-100"
+                                     x-transition:leave-end="rotate-180 scale-0"
+                                     class="absolute inset-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                </svg>
+                                <svg x-show="theme === 'dark'"
+                                     x-transition:enter="transition-transform duration-300"
+                                     x-transition:enter-start="-rotate-180 scale-0"
+                                     x-transition:enter-end="rotate-0 scale-100"
+                                     x-transition:leave="transition-transform duration-300"
+                                     x-transition:leave-start="rotate-0 scale-100"
+                                     x-transition:leave-end="-rotate-180 scale-0"
+                                     class="absolute inset-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+                                </svg>
+                            </div>
                             <span class="ml-2" x-text="theme === 'dark' ? '暗色' : '浅色'"></span>
                         </button>
                     </div>
-                    <span class="text-sm text-gray-600 dark:text-gray-400" x-text="user.nickname"></span>
-                    <button @click="logout" 
-                            class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium">
-                        退出登录
-                    </button>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600 dark:text-gray-400" x-text="user.nickname"></span>
+                        <button @click="logout" 
+                                class="text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200">
+                            退出登录
+                        </button>
+                    </div>
                 </div>
             </header>
 
             <!-- 页面内容 -->
-            <main class="flex-1 p-6 overflow-auto bg-gray-50 dark:bg-gray-900">
+            <main class="flex-1 p-6 overflow-auto bg-gray-50 dark:bg-gray-900 page-enter-active">
                 <!-- 通知组件 -->
                 <div x-show="notification.show" 
                      x-transition:enter="transition ease-out duration-300"
@@ -126,12 +206,18 @@
                      x-transition:leave="transition ease-in duration-300"
                      x-transition:leave-start="opacity-100 transform translate-y-0"
                      x-transition:leave-end="opacity-0 transform -translate-y-2"
-                     class="fixed top-4 right-4 z-50"
+                     class="fixed top-4 right-4 z-50 flex items-center"
                      x-cloak>
                     <div :class="{
                         'bg-red-500 dark:bg-red-600': notification.type === 'error',
                         'bg-green-500 dark:bg-green-600': notification.type === 'success'
-                    }" class="rounded-lg shadow-lg p-4 text-white">
+                    }" class="rounded-lg shadow-lg p-4 text-white flex items-center">
+                        <svg x-show="notification.type === 'success'" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <svg x-show="notification.type === 'error'" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                         <p x-text="notification.message"></p>
                     </div>
                 </div>
