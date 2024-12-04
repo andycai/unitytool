@@ -20,6 +20,7 @@ ftp = true        # FTP上传模块
 serverconf = true # 服务器配置模块
 cmd = true        # 命令模块
 pack = true       # 打包模块
+auth = true       # 认证模块
 
 [database]
 driver = "sqlite"
@@ -43,3 +44,7 @@ apk_path = "/-=共享你想共享的=-/dqtemp"
 zip_path = "/PublisherDQ2"
 log_dir = "output/logs/ftp"
 max_log_size = 20971520
+
+[auth]
+jwt_secret = "your-secret-key-here"
+token_expire = 86400                # 24小时

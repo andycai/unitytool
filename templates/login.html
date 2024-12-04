@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <script src="/js/alpine-3.14.1.js" defer></script>
+    <script src="/js/tailwind-3.4.5.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div x-data="loginForm()" class="min-h-screen flex items-center justify-center">
+        <div class="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+            <!-- 通知组件 -->
+            <div x-show="notification.show" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform -translate-y-2"
+                 x-transition:enter-end="opacity-100 transform translate-y-0"
+                 x-transition:leave="transition ease-in duration-300"
+                 x-transition:leave-start="opacity-100 transform translate-y-0"
+                 x-transition:leave-end="opacity-0 transform -translate-y-2"
+                 class="fixed top-4 right-4 z-50"
+                 x-cloak>
+                <div :class="{
+                    'bg-red-500': notification.type === 'error',
+                    'bg-green-500': notification.type === 'success'
+                }" class="rounded-lg shadow-lg p-4 text-white">
+                    <p x-text="notification.message"></p>
+                </div>
+            </div>
+
+            <!-- 登录表单 -->
+            <div>
+                <h2 class="text-center text-3xl font-extrabold text-gray-900">
+                    登录系统
+                </h2>
+            </div>
+            <form class="mt-8 space-y-6" @submit.prevent="login">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="username" class="sr-only">用户名</label>
+                        <input id="username" 
+                               name="username" 
+                               type="text" 
+                               x-model="form.username"
+                               required 
+                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                               placeholder="用户名">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">密码</label>
+                        <input id="password" 
+                               name="password" 
+                               type="password" 
+                               x-model="form.password"
+                               required 
+                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                               placeholder="密码">
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" 
+                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <svg class="h-5 w-5 text-blue-500 group-hover:text-blue-400" 
+                                 xmlns="http://www.w3.org/2000/svg" 
+                                 viewBox="0 0 20 20" 
+                                 fill="currentColor" 
+                                 aria-hidden="true">
+                                <path fill-rule="evenodd" 
+                                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" 
+                                      clip-rule="evenodd" />
+                            </svg>
+                        </span>
+                        登录
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function loginForm() {
+            return {
+                form: {
+                    username: '',
+                    password: ''
+                },
+                notification: {
+                    show: false,
+                    message: '',
+                    type: 'error',
+                    timeout: null
+                },
+                showNotification(message, type = 'error') {
+                    if (this.notification.timeout) {
+                        clearTimeout(this.notification.timeout);
+                    }
+                    this.notification.message = message;
+                    this.notification.type = type;
+                    this.notification.show = true;
+                    this.notification.timeout = setTimeout(() => {
+                        this.notification.show = false;
+                    }, 3000);
+                },
+                async login() {
+                    try {
+                        const response = await fetch('/api/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.form),
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(data.error || '登录失败');
+                        }
+
+                        // 保存 token 和用户信息
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+
+                        // 登录成功后跳转
+                        window.location.href = '/';
+                    } catch (error) {
+                        this.showNotification(error.message);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

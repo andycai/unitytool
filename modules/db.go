@@ -34,6 +34,11 @@ func InitDatabase() (*gorm.DB, error) {
 		return nil, fmt.Errorf("不支持的数据库驱动: %s", dbConfig.Driver)
 	}
 
+	// 初始化数据库表和基础数据
+	if err := utils.InitDatabase(db); err != nil {
+		return nil, fmt.Errorf("数据库迁移失败: %v", err)
+	}
+
 	// 自动迁移数据库表
 	if err := db.AutoMigrate(&models.Log{}, &models.StatsRecord{}, &models.StatsInfo{}); err != nil {
 		return nil, fmt.Errorf("数据库迁移失败: %v", err)

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/template/html/v2"
 	"mind.com/log/modules"
 	"mind.com/log/utils"
 )
@@ -21,8 +22,13 @@ func main() {
 		log.Fatalf("数据库初始化失败: %v", err)
 	}
 
-	// 创建 Fiber 应用
-	app := fiber.New()
+	// 初始化模板引擎
+	engine := html.New("./templates", ".html")
+
+	// 创建 Fiber 应用，并配置模板引擎
+	app := fiber.New(fiber.Config{
+		Views: engine,
+	})
 
 	// 注册静态路由
 	serverConfig := utils.GetServerConfig()
@@ -78,6 +84,12 @@ func main() {
 			BaseModule: modules.BaseModule{
 				DB:     db,
 				Config: utils.GetModuleConfig("pack"),
+			},
+		},
+		&modules.AuthModule{
+			BaseModule: modules.BaseModule{
+				DB:     db,
+				Config: utils.GetModuleConfig("auth"),
 			},
 		},
 	}

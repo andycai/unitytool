@@ -12,6 +12,7 @@ type Config struct {
 	Database  DatabaseConfig `toml:"database"`
 	JSONPaths JSONPathConfig `toml:"json_paths"`
 	FTP       FTPConfig      `toml:"ftp"`
+	Auth      AuthConfig     `toml:"auth"`
 }
 
 type ServerConfig struct {
@@ -57,11 +58,17 @@ type ModulesConfig struct {
 	ServerConf bool `toml:"serverconf"`
 	Cmd        bool `toml:"cmd"`
 	Pack       bool `toml:"pack"`
+	Auth       bool `toml:"auth"`
 }
 
 type StaticPathConfig struct {
 	Route string `toml:"route"`
 	Path  string `toml:"path"`
+}
+
+type AuthConfig struct {
+	JWTSecret   string `toml:"jwt_secret"`
+	TokenExpire int    `toml:"token_expire"`
 }
 
 var config Config
@@ -176,6 +183,8 @@ func GetModuleConfig(name string) ModuleConfig {
 		return ModuleConfig{enabled: config.Modules.Cmd}
 	case "pack":
 		return ModuleConfig{enabled: config.Modules.Pack}
+	case "auth":
+		return ModuleConfig{enabled: config.Modules.Auth}
 	default:
 		return ModuleConfig{enabled: false}
 	}
