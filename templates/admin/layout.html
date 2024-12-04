@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>管理后台 - {{ .Title }}</title>
-    <script src="/js/alpine-3.14.1.js" defer></script>
-    <script src="/js/tailwind-3.4.5.js"></script>
+    <script src="/static/js/alpine-3.14.1.js" defer></script>
+    <script src="/static/js/tailwind-3.4.5.js"></script>
     <style>
         [x-cloak] { display: none !important; }
     </style>
@@ -120,6 +120,7 @@
                         try {
                             const response = await originalFetch(resource, config);
                             if (response.status === 401) {
+                                console.error('Token validation failed:', await response.text());
                                 localStorage.removeItem('token');
                                 localStorage.removeItem('user');
                                 window.location.href = '/login';
@@ -131,17 +132,6 @@
                             throw error;
                         }
                     };
-
-                    // 初始页面加载时验证 token
-                    fetch(window.location.pathname, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    }).catch(() => {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        window.location.href = '/login';
-                    });
                 }
             }
         }

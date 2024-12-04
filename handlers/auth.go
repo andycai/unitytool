@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"mind.com/log/models"
@@ -38,13 +38,16 @@ func Login(c *fiber.Ctx, db *gorm.DB) error {
 	}
 
 	// 生成 JWT token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	claims := jwt.MapClaims{
+		"sub":      user.ID, // 使用标准声明
 		"user_id":  user.ID,
 		"username": user.Username,
 		"role_id":  user.RoleID,
 		"exp":      time.Now().Add(time.Duration(utils.GetConfig().Auth.TokenExpire) * time.Second).Unix(),
-	})
+		"iat":      time.Now().Unix(),
+	}
 
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(utils.GetConfig().Auth.JWTSecret))
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "生成token失败"})

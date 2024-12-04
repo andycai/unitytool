@@ -7,7 +7,7 @@ user_data_path = "./user_data.bin"
 
 # 静态路径配置改为数组
 static_paths = [
-    { route = "/", path = "./public" },
+    { route = "/static", path = "./public" },
     { route = "/cdn", path = "./cdn" },
     { route = "/cdn2", path = "./cdn2" },
 ]
