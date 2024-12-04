@@ -59,6 +59,16 @@ func Login(c *fiber.Ctx, db *gorm.DB) error {
 	// 清除密码字段
 	user.Password = ""
 
+	// 生成 token 后，设置 cookie
+	cookie := new(fiber.Cookie)
+	cookie.Name = "token"
+	cookie.Value = tokenString
+	cookie.Expires = time.Now().Add(time.Duration(utils.GetConfig().Auth.TokenExpire) * time.Second)
+	cookie.HTTPOnly = true
+	cookie.Secure = true // 如果是 HTTPS
+	cookie.Path = "/"
+	c.Cookie(cookie)
+
 	return c.JSON(fiber.Map{
 		"code":    0,
 		"message": "登录成功",

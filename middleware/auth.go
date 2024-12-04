@@ -14,8 +14,19 @@ import (
 // AuthMiddleware 认证中间件
 func AuthMiddleware(db *gorm.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// 获取 token
+		// 首先从请求头获取 token
 		authHeader := c.Get("Authorization")
+
+		// 如果请求头没有 token，尝试从 cookie 获取
+		if authHeader == "" {
+			if token := c.Cookies("token"); token != "" {
+				authHeader = "Bearer " + token
+				// 设置到请求头中，方便后续使用
+				c.Request().Header.Set("Authorization", authHeader)
+			}
+		}
+
+		// 如果还是没有 token
 		if authHeader == "" {
 			// 对于页面请求，重定向到登录页
 			if c.Method() == "GET" && !strings.HasPrefix(c.Path(), "/api/") {

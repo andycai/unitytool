@@ -111,11 +111,17 @@
                     window.fetch = async function(...args) {
                         let [resource, config = {}] = args;
                         
-                        // 确保 config.headers 存在
-                        config.headers = config.headers || {};
-                        
-                        // 为所有请求添加 token
-                        config.headers['Authorization'] = `Bearer ${token}`;
+                        // 确保 config 和 headers 存在
+                        config = { ...config };
+                        config.headers = {
+                            ...config.headers,
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        };
+
+                        // 调试信息
+                        console.log('Request headers:', config.headers);
                         
                         try {
                             const response = await originalFetch(resource, config);
@@ -132,6 +138,25 @@
                             throw error;
                         }
                     };
+
+                    // 初始验证请求
+                    fetch(window.location.pathname, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json',
+                        }
+                    }).then(response => {
+                        if (!response.ok) {
+                            throw new Error('Token validation failed');
+                        }
+                    }).catch(error => {
+                        console.error('Initial validation failed:', error);
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.href = '/login';
+                    });
                 }
             }
         }
