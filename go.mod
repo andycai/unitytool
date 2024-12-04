@@ -8,7 +8,6 @@ require (
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	golang.org/x/crypto v0.14.0
-	gorm.io/driver/sqlite v1.5.6
 )
 
 require (
@@ -20,7 +19,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	golang.org/x/text v0.14.0 // indirect
 	modernc.org/libc v1.22.5 // indirect

@@ -115,19 +115,24 @@
                             body: JSON.stringify(this.form),
                         });
 
-                        const data = await response.json();
+                        const result = await response.json();
 
-                        if (!response.ok) {
-                            throw new Error(data.error || '登录失败');
+                        if (!response.ok || result.code !== 0) {
+                            throw new Error(result.error || result.message || '登录失败');
                         }
 
                         // 保存 token 和用户信息
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('user', JSON.stringify(data.user));
+                        localStorage.setItem('token', result.data.token);
+                        localStorage.setItem('user', JSON.stringify(result.data.user));
 
-                        // 登录成功后跳转
-                        window.location.href = '/';
+                        // 登录成功，显示成功消息
+                        this.showNotification('登录成功', 'success');
+
+                        // 直接跳转到管理后台
+                        window.location.href = '/admin';
+
                     } catch (error) {
+                        console.error('Login error:', error);
                         this.showNotification(error.message);
                     }
                 }

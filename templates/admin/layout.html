@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>管理后台 - {{.Title}}</title>
+    <title>管理后台 - {{ .Title }}</title>
     <script src="/js/alpine-3.14.1.js" defer></script>
     <script src="/js/tailwind-3.4.5.js"></script>
     <style>
@@ -68,7 +68,7 @@
             </div>
 
             <!-- 页面内容 -->
-            {{.Content}}
+            {{ embed }}
         </main>
     </div>
 
@@ -100,14 +100,51 @@
                 },
                 init() {
                     // 检查登录状态
-                    if (!localStorage.getItem('token')) {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
                         window.location.href = '/login';
+                        return;
                     }
+
+                    // 添加全局请求拦截器
+                    const originalFetch = window.fetch;
+                    window.fetch = async function(...args) {
+                        let [resource, config = {}] = args;
+                        
+                        // 确保 config.headers 存在
+                        config.headers = config.headers || {};
+                        
+                        // 为所有请求添加 token
+                        config.headers['Authorization'] = `Bearer ${token}`;
+                        
+                        try {
+                            const response = await originalFetch(resource, config);
+                            if (response.status === 401) {
+                                localStorage.removeItem('token');
+                                localStorage.removeItem('user');
+                                window.location.href = '/login';
+                                return response;
+                            }
+                            return response;
+                        } catch (error) {
+                            console.error('Request failed:', error);
+                            throw error;
+                        }
+                    };
+
+                    // 初始页面加载时验证 token
+                    fetch(window.location.pathname, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }).catch(() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.href = '/login';
+                    });
                 }
             }
         }
     </script>
-    <!-- 页面特定的脚本 -->
-    {{.Scripts}}
 </body>
-</html> 
+</html>

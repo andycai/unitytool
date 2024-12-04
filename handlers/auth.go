@@ -38,7 +38,14 @@ func Login(c *fiber.Ctx, db *gorm.DB) error {
 	}
 
 	// 生成 JWT token
-	token, err := generateToken(user)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":  user.ID,
+		"username": user.Username,
+		"role_id":  user.RoleID,
+		"exp":      time.Now().Add(time.Duration(utils.GetConfig().Auth.TokenExpire) * time.Second).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(utils.GetConfig().Auth.JWTSecret))
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "生成token失败"})
 	}
@@ -46,9 +53,16 @@ func Login(c *fiber.Ctx, db *gorm.DB) error {
 	// 更新最后登录时间
 	db.Model(&user).Update("last_login", time.Now())
 
-	return c.JSON(LoginResponse{
-		Token: token,
-		User:  user,
+	// 清除密码字段
+	user.Password = ""
+
+	return c.JSON(fiber.Map{
+		"code":    0,
+		"message": "登录成功",
+		"data": fiber.Map{
+			"token": tokenString,
+			"user":  user,
+		},
 	})
 }
 

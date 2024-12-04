@@ -25,23 +25,30 @@ func (m *AuthModule) RegisterRoutes(app *fiber.App) {
 		return c.Render("login", fiber.Map{})
 	})
 
+	// 管理后台主页路由
+	app.Get("/admin", middleware.AuthMiddleware(m.DB), func(c *fiber.Ctx) error {
+		return c.Render("admin/index", fiber.Map{
+			"Title": "管理后台",
+		}, "admin/layout")
+	})
+
 	// 管理后台页面路由
 	app.Get("/admin/users", middleware.AuthMiddleware(m.DB), func(c *fiber.Ctx) error {
 		return c.Render("admin/users", fiber.Map{
 			"Title": "用户管理",
-		})
+		}, "admin/layout")
 	})
 
 	app.Get("/admin/roles", middleware.AuthMiddleware(m.DB), func(c *fiber.Ctx) error {
 		return c.Render("admin/roles", fiber.Map{
 			"Title": "角色管理",
-		})
+		}, "admin/layout")
 	})
 
 	app.Get("/admin/permissions", middleware.AuthMiddleware(m.DB), func(c *fiber.Ctx) error {
 		return c.Render("admin/permissions", fiber.Map{
 			"Title": "权限管理",
-		})
+		}, "admin/layout")
 	})
 
 	// API 路由
