@@ -21,9 +21,6 @@ func (m *BrowseModule) RegisterRoutes(app *fiber.App) {
 		return
 	}
 
-	// 静态文件服务
-	app.Static("/", m.ServerConfig.StaticPath)
-
 	// 文件浏览路由
 	app.Get("/browse/*", func(c *fiber.Ctx) error {
 		return handlers.HandleFileServer(c, m.ServerConfig.Output)

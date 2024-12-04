@@ -24,6 +24,12 @@ func main() {
 	// 创建 Fiber 应用
 	app := fiber.New()
 
+	// 注册静态路由
+	serverConfig := utils.GetServerConfig()
+	for _, staticPath := range serverConfig.StaticPaths {
+		app.Static(staticPath.Route, staticPath.Path)
+	}
+
 	// 初始化并注册模块
 	moduleList := []modules.Module{
 		&modules.LogsModule{
@@ -86,6 +92,5 @@ func main() {
 	}
 
 	// 启动服务器
-	serverConfig := utils.GetServerConfig()
 	app.Listen(fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port))
 }

@@ -15,12 +15,14 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host         string `toml:"host"`
-	Port         int    `toml:"port"`
-	Output       string `toml:"output"`
-	ScriptPath   string `toml:"script_path"`
-	StaticPath   string `toml:"static_path"`
-	UserDataPath string `toml:"user_data_path"`
+	Host         string             `toml:"host"`
+	Port         int                `toml:"port"`
+	Output       string             `toml:"output"`
+	ScriptPath   string             `toml:"script_path"`
+	StaticPaths  []StaticPathConfig `toml:"static_paths"`
+	UserDataPath string             `toml:"user_data_path"`
+	CDNPath      string             `toml:"cdn_path"`
+	CDN2Path     string             `toml:"cdn2_path"`
 }
 
 type DatabaseConfig struct {
@@ -55,6 +57,11 @@ type ModulesConfig struct {
 	ServerConf bool `toml:"serverconf"`
 	Cmd        bool `toml:"cmd"`
 	Pack       bool `toml:"pack"`
+}
+
+type StaticPathConfig struct {
+	Route string `toml:"route"`
+	Path  string `toml:"path"`
 }
 
 var config Config

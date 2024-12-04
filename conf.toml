@@ -3,8 +3,14 @@ host = "0.0.0.0"
 port = 3000
 output = "../publish/output"
 script_path = "sh"
-static_path = "./public"
 user_data_path = "./user_data.bin"
+
+# 静态路径配置改为数组
+static_paths = [
+    { route = "/", path = "./public" },
+    { route = "/cdn", path = "./cdn" },
+    { route = "/cdn2", path = "./cdn2" },
+]
 
 [modules]
 logs = true       # 日志模块
