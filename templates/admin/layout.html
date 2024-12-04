@@ -5,82 +5,191 @@
     <title>管理后台 - {{ .Title }}</title>
     <script src="/static/js/alpine-3.14.1.js" defer></script>
     <script src="/static/js/tailwind-3.4.5.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            50: '#F9FAFB',
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            300: '#D1D5DB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827',
+                        },
+                        blue: {
+                            50: '#EFF6FF',
+                            100: '#DBEAFE',
+                            200: '#BFDBFE',
+                            300: '#93C5FD',
+                            400: '#60A5FA',
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                            700: '#1D4ED8',
+                            800: '#1E40AF',
+                            900: '#1E3A8A',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         [x-cloak] { display: none !important; }
+        * {
+            transition-property: color, background-color, border-color;
+            transition-duration: 200ms;
+            transition-timing-function: ease-in-out;
+        }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div x-data="adminLayout()">
-        <!-- 顶部导航栏 -->
-        <nav class="bg-white shadow-md">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex">
-                        <div class="flex-shrink-0 flex items-center">
-                            <span class="text-xl font-bold">管理后台</span>
-                        </div>
-                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                            <a href="/admin/users" 
-                               class="border-b-2 border-transparent hover:border-blue-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                用户管理
-                            </a>
-                            <a href="/admin/roles" 
-                               class="border-b-2 border-transparent hover:border-blue-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                角色管理
-                            </a>
-                            <a href="/admin/permissions" 
-                               class="border-b-2 border-transparent hover:border-blue-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                权限管理
-                            </a>
-                        </div>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="flex items-center">
-                            <span class="text-sm text-gray-700 mr-4" x-text="user.nickname"></span>
-                            <button @click="logout" 
-                                    class="text-sm text-red-600 hover:text-red-800">
-                                退出登录
-                            </button>
-                        </div>
-                    </div>
-                </div>
+<body x-data="adminLayout()" 
+      x-init="init()"
+      :class="{'dark': theme === 'dark'}"
+      class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div class="flex">
+        <!-- 左侧菜单 -->
+        <div :class="{'w-56': !collapsed, 'w-16': collapsed}" 
+             class="transition-all duration-300 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+            <!-- 顶部Logo -->
+            <div class="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
+                <span x-show="!collapsed" class="text-lg font-bold text-gray-900 dark:text-white">管理后台</span>
+                <button @click="toggleCollapse()" 
+                        class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path x-show="!collapsed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                        <path x-show="collapsed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                </button>
             </div>
-        </nav>
+
+            <!-- 菜单 -->
+            <nav class="mt-4">
+                <template x-for="(item, index) in menuItems" :key="index">
+                    <a :href="item.path" 
+                       :class="{'px-4': !collapsed, 'px-5': collapsed}"
+                       class="nav-item flex items-center py-2.5 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
+                       :class="{'active': currentPath === item.path}">
+                        <div class="flex items-center">
+                            <div x-html="item.icon" class="text-gray-500 dark:text-gray-400"></div>
+                            <span x-show="!collapsed" 
+                                  class="ml-3 whitespace-nowrap"
+                                  x-text="item.name">
+                            </span>
+                        </div>
+                    </a>
+                </template>
+            </nav>
+        </div>
 
         <!-- 主要内容区域 -->
-        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <!-- 通知组件 -->
-            <div x-show="notification.show" 
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 transform -translate-y-2"
-                 x-transition:enter-end="opacity-100 transform translate-y-0"
-                 x-transition:leave="transition ease-in duration-300"
-                 x-transition:leave-start="opacity-100 transform translate-y-0"
-                 x-transition:leave-end="opacity-0 transform -translate-y-2"
-                 class="fixed top-4 right-4 z-50"
-                 x-cloak>
-                <div :class="{
-                    'bg-red-500': notification.type === 'error',
-                    'bg-green-500': notification.type === 'success'
-                }" class="rounded-lg shadow-lg p-4 text-white">
-                    <p x-text="notification.message"></p>
+        <div class="flex-1 flex flex-col">
+            <!-- 顶部导航栏 -->
+            <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-6">
+                <h1 class="text-xl font-semibold text-gray-800 dark:text-white">{{ .Title }}</h1>
+                <div class="flex items-center space-x-4">
+                    <!-- 主题切换开关 -->
+                    <div class="flex items-center">
+                        <button @click="toggleTheme()" 
+                                class="relative inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                                :class="{'bg-gray-200 dark:bg-gray-700': theme === 'light', 'bg-blue-600': theme === 'dark'}">
+                            <svg x-show="theme === 'light'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                            </svg>
+                            <svg x-show="theme === 'dark'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+                            </svg>
+                            <span class="ml-2" x-text="theme === 'dark' ? '暗色' : '浅色'"></span>
+                        </button>
+                    </div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400" x-text="user.nickname"></span>
+                    <button @click="logout" 
+                            class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium">
+                        退出登录
+                    </button>
                 </div>
-            </div>
+            </header>
 
             <!-- 页面内容 -->
-            {{ embed }}
-        </main>
+            <main class="flex-1 p-6 overflow-auto bg-gray-50 dark:bg-gray-900">
+                <!-- 通知组件 -->
+                <div x-show="notification.show" 
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform -translate-y-2"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     x-transition:leave="transition ease-in duration-300"
+                     x-transition:leave-start="opacity-100 transform translate-y-0"
+                     x-transition:leave-end="opacity-0 transform -translate-y-2"
+                     class="fixed top-4 right-4 z-50"
+                     x-cloak>
+                    <div :class="{
+                        'bg-red-500 dark:bg-red-600': notification.type === 'error',
+                        'bg-green-500 dark:bg-green-600': notification.type === 'success'
+                    }" class="rounded-lg shadow-lg p-4 text-white">
+                        <p x-text="notification.message"></p>
+                    </div>
+                </div>
+
+                <!-- 内容区域 -->
+                {{ embed }}
+            </main>
+        </div>
     </div>
 
     <script>
         function adminLayout() {
             return {
+                collapsed: localStorage.getItem('menuCollapsed') === 'true',
+                theme: localStorage.getItem('theme') || 'light',
+                currentPath: window.location.pathname,
+                menuItems: [
+                    {
+                        name: '首页',
+                        path: '/admin',
+                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>'
+                    },
+                    {
+                        name: '用户管理',
+                        path: '/admin/users',
+                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>'
+                    },
+                    {
+                        name: '角色管理',
+                        path: '/admin/roles',
+                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>'
+                    },
+                    {
+                        name: '权限管理',
+                        path: '/admin/permissions',
+                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>'
+                    }
+                ],
                 user: JSON.parse(localStorage.getItem('user') || '{}'),
                 notification: {
                     show: false,
                     message: '',
                     type: 'success',
                     timeout: null
+                },
+                toggleTheme() {
+                    this.theme = this.theme === 'light' ? 'dark' : 'light';
+                    localStorage.setItem('theme', this.theme);
+                    
+                    if (this.theme === 'dark') {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                },
+                toggleCollapse() {
+                    this.collapsed = !this.collapsed;
+                    localStorage.setItem('menuCollapsed', this.collapsed);
                 },
                 showNotification(message, type = 'success') {
                     if (this.notification.timeout) {
@@ -106,56 +215,28 @@
                         return;
                     }
 
-                    // 添加全局请求拦截器
-                    const originalFetch = window.fetch;
-                    window.fetch = async function(...args) {
-                        let [resource, config = {}] = args;
-                        
-                        // 确保 config 和 headers 存在
-                        config = { ...config };
-                        config.headers = {
-                            ...config.headers,
-                            'Authorization': `Bearer ${token}`,
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                        };
+                    // 设置初始主题
+                    if (this.theme === 'dark') {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
 
-                        // 调试信息
-                        console.log('Request headers:', config.headers);
-                        
-                        try {
-                            const response = await originalFetch(resource, config);
-                            if (response.status === 401) {
-                                console.error('Token validation failed:', await response.text());
-                                localStorage.removeItem('token');
-                                localStorage.removeItem('user');
-                                window.location.href = '/login';
-                                return response;
+                    // 监听主题变化
+                    window.addEventListener('theme-changed', (e) => {
+                        this.theme = e.detail;
+                    });
+
+                    // 监听存储变化
+                    window.addEventListener('storage', (e) => {
+                        if (e.key === 'theme') {
+                            this.theme = e.newValue || 'light';
+                            if (this.theme === 'dark') {
+                                document.documentElement.classList.add('dark');
+                            } else {
+                                document.documentElement.classList.remove('dark');
                             }
-                            return response;
-                        } catch (error) {
-                            console.error('Request failed:', error);
-                            throw error;
                         }
-                    };
-
-                    // 初始验证请求
-                    fetch(window.location.pathname, {
-                        method: 'GET',
-                        credentials: 'same-origin',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Accept': 'application/json',
-                        }
-                    }).then(response => {
-                        if (!response.ok) {
-                            throw new Error('Token validation failed');
-                        }
-                    }).catch(error => {
-                        console.error('Initial validation failed:', error);
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        window.location.href = '/login';
                     });
                 }
             }

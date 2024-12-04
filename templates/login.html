@@ -128,12 +128,15 @@
                         // 登录成功，显示成功消息
                         this.showNotification('登录成功', 'success');
 
+                        // 重定向 /damin
+                        window.location.href = '/admin';
+
                         // 使用表单提交方式跳转，这样会带上 cookie
-                        const form = document.createElement('form');
-                        form.method = 'GET';
-                        form.action = '/admin';
-                        document.body.appendChild(form);
-                        form.submit();
+                        // const form = document.createElement('form');
+                        // form.method = 'GET';
+                        // form.action = '/admin';
+                        // document.body.appendChild(form);
+                        // form.submit();
 
                     } catch (error) {
                         console.error('Login error:', error);
