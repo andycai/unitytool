@@ -834,9 +834,9 @@
                     if (path === this.currentPath) {
                         const prevTab = this.recentTabs[Math.max(0, index - 1)];
                         if (prevTab) {
-                            this.navigate(prevTab.path);
+                            window.location.href = prevTab.path;
                         } else {
-                            this.navigate('/admin');
+                            window.location.href = '/admin';
                         }
                     }
                 },
@@ -845,32 +845,6 @@
                     this.loading = true;
 
                     try {
-                        const response = await fetch(url, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        });
-                        if (!response.ok) throw new Error('加载失败');
-                        
-                        const html = await response.text();
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        
-                        // 更新内容区域
-                        const content = doc.querySelector('main');
-                        if (content) {
-                            document.querySelector('main').innerHTML = content.innerHTML;
-                        }
-                        
-                        // 更新标题
-                        const title = doc.querySelector('title');
-                        if (title) {
-                            document.title = title.textContent;
-                        }
-                        
-                        // 更新浏览器历史
-                        history.pushState({}, '', url);
-                        
                         // 更新当前路径
                         this.currentPath = url;
 
@@ -878,9 +852,43 @@
                         if (url !== '/admin') {
                             this.addTab(url);
                         }
+                        window.location.href = url;
+                        // const response = await fetch(url, {
+                        //     headers: {
+                        //         'X-Requested-With': 'XMLHttpRequest'
+                        //     }
+                        // });
+                        // if (!response.ok) throw new Error('加载失败');
                         
-                        // 滚动到顶部
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        // const html = await response.text();
+                        // const parser = new DOMParser();
+                        // const doc = parser.parseFromString(html, 'text/html');
+                        
+                        // // 更新内容区域
+                        // const content = doc.querySelector('main');
+                        // if (content) {
+                        //     document.querySelector('main').innerHTML = content.innerHTML;
+                        // }
+                        
+                        // // 更新标题
+                        // const title = doc.querySelector('title');
+                        // if (title) {
+                        //     document.title = title.textContent;
+                        // }
+                        
+                        // // 更新浏览器历史
+                        // history.pushState({}, '', url);
+                        
+                        // // 更新当前路径
+                        // this.currentPath = url;
+
+                        // // 添加到最近标签
+                        // if (url !== '/admin') {
+                        //     this.addTab(url);
+                        // }
+                        
+                        // // 滚动到顶部
+                        // window.scrollTo({ top: 0, behavior: 'smooth' });
                         
                     } catch (error) {
                         console.error('Navigation error:', error);
