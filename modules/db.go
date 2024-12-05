@@ -7,7 +7,6 @@ import (
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
-	"mind.com/log/models"
 	"mind.com/log/utils"
 )
 
@@ -36,12 +35,7 @@ func InitDatabase() (*gorm.DB, error) {
 
 	// 初始化数据库表和基础数据
 	if err := utils.InitDatabase(db); err != nil {
-		return nil, fmt.Errorf("数据库迁移失败: %v", err)
-	}
-
-	// 自动迁移数据库表
-	if err := db.AutoMigrate(&models.Log{}, &models.StatsRecord{}, &models.StatsInfo{}); err != nil {
-		return nil, fmt.Errorf("数据库迁移失败: %v", err)
+		return nil, fmt.Errorf("数据库初始化失败: %v", err)
 	}
 
 	return db, nil

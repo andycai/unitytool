@@ -24,25 +24,25 @@ func (m *ServerConfModule) RegisterRoutes(app *fiber.App) {
 	}
 
 	// 配置页面路由
-	app.Get("/serverconf", func(c *fiber.Ctx) error {
+	adminGroup.Get("/serverconf", func(c *fiber.Ctx) error {
 		return c.SendFile("templates/serverconf.html")
 	})
 
 	// API 路由
-	app.Get("/api/serverlist", handlers.GetServerList)
-	app.Post("/api/serverlist", handlers.UpdateServerList)
+	apiGroup.Get("/serverlist", handlers.GetServerList)
+	apiGroup.Post("/serverlist", handlers.UpdateServerList)
 
-	app.Get("/api/lastserver", handlers.GetLastServer)
-	app.Post("/api/lastserver", handlers.UpdateLastServer)
+	apiGroup.Get("/lastserver", handlers.GetLastServer)
+	apiGroup.Post("/lastserver", handlers.UpdateLastServer)
 
-	app.Get("/api/serverinfo", handlers.GetServerInfo)
-	app.Post("/api/serverinfo", handlers.UpdateServerInfo)
+	apiGroup.Get("/serverinfo", handlers.GetServerInfo)
+	apiGroup.Post("/serverinfo", handlers.UpdateServerInfo)
 
 	// 添加公告列表路由
-	app.Get("/api/noticelist", handlers.GetNoticeList)
-	app.Post("/api/noticelist", handlers.UpdateNoticeList)
+	apiGroup.Get("/noticelist", handlers.GetNoticeList)
+	apiGroup.Post("/noticelist", handlers.UpdateNoticeList)
 
 	// 添加公告数量路由
-	app.Get("/api/noticenum", handlers.GetNoticeNum)
-	app.Post("/api/noticenum", handlers.UpdateNoticeNum)
+	apiGroup.Get("/noticenum", handlers.GetNoticeNum)
+	apiGroup.Post("/noticenum", handlers.UpdateNoticeNum)
 }

@@ -31,6 +31,10 @@ func createTables(db *gorm.DB) error {
 		&models.Role{},
 		&models.Permission{},
 		&models.RolePermission{},
+		&models.AdminLog{},
+		&models.Log{},
+		&models.StatsRecord{},
+		&models.StatsInfo{},
 	)
 }
 
@@ -129,6 +133,20 @@ func initBaseData(db *gorm.DB) error {
 				Name:        "删除权限",
 				Code:        "permission:delete",
 				Description: "删除权限",
+				CreatedAt:   time.Now(),
+				UpdatedAt:   time.Now(),
+			},
+			{
+				Name:        "查看日志",
+				Code:        "admin_log:list",
+				Description: "查看操作日志",
+				CreatedAt:   time.Now(),
+				UpdatedAt:   time.Now(),
+			},
+			{
+				Name:        "删除日志",
+				Code:        "admin_log:delete",
+				Description: "删除操作日志",
 				CreatedAt:   time.Now(),
 				UpdatedAt:   time.Now(),
 			},

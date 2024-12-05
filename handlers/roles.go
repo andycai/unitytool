@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -73,6 +74,11 @@ func CreateRole(c *fiber.Ctx, db *gorm.DB) error {
 	}
 
 	tx.Commit()
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "create", "role", role.ID, fmt.Sprintf("创建角色：%s", role.Name))
+
 	return c.JSON(role)
 }
 
@@ -123,6 +129,11 @@ func UpdateRole(c *fiber.Ctx, db *gorm.DB) error {
 	}
 
 	tx.Commit()
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "update", "role", role.ID, fmt.Sprintf("更新角色：%s", role.Name))
+
 	return c.JSON(role)
 }
 
@@ -161,5 +172,10 @@ func DeleteRole(c *fiber.Ctx, db *gorm.DB) error {
 	}
 
 	tx.Commit()
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "delete", "role", role.ID, fmt.Sprintf("删除角色：%s", role.Name))
+
 	return c.JSON(fiber.Map{"message": "删除成功"})
 }

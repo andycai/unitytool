@@ -21,7 +21,7 @@ func (m *CmdModule) RegisterRoutes(app *fiber.App) {
 	}
 
 	// 脚本命令执行路由
-	app.Post("/cmd", func(c *fiber.Ctx) error {
+	apiGroup.Post("/cmd", func(c *fiber.Ctx) error {
 		return handlers.ExecShell(c, m.ServerConfig.ScriptPath)
 	})
 }

@@ -21,6 +21,7 @@ serverconf = true # 服务器配置模块
 cmd = true        # 命令模块
 pack = true       # 打包模块
 auth = true       # 认证模块
+admin_logs = true # 管理日志模块
 
 [database]
 driver = "sqlite"

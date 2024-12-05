@@ -1,5 +1,5 @@
 <!-- Permission management content -->
-<div x-data="permissionManagement()" x-init="init()" class="space-y-6">
+<div x-data="permissionManagement()" class="space-y-6">
     <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white">权限管理</h2>
         <button @click="createPermission()" 
@@ -63,7 +63,6 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">权限编码</label>
                         <input type="text" x-model="form.code" 
-                               :disabled="showEditModal"
                                class="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400">
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">格式：module:action，例如：user:create</p>
                     </div>

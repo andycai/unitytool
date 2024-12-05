@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Directory listing for {{.Path}}</title>
+    <title>目录列表：{{.Path}}</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .list { list-style: none; padding: 0; }
@@ -125,7 +125,7 @@
                 return;
             }
 
-            fetch('/browse/' + path, {
+            fetch('/admin/browse/' + path, {
                 method: 'DELETE'
             })
             .then(response => {
@@ -148,7 +148,7 @@
                 return;
             }
 
-            fetch(`/ftp/upload?file=${path}&type=${type}`, {
+            fetch(`/admin/ftp/upload?file=${path}&type=${type}`, {
                 method: 'POST'
             })
             .then(response => response.json())
@@ -169,7 +169,7 @@
 <body>
     <div class="breadcrumb">
         <div class="breadcrumb-item">
-            <a href="/browse/">根目录</a>
+            <a href="/admin/browse/">根目录</a>
         </div>
         {{if ne .Path "."}}
             {{$paths := .BreadcrumbPaths}}
@@ -179,7 +179,7 @@
                     {{if eq $index (len $paths)}}
                         <span class="breadcrumb-current">{{$element.Name}}</span>
                     {{else}}
-                        <a href="/browse/{{$element.Path}}">{{$element.Name}}</a>
+                        <a href="/admin/browse/{{$element.Path}}">{{$element.Name}}</a>
                     {{end}}
                 </div>
             {{end}}
@@ -191,7 +191,7 @@
         {{if ne .Path "."}}
         <li>
             <div class="file-info">
-                <a href="/browse/{{.ParentPath}}" class="dir">📁 ..</a>
+                <a href="/admin/browse/{{.ParentPath}}" class="dir">📁 ..</a>
             </div>
         </li>
         {{end}}
@@ -199,9 +199,9 @@
         <li>
             <div class="file-info">
                 {{if .IsDir}}
-                <a href="/browse/{{.Path}}" class="dir">📁 {{.Name}}/</a>
+                <a href="/admin/browse/{{.Path}}" class="dir">📁 {{.Name}}/</a>
                 {{else}}
-                <a href="/browse/{{.Path}}" class="file">📄 {{.Name}}</a>
+                <a href="/admin/browse/{{.Path}}" class="file">📄 {{.Name}}</a>
                 <span class="size">{{.FormatSize}}</span>
                 {{end}}
                 <span class="time">{{.ModTime}}</span>

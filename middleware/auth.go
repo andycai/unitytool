@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -81,6 +82,9 @@ func AuthMiddleware(db *gorm.DB) fiber.Handler {
 // HasPermission 权限检查中间件
 func HasPermission(permissionCode string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		if c.Locals("user") == nil {
+			return errors.New("请先登录")
+		}
 		user := c.Locals("user").(models.User)
 
 		// 检查用户权限

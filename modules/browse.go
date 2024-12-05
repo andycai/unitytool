@@ -12,7 +12,6 @@ type BrowseModule struct {
 }
 
 func (m *BrowseModule) Init() error {
-	// 初始化文件浏览模块
 	return nil
 }
 
@@ -22,12 +21,12 @@ func (m *BrowseModule) RegisterRoutes(app *fiber.App) {
 	}
 
 	// 文件浏览路由
-	app.Get("/browse/*", func(c *fiber.Ctx) error {
+	adminGroup.Get("/browse/*", func(c *fiber.Ctx) error {
 		return handlers.HandleFileServer(c, m.ServerConfig.Output)
 	})
 
 	// 文件删除路由
-	app.Delete("/browse/*", func(c *fiber.Ctx) error {
+	apiGroup.Delete("/browse/*", func(c *fiber.Ctx) error {
 		return handlers.HandleFileServer(c, m.ServerConfig.Output)
 	})
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -66,6 +67,10 @@ func CreateUser(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(500).JSON(fiber.Map{"error": "创建用户失败"})
 	}
 
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "create", "user", user.ID, fmt.Sprintf("创建用户：%s", user.Username))
+
 	return c.JSON(user)
 }
 
@@ -107,21 +112,35 @@ func UpdateUser(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(500).JSON(fiber.Map{"error": "更新用户失败"})
 	}
 
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "update", "user", user.ID, fmt.Sprintf("更新用户：%s", user.Username))
+
 	return c.JSON(user)
 }
 
 // DeleteUser 删除用户
 func DeleteUser(c *fiber.Ctx, db *gorm.DB) error {
 	id := c.Params("id")
-
 	var user models.User
+
 	if err := db.First(&user, id).Error; err != nil {
-		return c.Status(404).JSON(fiber.Map{"error": "用户不存在"})
+		return c.Status(404).JSON(fiber.Map{
+			"error": "用户不存在",
+		})
 	}
 
 	if err := db.Delete(&user).Error; err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "删除用户失败"})
+		return c.Status(500).JSON(fiber.Map{
+			"error": "删除用户失败",
+		})
 	}
 
-	return c.JSON(fiber.Map{"message": "删除成功"})
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "delete", "user", user.ID, fmt.Sprintf("删除用户：%s", user.Username))
+
+	return c.JSON(fiber.Map{
+		"message": "删除成功",
+	})
 }

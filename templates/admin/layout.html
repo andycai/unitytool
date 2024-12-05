@@ -296,6 +296,18 @@
                                         <div class="text-sm font-medium text-gray-900 dark:text-white">用户管理</div>
                                         <div class="text-xs text-gray-500 dark:text-gray-400">管理系统户账号</div>
                                     </a>
+                                    <a href="/admin/roles" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
+                                        <i class="fas fa-user-tag w-5 h-5 mr-2"></i>
+                                        <span>角色管理</span>
+                                    </a>
+                                    <a href="/admin/permissions" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
+                                        <i class="fas fa-key w-5 h-5 mr-2"></i>
+                                        <span>权限管理</span>
+                                    </a>
+                                    <a href="/admin/logs" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
+                                        <i class="fas fa-history w-5 h-5 mr-2"></i>
+                                        <span>操作日志</span>
+                                    </a>
                                     <!-- ... 其他速 ... -->
                                 </div>
                             </div>
@@ -487,6 +499,11 @@
                         name: '权限管理',
                         path: '/admin/permissions',
                         icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>'
+                    },
+                    {
+                        name: '操作日志',
+                        path: '/admin/logs',
+                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
                     }
                 ],
                 user: JSON.parse(localStorage.getItem('user') || '{}'),

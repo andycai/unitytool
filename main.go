@@ -46,72 +46,11 @@ func main() {
 		app.Static(staticPath.Route, staticPath.Path)
 	}
 
-	// 初始化并注册模块
-	moduleList := []modules.Module{
-		&modules.LogsModule{
-			BaseModule: modules.BaseModule{
-				DB:     db,
-				Config: utils.GetModuleConfig("logs"),
-			},
-		},
-		&modules.StatsModule{
-			BaseModule: modules.BaseModule{
-				DB:     db,
-				Config: utils.GetModuleConfig("stats"),
-			},
-		},
-		&modules.BrowseModule{
-			BaseModule: modules.BaseModule{
-				DB:     db,
-				Config: utils.GetModuleConfig("browse"),
-			},
-			ServerConfig: utils.GetServerConfig(),
-		},
-		&modules.FTPModule{
-			BaseModule: modules.BaseModule{
-				DB:     db,
-				Config: utils.GetModuleConfig("ftp"),
-			},
-			ServerConfig: utils.GetServerConfig(),
-			FTPConfig:    utils.GetFTPConfig(),
-		},
-		&modules.ServerConfModule{
-			BaseModule: modules.BaseModule{
-				DB:     db,
-				Config: utils.GetModuleConfig("serverconf"),
-			},
-			ServerConfig: utils.GetServerConfig(),
-			JSONPaths:    utils.GetJSONPathConfig(),
-		},
-		&modules.CmdModule{
-			BaseModule: modules.BaseModule{
-				DB:     db,
-				Config: utils.GetModuleConfig("cmd"),
-			},
-			ServerConfig: utils.GetServerConfig(),
-		},
-		&modules.PackModule{
-			BaseModule: modules.BaseModule{
-				DB:     db,
-				Config: utils.GetModuleConfig("pack"),
-			},
-		},
-		&modules.AuthModule{
-			BaseModule: modules.BaseModule{
-				DB:     db,
-				Config: utils.GetModuleConfig("auth"),
-			},
-		},
-	}
+	// 初始化全局路由
+	modules.InitGlobalRoutes(app, db)
 
-	// 初始化和注册所有模块
-	for _, module := range moduleList {
-		if err := module.Init(); err != nil {
-			log.Printf("模块初始化失败: %v", err)
-			continue
-		}
-		module.RegisterRoutes(app)
-	}
+	// 初始化模块
+	modules.InitModules(app, db)
 
 	// 启动服务器
 	app.Listen(fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port))

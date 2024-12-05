@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -55,6 +56,10 @@ func CreatePermission(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(500).JSON(fiber.Map{"error": "创建权限失败"})
 	}
 
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "create", "permission", permission.ID, fmt.Sprintf("创建权限：%s", permission.Name))
+
 	return c.JSON(permission)
 }
 
@@ -95,6 +100,10 @@ func UpdatePermission(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(500).JSON(fiber.Map{"error": "更新权限失败"})
 	}
 
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "update", "permission", permission.ID, fmt.Sprintf("更新权限：%s", permission.Name))
+
 	return c.JSON(permission)
 }
 
@@ -112,9 +121,18 @@ func DeletePermission(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(400).JSON(fiber.Map{"error": "该权限正在被角色使用，无法删除"})
 	}
 
-	if err := db.Delete(&models.Permission{}, id).Error; err != nil {
+	var permission models.Permission
+	if err := db.First(&permission, id).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "权限不存在"})
+	}
+
+	if err := db.Delete(&permission).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "删除权限失败"})
 	}
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "delete", "permission", permission.ID, fmt.Sprintf("删除权限：%s", permission.Name))
 
 	return c.JSON(fiber.Map{"message": "删除成功"})
 }

@@ -19,6 +19,6 @@ func (m *PackModule) RegisterRoutes(app *fiber.App) {
 	}
 
 	// Unity打包接口
-	app.Post("/pack/ab", handlers.HandlePackAB)
-	app.Post("/pack/apk", handlers.HandlePackAPK)
+	apiGroup.Post("/pack/ab", handlers.HandlePackAB)
+	apiGroup.Post("/pack/apk", handlers.HandlePackAPK)
 }

@@ -32,7 +32,8 @@ func (m *FTPModule) RegisterRoutes(app *fiber.App) {
 		return
 	}
 
-	app.Post("/ftp/upload", func(c *fiber.Ctx) error {
+	// FTP 上传路由
+	adminGroup.Post("/ftp/upload", func(c *fiber.Ctx) error {
 		return handlers.HandleFTPUpload(c, m.ServerConfig.Output)
 	})
 }

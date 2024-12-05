@@ -59,6 +59,7 @@ type ModulesConfig struct {
 	Cmd        bool `toml:"cmd"`
 	Pack       bool `toml:"pack"`
 	Auth       bool `toml:"auth"`
+	AdminLogs  bool `toml:"admin_logs"`
 }
 
 type StaticPathConfig struct {
@@ -185,6 +186,8 @@ func GetModuleConfig(name string) ModuleConfig {
 		return ModuleConfig{enabled: config.Modules.Pack}
 	case "auth":
 		return ModuleConfig{enabled: config.Modules.Auth}
+	case "admin_logs":
+		return ModuleConfig{enabled: config.Modules.AdminLogs}
 	default:
 		return ModuleConfig{enabled: false}
 	}
