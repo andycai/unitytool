@@ -801,9 +801,16 @@
                     const parts = path.split('/').filter(Boolean);
                     let currentPath = '';
                     
+                    // 合并所有菜单项以便搜索
+                    const allMenuItems = [
+                        { name: '首页', path: '/admin', icon: this.menuIcons.home },
+                        ...this.systemMenuItems,
+                        ...this.gameMenuItems
+                    ];
+                    
                     parts.forEach((part, index) => {
                         currentPath += `/${part}`;
-                        const name = this.menuItems.find(item => item.path === currentPath)?.name || 
+                        const name = allMenuItems.find(item => item.path === currentPath)?.name || 
                                     part.charAt(0).toUpperCase() + part.slice(1);
                         crumbs.push({ name, path: currentPath });
                     });
