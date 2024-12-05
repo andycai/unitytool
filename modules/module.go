@@ -53,14 +53,14 @@ func InitGlobalRoutes(app *fiber.App, db *gorm.DB) {
 	apiGroup.Use(middleware.AuthMiddleware(db))
 }
 
-// 初始化模块
+// 初���化模块
 func InitModules(app *fiber.App, db *gorm.DB) {
 	// 初始化并注册模块
 	moduleList := []Module{
-		&LogsModule{
+		&GameLogsModule{
 			BaseModule: BaseModule{
 				DB:     db,
-				Config: utils.GetModuleConfig("logs"),
+				Config: utils.GetModuleConfig("game_logs"),
 			},
 		},
 		&StatsModule{

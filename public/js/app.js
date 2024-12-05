@@ -349,7 +349,7 @@ function logSystem() {
                                         const process = dataset.process[index];
                                         this.updateClickedPointInfo(pic, process);
                                         
-                                        // 更��当前选择的索引
+                                        // 更新当前选择的索引
                                         this.currentPointIndex[config.id] = index;
                                         
                                         // 高亮显示当前点
@@ -487,7 +487,7 @@ function logSystem() {
         },
 
         async fetchLogs() {
-            const response = await fetch(`/api/logs?page=${this.page}&limit=${this.limit}&search=${this.searchQuery}`);
+            const response = await fetch(`/api/game_logs?page=${this.page}&limit=${this.limit}&search=${this.searchQuery}`);
             const data = await response.json();
             this.logs = data.logs;
             this.total = data.total;
@@ -497,41 +497,40 @@ function logSystem() {
 
         async deleteLogsBefore() {
             if (!this.selectedDate) {
-                this.showNotification('请先选择一个日期！', 'warning');
+                alert('请选择日期');
                 return;
             }
-            if (confirm('确定要删除选择日期前的日志数据吗？')) {
-                try {
-                    const response = await fetch(`/api/logs/before?date=${this.selectedDate}`, {
-                        method: 'DELETE'
-                    });
-                    const result = await response.json();
-                    if (response.ok && result.code === 0) {
-                        this.showNotification(`成功删除 ${result.count} 条日志。`, 'success');
-                        this.fetchLogs();
-                    } else {
-                        this.showNotification('删除日志失败: ' + result.error, 'error');
-                    }
-                } catch (error) {
-                    this.showNotification('删除日志失败： ' + error.message, 'error');
-                }
+
+            if (!confirm('确定要删除这个日期之前的所有日志吗？')) {
+                return;
+            }
+
+            const response = await fetch(`/api/game_logs/before?date=${this.selectedDate}`, {
+                method: 'DELETE'
+            });
+            const data = await response.json();
+            if (data.code === 0) {
+                this.fetchLogs();
+                alert('删除成功');
+            } else {
+                alert(data.error || '删除失败');
             }
         },
 
         deleteLog(id) {
-            fetch(`/api/logs/${id}`, { method: 'DELETE' })
+            if (!confirm('确定要删除这条日志吗？')) {
+                return;
+            }
+
+            fetch(`/api/game_logs/${id}`, { method: 'DELETE' })
                 .then(response => response.json())
-                .then(result => {
-                    if (result.code === 0) {
-                        this.showNotification('日志已成功删除', 'success');
+                .then(data => {
+                    if (data.code === 0) {
                         this.fetchLogs();
+                        alert('删除成功');
                     } else {
-                        this.showNotification('删除日志失败: ' + result.error, 'error');
+                        alert(data.error || '删除失败');
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    this.showNotification('删除日志时发生错误', 'error');
                 });
         },
 

@@ -13,7 +13,7 @@ static_paths = [
 ]
 
 [modules]
-logs = true       # 日志模块
+game_logs = true  # 游戏日志模块
 stats = true      # 统计模块
 browse = true     # 文件浏览模块
 ftp = true        # FTP上传模块

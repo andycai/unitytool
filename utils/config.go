@@ -51,7 +51,7 @@ type JSONPathConfig struct {
 }
 
 type ModulesConfig struct {
-	Logs       bool `toml:"logs"`
+	GameLogs   bool `toml:"game_logs"`
 	Stats      bool `toml:"stats"`
 	Browse     bool `toml:"browse"`
 	FTP        bool `toml:"ftp"`
@@ -170,8 +170,8 @@ func (c ModuleConfig) IsEnabled() bool {
 
 func GetModuleConfig(name string) ModuleConfig {
 	switch name {
-	case "logs":
-		return ModuleConfig{enabled: config.Modules.Logs}
+	case "game_logs":
+		return ModuleConfig{enabled: config.Modules.GameLogs}
 	case "stats":
 		return ModuleConfig{enabled: config.Modules.Stats}
 	case "browse":
