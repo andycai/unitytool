@@ -275,33 +275,98 @@
 
             <!-- 菜单项 -->
             <nav class="flex-1 overflow-y-auto py-4">
-                <template x-for="(item, index) in menuItems" :key="index">
-                    <a :href="item.path" 
-                       :class="{
-                           'px-4': !collapsed,
-                           'px-6': collapsed,
-                           'bg-blue-50 dark:bg-blue-900/20': currentPath === item.path,
-                           'hover:bg-gray-50 dark:hover:bg-gray-700': currentPath !== item.path
-                       }"
-                       class="flex items-center h-12 text-sm transition-colors duration-200">
-                        <div class="flex items-center" :class="{'justify-center': collapsed}">
-                            <div class="w-5 h-5" x-html="item.icon" 
-                                 :class="{
-                                     'text-gray-500 dark:text-gray-400': currentPath !== item.path,
-                                     'text-blue-600 dark:text-blue-400': currentPath === item.path
-                                 }">
-                            </div>
-                            <span x-show="!collapsed" 
-                                  class="ml-3 whitespace-nowrap"
-                                  :class="{
-                                      'text-gray-600 dark:text-gray-400': currentPath !== item.path,
-                                      'text-blue-600 dark:text-blue-400 font-medium': currentPath === item.path
-                                  }"
-                                  x-text="item.name">
-                            </span>
+                <!-- 首页 -->
+                <a href="/admin" 
+                   :class="{
+                       'px-4': !collapsed,
+                       'px-6': collapsed,
+                       'bg-blue-50 dark:bg-blue-900/20': currentPath === '/admin',
+                       'hover:bg-gray-50 dark:hover:bg-gray-700': currentPath !== '/admin'
+                   }"
+                   class="flex items-center h-12 text-sm transition-colors duration-200">
+                    <div class="flex items-center" :class="{'justify-center': collapsed}">
+                        <div class="w-5 h-5" x-html="menuIcons.home" 
+                             :class="{
+                                 'text-gray-500 dark:text-gray-400': currentPath !== '/admin',
+                                 'text-blue-600 dark:text-blue-400': currentPath === '/admin'
+                             }">
                         </div>
-                    </a>
-                </template>
+                        <span x-show="!collapsed" 
+                              class="ml-3 whitespace-nowrap"
+                              :class="{
+                                  'text-gray-600 dark:text-gray-400': currentPath !== '/admin',
+                                  'text-blue-600 dark:text-blue-400 font-medium': currentPath === '/admin'
+                              }">首页</span>
+                    </div>
+                </a>
+
+                <!-- 系统管理 -->
+                <div class="mt-4">
+                    <div x-show="!collapsed" class="px-4 mb-2">
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">系统管理</div>
+                    </div>
+                    <template x-for="item in systemMenuItems" :key="item.path">
+                        <a :href="item.path" 
+                           :class="{
+                               'px-4': !collapsed,
+                               'px-6': collapsed,
+                               'bg-blue-50 dark:bg-blue-900/20': currentPath === item.path,
+                               'hover:bg-gray-50 dark:hover:bg-gray-700': currentPath !== item.path
+                           }"
+                           class="flex items-center h-12 text-sm transition-colors duration-200">
+                            <div class="flex items-center" :class="{'justify-center': collapsed}">
+                                <div class="w-5 h-5" x-html="item.icon" 
+                                     :class="{
+                                         'text-gray-500 dark:text-gray-400': currentPath !== item.path,
+                                         'text-blue-600 dark:text-blue-400': currentPath === item.path
+                                     }">
+                                </div>
+                                <span x-show="!collapsed" 
+                                      class="ml-3 whitespace-nowrap"
+                                      :class="{
+                                          'text-gray-600 dark:text-gray-400': currentPath !== item.path,
+                                          'text-blue-600 dark:text-blue-400 font-medium': currentPath === item.path
+                                      }"
+                                      x-text="item.name">
+                                </span>
+                            </div>
+                        </a>
+                    </template>
+                </div>
+
+                <!-- 游戏管理 -->
+                <div class="mt-4">
+                    <div x-show="!collapsed" class="px-4 mb-2">
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">游戏管理</div>
+                    </div>
+                    <template x-for="item in gameMenuItems" :key="item.path">
+                        <a :href="item.path" 
+                           :class="{
+                               'px-4': !collapsed,
+                               'px-6': collapsed,
+                               'bg-blue-50 dark:bg-blue-900/20': currentPath === item.path,
+                               'hover:bg-gray-50 dark:hover:bg-gray-700': currentPath !== item.path
+                           }"
+                           class="flex items-center h-12 text-sm transition-colors duration-200">
+                            <div class="flex items-center" :class="{'justify-center': collapsed}">
+                                <div class="w-5 h-5" x-html="item.icon" 
+                                     :class="{
+                                         'text-gray-500 dark:text-gray-400': currentPath !== item.path,
+                                         'text-blue-600 dark:text-blue-400': currentPath === item.path
+                                     }">
+                                </div>
+                                <span x-show="!collapsed" 
+                                      class="ml-3 whitespace-nowrap"
+                                      :class="{
+                                          'text-gray-600 dark:text-gray-400': currentPath !== item.path,
+                                          'text-blue-600 dark:text-blue-400 font-medium': currentPath === item.path
+                                      }"
+                                      x-text="item.name">
+                                </span>
+                            </div>
+                        </a>
+                    </template>
+                </div>
             </nav>
 
             <!-- 底部信息 -->
@@ -567,12 +632,17 @@
                 mobileMenuOpen: false,
                 theme: localStorage.theme || 'light',
                 currentPath: window.location.pathname,
-                menuItems: [
-                    {
-                        name: '首页',
-                        path: '/admin',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>'
-                    },
+                menuIcons: {
+                    home: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>',
+                    users: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>',
+                    roles: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>',
+                    permissions: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>',
+                    logs: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+                    stats: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>',
+                    ftp: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>',
+                    browse: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>'
+                },
+                systemMenuItems: [
                     {
                         name: '用户管理',
                         path: '/admin/users',
@@ -592,6 +662,28 @@
                         name: '操作日志',
                         path: '/admin/logs',
                         icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
+                    }
+                ],
+                gameMenuItems: [
+                    {
+                        name: '游戏日志',
+                        path: '/admin/game_logs',
+                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
+                    },
+                    {
+                        name: '统计数据',
+                        path: '/admin/stats',
+                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>'
+                    },
+                    {
+                        name: 'FTP上传',
+                        path: '/admin/ftp',
+                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>'
+                    },
+                    {
+                        name: '文件浏览',
+                        path: '/admin/browse',
+                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>'
                     }
                 ],
                 user: JSON.parse(localStorage.getItem('user') || '{}'),
@@ -618,7 +710,7 @@
                     window.location.href = '/login';
                 },
                 init() {
-                    // ��查登录状态
+                    // 查登录状态
                     const token = localStorage.getItem('token');
                     if (!token) {
                         window.location.href = '/login';
@@ -651,7 +743,7 @@
 
                     this.updateBreadcrumbs();
 
-                    // 延迟显示菜单���
+                    // 延迟显示菜单
                     setTimeout(() => {
                         this.show = true;
                     }, 100);
