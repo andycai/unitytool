@@ -102,7 +102,7 @@ function roleManagement() {
             }
         },
         async deleteRole(id) {
-            if (!confirm('确定要删除���个角色吗？')) return;
+            if (!confirm('确定要删除这个角色吗？')) return;
 
             try {
                 const response = await fetch(`/api/roles/${id}`, {
