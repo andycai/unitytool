@@ -11,7 +11,6 @@ type AuthModule struct {
 }
 
 func (m *AuthModule) Init() error {
-	// 不需要在这里初始化模板引擎了
 	return nil
 }
 
@@ -39,18 +38,27 @@ func (m *AuthModule) RegisterRoutes(app *fiber.App) {
 	admin.Get("/users", func(c *fiber.Ctx) error {
 		return c.Render("admin/users", fiber.Map{
 			"Title": "用户管理",
+			"Scripts": []string{
+				"/static/js/admin/users.js",
+			},
 		}, "admin/layout")
 	})
 
 	admin.Get("/roles", func(c *fiber.Ctx) error {
 		return c.Render("admin/roles", fiber.Map{
 			"Title": "角色管理",
+			"Scripts": []string{
+				"/static/js/admin/roles.js",
+			},
 		}, "admin/layout")
 	})
 
 	admin.Get("/permissions", func(c *fiber.Ctx) error {
 		return c.Render("admin/permissions", fiber.Map{
 			"Title": "权限管理",
+			"Scripts": []string{
+				"/static/js/admin/permissions.js",
+			},
 		}, "admin/layout")
 	})
 

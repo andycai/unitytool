@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,10 +25,19 @@ func main() {
 
 	// 初始化模板引擎
 	engine := html.New("./templates", ".html")
+	engine.Reload(true) // 开发模式下启用模板重载
+	engine.Debug(true)  // 开发模式下启用调试信息
+
+	// 添加模板函数
+	engine.AddFunc("yield", func() string { return "" })
+	engine.AddFunc("partial", func(name string, data interface{}) template.HTML {
+		return template.HTML("")
+	})
 
 	// 创建 Fiber 应用，并配置模板引擎
 	app := fiber.New(fiber.Config{
-		Views: engine,
+		Views:       engine,
+		ViewsLayout: "admin/layout", // 设置默认布局
 	})
 
 	// 注册静态路由

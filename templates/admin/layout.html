@@ -1,3 +1,4 @@
+{{ define "admin/layout" }}
 <!DOCTYPE html>
 <html>
 <head>
@@ -269,7 +270,7 @@
                                         <div class="text-sm font-medium text-gray-900 dark:text-white">用户管理</div>
                                         <div class="text-xs text-gray-500 dark:text-gray-400">管理系统户账号</div>
                                     </a>
-                                    <!-- ... 其他快速航项 ... -->
+                                    <!-- ... 其他���速 ... -->
                                 </div>
                             </div>
                         </div>
@@ -357,7 +358,7 @@
                                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                     </svg>
-                                    退出登
+                                    退���登
                                 </div>
                             </button>
                         </div>
@@ -398,12 +399,41 @@
 
             <!-- 页面内容 -->
             <main class="flex-1 p-6 overflow-auto bg-gray-50 dark:bg-gray-900 relative">
-                <!-- 内容区 -->
                 {{ embed }}
             </main>
         </div>
     </div>
 
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('notification', {
+                notifications: [],
+                notificationCount: 0,
+                show(message, type = 'success') {
+                    const id = ++this.notificationCount;
+                    const notification = {
+                        id,
+                        message,
+                        type,
+                        show: true,
+                        progress: 100
+                    };
+                    
+                    this.notifications.push(notification);
+                    
+                    setTimeout(() => {
+                        notification.progress = 0;
+                        setTimeout(() => {
+                            notification.show = false;
+                            setTimeout(() => {
+                                this.notifications = this.notifications.filter(n => n.id !== id);
+                            }, 300);
+                        }, 300);
+                    }, 100);
+                }
+            });
+        });
+    </script>
     <script>
         function adminLayout() {
             return {
@@ -434,11 +464,9 @@
                     }
                 ],
                 user: JSON.parse(localStorage.getItem('user') || '{}'),
-                notifications: [],
-                notificationCount: 0,
-                loading: false,
-                breadcrumbs: [],
                 show: false,
+                breadcrumbs: [],
+                loading: false,
                 toggleTheme() {
                     this.theme = this.theme === 'light' ? 'dark' : 'light';
                     localStorage.setItem('theme', this.theme);
@@ -452,31 +480,6 @@
                 toggleCollapse() {
                     this.collapsed = !this.collapsed;
                     localStorage.setItem('menuCollapsed', this.collapsed);
-                },
-                showNotification(message, type = 'success') {
-                    const id = ++this.notificationCount;
-                    const notification = {
-                        id,
-                        message,
-                        type,
-                        show: true
-                    };
-                    
-                    this.notifications.push(notification);
-                    
-                    // 3秒后自动移除
-                    setTimeout(() => {
-                        this.removeNotification(id);
-                    }, 3000);
-                },
-                removeNotification(id) {
-                    const index = this.notifications.findIndex(n => n.id === id);
-                    if (index > -1) {
-                        this.notifications[index].show = false;
-                        setTimeout(() => {
-                            this.notifications = this.notifications.filter(n => n.id !== id);
-                        }, 300);
-                    }
                 },
                 logout() {
                     localStorage.removeItem('token');
@@ -521,9 +524,6 @@
                     setTimeout(() => {
                         this.show = true;
                     }, 100);
-
-                    // 初始化进度条状态
-                    this.loading = false;
                 },
                 async navigate(url) {
                     if (this.loading) return;
@@ -562,7 +562,7 @@
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                         
                     } catch (error) {
-                        this.showNotification(error.message, 'error');
+                        Alpine.store('notification').show(error.message, 'error');
                     } finally {
                         setTimeout(() => {
                             this.loading = false;
@@ -590,5 +590,13 @@
             }
         }
     </script>
+    
+    <!-- 页面特定的脚本 -->
+    {{if .Scripts}}
+        {{range .Scripts}}
+            <script src="{{.}}"></script>
+        {{end}}
+    {{end}}
 </body>
 </html>
+{{ end }}

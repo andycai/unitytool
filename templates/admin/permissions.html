@@ -1,7 +1,8 @@
-<div x-data="permissionManagement()" class="space-y-6">
+<!-- Permission management content -->
+<div x-data="permissionManagement()" x-init="init()" class="space-y-6">
     <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white">权限管理</h2>
-        <button @click="showCreateModal = true" 
+        <button @click="createPermission()" 
                 class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
             添加权限
         </button>
@@ -50,10 +51,10 @@
          x-cloak>
         <div class="relative top-20 mx-auto p-6 border border-gray-200 dark:border-gray-700 w-[600px] shadow-xl rounded-lg bg-white dark:bg-gray-800 transition-colors duration-200">
             <div class="mt-3">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">
                     <span x-text="showEditModal ? '编辑权限' : '创建权限'"></span>
                 </h3>
-                <form @submit.prevent="showEditModal ? updatePermission() : createPermission()">
+                <form @submit.prevent="submitForm">
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">权限名称</label>
                         <input type="text" x-model="form.name" 
@@ -87,136 +88,3 @@
         </div>
     </div>
 </div>
-
-<script>
-function permissionManagement() {
-    return {
-        permissions: [],
-        showCreateModal: false,
-        showEditModal: false,
-        form: {
-            name: '',
-            code: '',
-            description: ''
-        },
-        editingId: null,
-
-        async init() {
-            await this.loadPermissions();
-        },
-
-        async loadPermissions() {
-            try {
-                const response = await fetch('/api/permissions', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (!response.ok) throw new Error('加载权限列表失败');
-                this.permissions = await response.json();
-            } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
-            }
-        },
-
-        resetForm() {
-            this.form = {
-                name: '',
-                code: '',
-                description: ''
-            };
-        },
-
-        closeModal() {
-            this.showCreateModal = false;
-            this.showEditModal = false;
-            this.resetForm();
-        },
-
-        editPermission(perm) {
-            this.editingId = perm.id;
-            this.form = {
-                name: perm.name,
-                code: perm.code,
-                description: perm.description
-            };
-            this.showEditModal = true;
-        },
-
-        async createPermission() {
-            try {
-                const response = await fetch('/api/permissions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify(this.form)
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || '创建权限失败');
-                }
-
-                this.$parent.showNotification('创建权限成功');
-                this.closeModal();
-                await this.loadPermissions();
-            } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
-            }
-        },
-
-        async updatePermission() {
-            try {
-                const response = await fetch(`/api/permissions/${this.editingId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify(this.form)
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || '更新权限失败');
-                }
-
-                this.$parent.showNotification('更新权限成功');
-                this.closeModal();
-                await this.loadPermissions();
-            } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
-            }
-        },
-
-        async deletePermission(id) {
-            if (!confirm('确定要删除此权限吗？删除后可能会影响现有角色的权限配置。')) return;
-
-            try {
-                const response = await fetch(`/api/permissions/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || '删除权限失败');
-                }
-
-                this.$parent.showNotification('删除权限成功');
-                await this.loadPermissions();
-            } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
-            }
-        },
-
-        formatDate(date) {
-            return new Date(date).toLocaleString();
-        }
-    }
-}
-</script>

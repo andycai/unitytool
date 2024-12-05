@@ -1,7 +1,8 @@
-<div x-data="roleManagement()" class="space-y-6">
+<!-- Role management content -->
+<div x-data="roleManagement()" x-init="init()" class="space-y-6">
     <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white">角色管理</h2>
-        <button @click="showCreateModal = true" 
+        <button @click="createRole()" 
                 class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
             添加角色
         </button>
@@ -56,10 +57,10 @@
          x-cloak>
         <div class="relative top-20 mx-auto p-6 border border-gray-200 dark:border-gray-700 w-[800px] shadow-xl rounded-lg bg-white dark:bg-gray-800 transition-colors duration-200">
             <div class="mt-3">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">
                     <span x-text="showEditModal ? '编辑角色' : '创建角色'"></span>
                 </h3>
-                <form @submit.prevent="showEditModal ? updateRole() : createRole()">
+                <form @submit.prevent="submitForm">
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">角色名称</label>
                         <input type="text" x-model="form.name" 
@@ -100,152 +101,3 @@
         </div>
     </div>
 </div>
-
-<script>
-function roleManagement() {
-    return {
-        roles: [],
-        permissions: [],
-        showCreateModal: false,
-        showEditModal: false,
-        form: {
-            name: '',
-            description: '',
-            permissions: []
-        },
-        editingId: null,
-
-        async init() {
-            await this.loadRoles();
-            await this.loadPermissions();
-        },
-
-        async loadRoles() {
-            try {
-                const response = await fetch('/api/roles', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (!response.ok) throw new Error('加载角色列表失败');
-                this.roles = await response.json();
-            } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
-            }
-        },
-
-        async loadPermissions() {
-            try {
-                const response = await fetch('/api/permissions', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (!response.ok) throw new Error('加载权限列表失败');
-                this.permissions = await response.json();
-            } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
-            }
-        },
-
-        resetForm() {
-            this.form = {
-                name: '',
-                description: '',
-                permissions: []
-            };
-        },
-
-        closeModal() {
-            this.showCreateModal = false;
-            this.showEditModal = false;
-            this.resetForm();
-        },
-
-        editRole(role) {
-            this.editingId = role.id;
-            this.form = {
-                name: role.name,
-                description: role.description,
-                permissions: role.permissions.map(p => p.id)
-            };
-            this.showEditModal = true;
-        },
-
-        async createRole() {
-            try {
-                const response = await fetch('/api/roles', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify(this.form)
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || '创建角色失败');
-                }
-
-                this.$parent.showNotification('创建角色成功');
-                this.closeModal();
-                await this.loadRoles();
-            } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
-            }
-        },
-
-        async updateRole() {
-            try {
-                const response = await fetch(`/api/roles/${this.editingId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify(this.form)
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || '更新角色失败');
-                }
-
-                this.$parent.showNotification('更新角色成功');
-                this.closeModal();
-                await this.loadRoles();
-            } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
-            }
-        },
-
-        async deleteRole(id) {
-            if (!confirm('确定要删除此角色吗？')) return;
-
-            try {
-                const response = await fetch(`/api/roles/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || '删除角色失败');
-                }
-
-                this.$parent.showNotification('删除角色成功');
-                await this.loadRoles();
-            } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
-            }
-        },
-
-        formatDate(date) {
-            return new Date(date).toLocaleString();
-        }
-    }
-}
-</script>

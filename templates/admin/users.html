@@ -1,4 +1,5 @@
-<div x-data="userManagement()" class="space-y-6">
+<!-- User management content -->
+<div x-data="userManagement()" x-init="init()" class="space-y-6">
     <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white">用户管理</h2>
         <button @click="showCreateModal = true" 
@@ -61,7 +62,7 @@
                 <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">
                     <span x-text="showEditModal ? '编辑用户' : '创建用户'"></span>
                 </h3>
-                <form @submit.prevent="showEditModal ? updateUser() : createUser()">
+                <form @submit.prevent="submitForm">
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">用户名</label>
@@ -115,161 +116,3 @@
         </div>
     </div>
 </div>
-
-<script>
-function userManagement() {
-    return {
-        users: [],
-        roles: [],
-        showCreateModal: false,
-        showEditModal: false,
-        form: {
-            username: '',
-            password: '',
-            nickname: '',
-            role_id: '',
-            status: 1
-        },
-        editingId: null,
-
-        async init() {
-            await this.loadUsers();
-            await this.loadRoles();
-            if (this.roles.length > 0) {
-                this.form.role_id = this.roles[0].id;
-            }
-        },
-
-        async loadUsers() {
-            try {
-                const response = await fetch('/api/users', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (!response.ok) throw new Error('加载用户列表失败');
-                this.users = await response.json();
-            } catch (error) {
-                adminLayout().showNotification(error.message, 'error');
-            }
-        },
-
-        async loadRoles() {
-            try {
-                const response = await fetch('/api/roles', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (!response.ok) throw new Error('加载角色列表失败');
-                this.roles = await response.json();
-            } catch (error) {
-                adminLayout().showNotification(error.message, 'error');
-            }
-        },
-
-        resetForm() {
-            this.form = {
-                username: '',
-                password: '',
-                nickname: '',
-                role_id: this.roles.length > 0 ? this.roles[0].id : null,
-                status: 1
-            };
-        },
-
-        closeModal() {
-            this.showCreateModal = false;
-            this.showEditModal = false;
-            this.resetForm();
-        },
-
-        editUser(user) {
-            this.editingId = user.id;
-            this.form = {
-                username: user.username,
-                password: '',
-                nickname: user.nickname,
-                role_id: user.role_id,
-                status: user.status
-            };
-            this.showEditModal = true;
-        },
-
-        async createUser() {
-            try {
-                const response = await fetch('/api/users', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify(this.form)
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || '创建用户失败');
-                }
-
-                adminLayout().showNotification('创建用户成功', 'success');
-                this.closeModal();
-                await this.loadUsers();
-            } catch (error) {
-                adminLayout().showNotification(error.message, 'error');
-            }
-        },
-
-        async updateUser() {
-            try {
-                const response = await fetch(`/api/users/${this.editingId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify(this.form)
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || '更新用户失败');
-                }
-
-                adminLayout().showNotification('更新用户成功', 'success');
-                this.closeModal();
-                await this.loadUsers();
-            } catch (error) {
-                adminLayout().showNotification(error.message, 'error');
-            }
-        },
-
-        async deleteUser(id) {
-            if (!confirm('确定要删除此用户吗？')) return;
-
-            try {
-                const response = await fetch(`/api/users/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || '删除用户失败');
-                }
-
-                adminLayout().showNotification('删除用户成功', 'success');
-                await this.loadUsers();
-            } catch (error) {
-                adminLayout().showNotification(error.message, 'error');
-            }
-        },
-
-        formatDate(date) {
-            return new Date(date).toLocaleString();
-        }
-    }
-}
-</script>
