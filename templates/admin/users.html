@@ -82,8 +82,9 @@
                         </div>
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">角色</label>
-                            <select x-model="form.role_id" 
+                            <select x-model.number="form.role_id" 
                                     class="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                <option value="">请选择角色</option>
                                 <template x-for="role in roles" :key="role.id">
                                     <option :value="role.id" x-text="role.name"></option>
                                 </template>
@@ -91,10 +92,10 @@
                         </div>
                         <div class="mb-4" x-show="showEditModal">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">状态</label>
-                            <select x-model="form.status" 
+                            <select x-model.number="form.status" 
                                     class="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400">
-                                <option value="1">启用</option>
-                                <option value="0">禁用</option>
+                                <option :value="1">启用</option>
+                                <option :value="0">禁用</option>
                             </select>
                         </div>
                         <div class="flex justify-end space-x-3 mt-6">
@@ -127,13 +128,16 @@ function userManagement() {
             password: '',
             nickname: '',
             role_id: '',
-            status: '1'
+            status: 1
         },
         editingId: null,
 
         async init() {
             await this.loadUsers();
             await this.loadRoles();
+            if (this.roles.length > 0) {
+                this.form.role_id = this.roles[0].id;
+            }
         },
 
         async loadUsers() {
@@ -146,7 +150,7 @@ function userManagement() {
                 if (!response.ok) throw new Error('加载用户列表失败');
                 this.users = await response.json();
             } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
+                adminLayout().showNotification(error.message, 'error');
             }
         },
 
@@ -160,7 +164,7 @@ function userManagement() {
                 if (!response.ok) throw new Error('加载角色列表失败');
                 this.roles = await response.json();
             } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
+                adminLayout().showNotification(error.message, 'error');
             }
         },
 
@@ -169,8 +173,8 @@ function userManagement() {
                 username: '',
                 password: '',
                 nickname: '',
-                role_id: '',
-                status: '1'
+                role_id: this.roles.length > 0 ? this.roles[0].id : null,
+                status: 1
             };
         },
 
@@ -187,7 +191,7 @@ function userManagement() {
                 password: '',
                 nickname: user.nickname,
                 role_id: user.role_id,
-                status: String(user.status)
+                status: user.status
             };
             this.showEditModal = true;
         },
@@ -208,11 +212,11 @@ function userManagement() {
                     throw new Error(data.error || '创建用户失败');
                 }
 
-                this.$parent.showNotification('创建用户成功');
+                adminLayout().showNotification('创建用户成功', 'success');
                 this.closeModal();
                 await this.loadUsers();
             } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
+                adminLayout().showNotification(error.message, 'error');
             }
         },
 
@@ -232,11 +236,11 @@ function userManagement() {
                     throw new Error(data.error || '更新用户失败');
                 }
 
-                this.$parent.showNotification('更新用户成功');
+                adminLayout().showNotification('更新用户成功', 'success');
                 this.closeModal();
                 await this.loadUsers();
             } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
+                adminLayout().showNotification(error.message, 'error');
             }
         },
 
@@ -256,10 +260,10 @@ function userManagement() {
                     throw new Error(data.error || '删除用户失败');
                 }
 
-                this.$parent.showNotification('删除用户成功');
+                adminLayout().showNotification('删除用户成功', 'success');
                 await this.loadUsers();
             } catch (error) {
-                this.$parent.showNotification(error.message, 'error');
+                adminLayout().showNotification(error.message, 'error');
             }
         },
 
