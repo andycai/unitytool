@@ -52,7 +52,7 @@ function roleManagement() {
             this.form = {
                 name: role.name,
                 description: role.description,
-                permissions: role.permissions.map(p => p.id)
+                permissions: role.permissions.map(p => parseInt(p.id))
             };
             this.showEditModal = true;
             this.showCreateModal = false;
@@ -75,13 +75,18 @@ function roleManagement() {
             try {
                 const url = this.editMode ? `/api/roles/${this.currentRole.id}` : '/api/roles';
                 const method = this.editMode ? 'PUT' : 'POST';
+                // 确保权限 ID 都是整数
+                const formData = {
+                    ...this.form,
+                    permissions: this.form.permissions.map(id => parseInt(id))
+                };
                 
                 const response = await fetch(url, {
                     method,
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(this.form)
+                    body: JSON.stringify(formData)
                 });
 
                 if (!response.ok) {
