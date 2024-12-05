@@ -37,7 +37,51 @@
                         }
                     }
                 }
-            }
+            },
+            plugins: [
+                function({ addUtilities }) {
+                    const newUtilities = {
+                        '.scrollbar-thin': {
+                            'scrollbar-width': 'thin',
+                            '&::-webkit-scrollbar': {
+                                width: '8px',
+                                height: '8px',
+                            },
+                        },
+                        '.scrollbar-thumb-rounded-full': {
+                            '&::-webkit-scrollbar-thumb': {
+                                'border-radius': '9999px',
+                            },
+                        },
+                        '.scrollbar-track-rounded-full': {
+                            '&::-webkit-scrollbar-track': {
+                                'border-radius': '9999px',
+                            },
+                        },
+                        '.scrollbar-thumb-gray-300': {
+                            '&::-webkit-scrollbar-thumb': {
+                                'background-color': '#D1D5DB',
+                            },
+                        },
+                        '.dark .dark\\:scrollbar-thumb-gray-600': {
+                            '&::-webkit-scrollbar-thumb': {
+                                'background-color': '#4B5563',
+                            },
+                        },
+                        '.scrollbar-track-gray-100': {
+                            '&::-webkit-scrollbar-track': {
+                                'background-color': '#F3F4F6',
+                            },
+                        },
+                        '.dark .dark\\:scrollbar-track-gray-800': {
+                            '&::-webkit-scrollbar-track': {
+                                'background-color': '#1F2937',
+                            },
+                        },
+                    };
+                    addUtilities(newUtilities, ['responsive', 'dark']);
+                }
+            ]
         }
     </script>
     <style>
@@ -47,6 +91,50 @@
             transition-duration: 200ms;
             transition-timing-function: ease-in-out;
         }
+
+        /* 自定义滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        /* 暗色模式滚动条 */
+        .dark ::-webkit-scrollbar-track {
+            background: #1F2937;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4B5563;
+        }
+
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+
+        /* Firefox 滚动条样式 */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #888 #f1f1f1;
+        }
+
+        .dark * {
+            scrollbar-color: #4B5563 #1F2937;
+        }
+
         .page-enter {
             opacity: 0;
             transform: translateY(1rem);
@@ -530,7 +618,7 @@
                     window.location.href = '/login';
                 },
                 init() {
-                    // 检查登录状态
+                    // ��查登录状态
                     const token = localStorage.getItem('token');
                     if (!token) {
                         window.location.href = '/login';
@@ -563,7 +651,7 @@
 
                     this.updateBreadcrumbs();
 
-                    // 延迟显示菜单项
+                    // 延迟显示菜单���
                     setTimeout(() => {
                         this.show = true;
                     }, 100);

@@ -53,14 +53,14 @@
 
     <!-- 模态框 -->
     <div x-show="showCreateModal || showEditModal" 
-         class="fixed top-0 left-0 right-0 bottom-0 z-50 overflow-y-auto"
+         class="fixed top-0 left-0 right-0 bottom-0 z-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 scrollbar-thumb-rounded-full scrollbar-track-rounded-full"
          x-cloak>
         <!-- 背景遮罩 -->
         <div class="fixed top-0 left-0 right-0 bottom-0 bg-black opacity-50"></div>
         
         <!-- 模态框内容 -->
         <div class="relative w-full h-full flex items-center justify-center p-4">
-            <div class="relative w-[800px] bg-white dark:bg-gray-800 rounded-lg shadow-2xl">
+            <div class="relative w-[800px] bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
                 <!-- 模态框头部 -->
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white">
