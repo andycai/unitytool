@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/andycai/unitool/utils"
+	"github.com/gofiber/fiber/v2"
 )
 
 // ServerList 结构体
@@ -65,6 +65,7 @@ type ServerInfoConfig struct {
 	NoticeNumURL      string `json:"noticeNumURL"`
 	NoticeURL         string `json:"noticeURL"`
 	PkgVersion        string `json:"pkgVersion"`
+	DoPatcher         int    `json:"doPatcher"`
 }
 
 // 修改公告列表相关结构
