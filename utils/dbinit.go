@@ -32,9 +32,10 @@ func createTables(db *gorm.DB) error {
 		&models.Permission{},
 		&models.RolePermission{},
 		&models.AdminLog{},
-		&models.Log{},
+		&models.GameLog{},
 		&models.StatsRecord{},
 		&models.StatsInfo{},
+		&models.Menu{},
 	)
 }
 
@@ -189,6 +190,211 @@ func initBaseData(db *gorm.DB) error {
 			return err
 		}
 
+		// 4. 初始化菜单数据
+		if err := initMenus(tx); err != nil {
+			return err
+		}
+
 		return nil
 	})
+}
+
+// initMenus 初始化菜单数据
+func initMenus(tx *gorm.DB) error {
+	now := time.Now()
+
+	// 系统管理菜单组
+	systemManage := models.Menu{
+		ParentID:   0,
+		Name:       "系统管理",
+		Path:       "/admin",
+		Icon:       "settings",
+		Sort:       1,
+		Permission: "",
+		IsShow:     true,
+		CreatedAt:  now,
+		UpdatedAt:  now,
+	}
+	if err := tx.Create(&systemManage).Error; err != nil {
+		return err
+	}
+
+	// 系统管理子菜单
+	systemMenus := []models.Menu{
+		{
+			ParentID:   systemManage.ID,
+			Name:       "用户管理",
+			Path:       "/admin/users",
+			Icon:       "user",
+			Sort:       1,
+			Permission: "user:list",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+		{
+			ParentID:   systemManage.ID,
+			Name:       "角色管理",
+			Path:       "/admin/roles",
+			Icon:       "users",
+			Sort:       2,
+			Permission: "role:list",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+		{
+			ParentID:   systemManage.ID,
+			Name:       "权限管理",
+			Path:       "/admin/permissions",
+			Icon:       "key",
+			Sort:       3,
+			Permission: "permission:list",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+		{
+			ParentID:   systemManage.ID,
+			Name:       "操作日志",
+			Path:       "/admin/logs",
+			Icon:       "list",
+			Sort:       4,
+			Permission: "admin_log:list",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+	}
+
+	if err := tx.Create(&systemMenus).Error; err != nil {
+		return err
+	}
+
+	// 游戏管理菜单组
+	gameManage := models.Menu{
+		ParentID:   0,
+		Name:       "游戏管理",
+		Path:       "/admin/game",
+		Icon:       "game",
+		Sort:       2,
+		Permission: "",
+		IsShow:     true,
+		CreatedAt:  now,
+		UpdatedAt:  now,
+	}
+	if err := tx.Create(&gameManage).Error; err != nil {
+		return err
+	}
+
+	// 游戏管理子菜单
+	gameMenus := []models.Menu{
+		{
+			ParentID:   gameManage.ID,
+			Name:       "游戏日志",
+			Path:       "/admin/game/logs",
+			Icon:       "file-text",
+			Sort:       1,
+			Permission: "",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+		{
+			ParentID:   gameManage.ID,
+			Name:       "性能统计",
+			Path:       "/admin/game/stats",
+			Icon:       "bar-chart",
+			Sort:       2,
+			Permission: "",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+	}
+
+	if err := tx.Create(&gameMenus).Error; err != nil {
+		return err
+	}
+
+	// 系统工具菜单组
+	toolsManage := models.Menu{
+		ParentID:   0,
+		Name:       "系统工具",
+		Path:       "/admin/tools",
+		Icon:       "tool",
+		Sort:       3,
+		Permission: "",
+		IsShow:     true,
+		CreatedAt:  now,
+		UpdatedAt:  now,
+	}
+	if err := tx.Create(&toolsManage).Error; err != nil {
+		return err
+	}
+
+	// 系统工具子菜单
+	toolsMenus := []models.Menu{
+		{
+			ParentID:   toolsManage.ID,
+			Name:       "文件浏览",
+			Path:       "/admin/browse",
+			Icon:       "folder",
+			Sort:       1,
+			Permission: "",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+		{
+			ParentID:   toolsManage.ID,
+			Name:       "FTP上传",
+			Path:       "/admin/ftp",
+			Icon:       "upload",
+			Sort:       2,
+			Permission: "",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+		{
+			ParentID:   toolsManage.ID,
+			Name:       "服务器配置",
+			Path:       "/admin/serverconf",
+			Icon:       "server",
+			Sort:       3,
+			Permission: "",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+		{
+			ParentID:   toolsManage.ID,
+			Name:       "命令执行",
+			Path:       "/admin/cmd",
+			Icon:       "terminal",
+			Sort:       4,
+			Permission: "",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+		{
+			ParentID:   toolsManage.ID,
+			Name:       "打包工具",
+			Path:       "/admin/pack",
+			Icon:       "package",
+			Sort:       5,
+			Permission: "",
+			IsShow:     true,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+	}
+
+	if err := tx.Create(&toolsMenus).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

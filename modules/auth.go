@@ -54,6 +54,16 @@ func (m *AuthModule) RegisterRoutes(app *fiber.App) {
 		}, "admin/layout")
 	})
 
+	// 菜单管理页面路由
+	adminGroup.Get("/menus", func(c *fiber.Ctx) error {
+		return c.Render("admin/menus", fiber.Map{
+			"Title": "菜单管理",
+			"Scripts": []string{
+				"/static/js/admin/menus.js",
+			},
+		}, "admin/layout")
+	})
+
 	// 用户管理 API
 	apiGroup.Get("/users", middleware.HasPermission("user:list"), func(c *fiber.Ctx) error {
 		return handlers.GetUsers(c, m.DB)

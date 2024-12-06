@@ -20,7 +20,7 @@ func (m *AdminLogsModule) RegisterRoutes(app *fiber.App) {
 	}
 
 	// 管理员日志页面
-	adminGroup.Get("/logs", middleware.HasPermission("admin_logs:list"), func(c *fiber.Ctx) error {
+	adminGroup.Get("/logs", middleware.HasPermission("admin_log:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/logs", fiber.Map{
 			"Title": "操作日志",
 			"Scripts": []string{
@@ -30,12 +30,12 @@ func (m *AdminLogsModule) RegisterRoutes(app *fiber.App) {
 	})
 
 	// 获取日志列表
-	apiGroup.Get("/logs", middleware.HasPermission("admin_logs:list"), func(c *fiber.Ctx) error {
+	apiGroup.Get("/logs", middleware.HasPermission("admin_log:list"), func(c *fiber.Ctx) error {
 		return handlers.GetAdminLogs(c, m.DB)
 	})
 
 	// 删除日志
-	apiGroup.Delete("/logs", middleware.HasPermission("admin_logs:delete"), func(c *fiber.Ctx) error {
+	apiGroup.Delete("/logs", middleware.HasPermission("admin_log:delete"), func(c *fiber.Ctx) error {
 		return handlers.DeleteAdminLogs(c, m.DB)
 	})
 }

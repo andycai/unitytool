@@ -10,11 +10,11 @@ import (
 )
 
 type LogReq struct {
-	AppID    string       `json:"app_id"`
-	Package  string       `json:"package"`
-	RoleName string       `json:"role_name"`
-	Device   string       `json:"device"`
-	Logs     []models.Log `json:"list"`
+	AppID    string           `json:"app_id"`
+	Package  string           `json:"package"`
+	RoleName string           `json:"role_name"`
+	Device   string           `json:"device"`
+	Logs     []models.GameLog `json:"list"`
 }
 
 // 创建日志记录
@@ -47,10 +47,10 @@ func GetLogs(c *fiber.Ctx, db *gorm.DB) error {
 	limit := c.QueryInt("limit", 10)
 	search := c.Query("search", "")
 
-	var logs []models.Log
+	var logs []models.GameLog
 	var total int64
 
-	query := db.Model(&models.Log{})
+	query := db.Model(&models.GameLog{})
 
 	if search != "" {
 		query = query.Where("role_name LIKE ? OR log_message LIKE ?", "%"+search+"%", "%"+search+"%")
@@ -90,7 +90,7 @@ func DeleteLogsBefore(c *fiber.Ctx, db *gorm.DB) error {
 	endOfDayMilli := endOfDay.UnixMilli()
 
 	// Delete logs before the end of the selected day
-	result := db.Where("create_at < ?", endOfDayMilli).Delete(&models.Log{})
+	result := db.Where("create_at < ?", endOfDayMilli).Delete(&models.GameLog{})
 
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"code": 3, "error": "Failed to delete logs"})
@@ -106,7 +106,7 @@ func DeleteLog(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(400).JSON(fiber.Map{"code": 4, "error": "Log ID is required"})
 	}
 
-	result := db.Delete(&models.Log{}, id)
+	result := db.Delete(&models.GameLog{}, id)
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"code": 5, "error": "Failed to delete log"})
 	}
