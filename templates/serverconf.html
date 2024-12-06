@@ -42,7 +42,7 @@
                             class="py-2 px-4">
                             服务器列表
                         </button>
-                        <a href="/api/serverlist" target="_blank" 
+                        <a href="/open/game/serverlist" target="_blank" 
                            class="ml-1 text-xs text-gray-500 hover:text-blue-500" title="查看API">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -59,7 +59,7 @@
                             class="py-2 px-4">
                             最后登录服务器
                         </button>
-                        <a href="/api/lastserver" target="_blank" 
+                        <a href="/open/game/lastserver" target="_blank" 
                            class="ml-1 text-xs text-gray-500 hover:text-blue-500" title="查看API">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -76,7 +76,7 @@
                             class="py-2 px-4">
                             服务器信息
                         </button>
-                        <a href="/api/serverinfo" target="_blank" 
+                        <a href="/open/game/serverinfo" target="_blank" 
                            class="ml-1 text-xs text-gray-500 hover:text-blue-500" title="查看API">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -93,7 +93,7 @@
                             class="py-2 px-4">
                             公告列表
                         </button>
-                        <a href="/api/noticelist" target="_blank" 
+                        <a href="/open/game/noticelist" target="_blank" 
                            class="ml-1 text-xs text-gray-500 hover:text-blue-500" title="查看API">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -110,7 +110,7 @@
                             class="py-2 px-4">
                             公告数量
                         </button>
-                        <a href="/api/noticenum" target="_blank" 
+                        <a href="/open/game/noticenum" target="_blank" 
                            class="ml-1 text-xs text-gray-500 hover:text-blue-500" title="查看API">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -615,7 +615,7 @@
 
                 async loadServerList() {
                     try {
-                        const response = await fetch('/api/serverlist');
+                        const response = await fetch('/open/game/serverlist');
                         if (!response.ok) throw new Error('加载失败');
                         this.serverList = await response.json();
                     } catch (error) {
@@ -626,7 +626,7 @@
 
                 async loadLastServer() {
                     try {
-                        const response = await fetch('/api/lastserver');
+                        const response = await fetch('/open/game/lastserver');
                         if (!response.ok) throw new Error('加载失败');
                         this.lastServer = await response.json();
                     } catch (error) {
@@ -637,7 +637,7 @@
 
                 async loadServerInfo() {
                     try {
-                        const response = await fetch('/api/serverinfo');
+                        const response = await fetch('/open/game/serverinfo');
                         if (!response.ok) throw new Error('加载失败');
                         this.serverInfo = await response.json();
                     } catch (error) {
@@ -648,7 +648,7 @@
 
                 async loadNoticeList() {
                     try {
-                        const response = await fetch('/api/noticelist');
+                        const response = await fetch('/open/game/noticelist');
                         if (!response.ok) throw new Error('加载失败');
                         this.noticeList = await response.json();
                     } catch (error) {
@@ -659,7 +659,7 @@
 
                 async loadNoticeNum() {
                     try {
-                        const response = await fetch('/api/noticenum');
+                        const response = await fetch('/open/game/noticenum');
                         if (!response.ok) throw new Error('加载失败');
                         this.noticeNum = await response.json();
                     } catch (error) {
@@ -712,7 +712,7 @@
 
                 async saveServerList() {
                     try {
-                        const response = await fetch('/api/serverlist', {
+                        const response = await fetch('/api/game/serverlist', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -729,7 +729,7 @@
 
                 async saveLastServer() {
                     try {
-                        const response = await fetch('/api/lastserver', {
+                        const response = await fetch('/api/game/lastserver', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -746,7 +746,7 @@
 
                 async saveServerInfo() {
                     try {
-                        const response = await fetch('/api/serverinfo', {
+                        const response = await fetch('/api/game/serverinfo', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -763,7 +763,7 @@
 
                 async saveNoticeList() {
                     try {
-                        const response = await fetch('/api/noticelist', {
+                        const response = await fetch('/api/game/noticelist', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -780,7 +780,7 @@
 
                 async saveNoticeNum() {
                     try {
-                        const response = await fetch('/api/noticenum', {
+                        const response = await fetch('/api/game/noticenum', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

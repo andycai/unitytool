@@ -1,9 +1,9 @@
 package modules
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"github.com/andycai/unitool/handlers"
 	"github.com/andycai/unitool/utils"
+	"github.com/gofiber/fiber/v2"
 )
 
 type ServerConfModule struct {
@@ -24,25 +24,21 @@ func (m *ServerConfModule) RegisterRoutes(app *fiber.App) {
 	}
 
 	// 配置页面路由
-	adminGroup.Get("/serverconf", func(c *fiber.Ctx) error {
+	adminGroup.Get("/game/serverconf", func(c *fiber.Ctx) error {
 		return c.SendFile("templates/serverconf.html")
 	})
 
-	// API 路由
-	apiGroup.Get("/serverlist", handlers.GetServerList)
-	apiGroup.Post("/serverlist", handlers.UpdateServerList)
+	// 私有 API 路由
+	apiGroup.Post("/game/serverlist", handlers.UpdateServerList)
+	apiGroup.Post("/game/lastserver", handlers.UpdateLastServer)
+	apiGroup.Post("/game/serverinfo", handlers.UpdateServerInfo)
+	apiGroup.Post("/game/noticelist", handlers.UpdateNoticeList)
+	apiGroup.Post("/game/noticenum", handlers.UpdateNoticeNum)
 
-	apiGroup.Get("/lastserver", handlers.GetLastServer)
-	apiGroup.Post("/lastserver", handlers.UpdateLastServer)
-
-	apiGroup.Get("/serverinfo", handlers.GetServerInfo)
-	apiGroup.Post("/serverinfo", handlers.UpdateServerInfo)
-
-	// 添加公告列表路由
-	apiGroup.Get("/noticelist", handlers.GetNoticeList)
-	apiGroup.Post("/noticelist", handlers.UpdateNoticeList)
-
-	// 添加公告数量路由
-	apiGroup.Get("/noticenum", handlers.GetNoticeNum)
-	apiGroup.Post("/noticenum", handlers.UpdateNoticeNum)
+	//  公开 API 路由
+	openGroup.Get("/game/serverlist", handlers.GetServerList)
+	openGroup.Get("/game/lastserver", handlers.GetLastServer)
+	openGroup.Get("/game/serverinfo", handlers.GetServerInfo)
+	openGroup.Get("/game/noticelist", handlers.GetNoticeList)
+	openGroup.Get("/game/noticenum", handlers.GetNoticeNum)
 }

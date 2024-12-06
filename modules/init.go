@@ -3,12 +3,12 @@ package modules
 import (
 	"log"
 
-	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 	"github.com/andycai/unitool/dao"
 	"github.com/andycai/unitool/handlers"
 	"github.com/andycai/unitool/middleware"
 	"github.com/andycai/unitool/utils"
+	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 // ModuleConfig 模块配置接口
@@ -24,6 +24,7 @@ type Module interface {
 
 var adminGroup fiber.Router
 var apiGroup fiber.Router
+var openGroup fiber.Router
 
 func GetAdminGroup() fiber.Router {
 	return adminGroup
@@ -34,7 +35,7 @@ func GetApiGroup() fiber.Router {
 }
 
 // 初始化全局路由
-func InitGlobalRoutes(app *fiber.App, db *gorm.DB) {
+func InitRoutes(app *fiber.App, db *gorm.DB) {
 	// 登录页面路由（不需要认证）
 	app.Get("/login", func(c *fiber.Ctx) error {
 		return c.Render("login", fiber.Map{}, "login")
@@ -52,6 +53,9 @@ func InitGlobalRoutes(app *fiber.App, db *gorm.DB) {
 	// API 路由组
 	apiGroup = app.Group("/api")
 	apiGroup.Use(middleware.AuthMiddleware(db))
+
+	// 公开 API 路由组
+	openGroup = app.Group("/open")
 }
 
 // 初始化模块

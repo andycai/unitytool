@@ -47,7 +47,7 @@ func main() {
 	}
 
 	// 初始化全局路由
-	modules.InitGlobalRoutes(app, db)
+	modules.InitRoutes(app, db)
 
 	// 初始化模块
 	modules.InitModules(app, db)
