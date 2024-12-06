@@ -12,7 +12,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jlaffaye/ftp"
-	"mind.com/log/utils"
+	"github.com/andycai/unitool/utils"
 )
 
 // FileInfo 存储文件信息的结构体

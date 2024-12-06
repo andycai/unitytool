@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"mind.com/log/models"
+	"github.com/andycai/unitool/models"
 )
 
 // InitDatabase 初始化数据库

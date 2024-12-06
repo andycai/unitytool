@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	"mind.com/log/models"
+	"github.com/andycai/unitool/models"
 )
 
 type CreatePermissionRequest struct {

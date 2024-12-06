@@ -3,7 +3,7 @@ package handlers
 import (
 	"time"
 
-	"mind.com/log/models"
+	"github.com/andycai/unitool/models"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"

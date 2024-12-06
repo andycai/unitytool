@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/andycai/unitool/utils"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
-	"mind.com/log/utils"
 )
 
 func InitDatabase() (*gorm.DB, error) {

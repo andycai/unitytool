@@ -1,4 +1,4 @@
-module mind.com/log
+module github.com/andycai/unitool
 
 go 1.21.0
 

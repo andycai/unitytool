@@ -5,10 +5,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	"mind.com/log/dao"
-	"mind.com/log/handlers"
-	"mind.com/log/middleware"
-	"mind.com/log/utils"
+	"github.com/andycai/unitool/dao"
+	"github.com/andycai/unitool/handlers"
+	"github.com/andycai/unitool/middleware"
+	"github.com/andycai/unitool/utils"
 )
 
 // ModuleConfig 模块配置接口

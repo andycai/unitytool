@@ -7,8 +7,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"mind.com/log/models"
-	"mind.com/log/utils"
+	"github.com/andycai/unitool/models"
+	"github.com/andycai/unitool/utils"
 )
 
 type LoginRequest struct {

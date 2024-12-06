@@ -1,10 +1,10 @@
 package modules
 
 import (
+	"github.com/andycai/unitool/dao"
+	"github.com/andycai/unitool/middleware"
+	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
-	"mind.com/log/dao"
-	"mind.com/log/middleware"
-	"mind.com/log/models"
 )
 
 var menuDao *dao.MenuDao

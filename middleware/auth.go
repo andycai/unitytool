@@ -8,8 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
-	"mind.com/log/models"
-	"mind.com/log/utils"
+	"github.com/andycai/unitool/models"
+	"github.com/andycai/unitool/utils"
 )
 
 // AuthMiddleware 认证中间件

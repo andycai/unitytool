@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"mind.com/log/models"
+	"github.com/andycai/unitool/models"
 )
 
 type CreateUserRequest struct {

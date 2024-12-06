@@ -5,10 +5,10 @@ import (
 	"html/template"
 	"log"
 
+	"github.com/andycai/unitool/modules"
+	"github.com/andycai/unitool/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
-	"mind.com/log/modules"
-	"mind.com/log/utils"
 )
 
 func main() {

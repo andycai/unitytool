@@ -2,8 +2,8 @@ package modules
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"mind.com/log/handlers"
-	"mind.com/log/utils"
+	"github.com/andycai/unitool/handlers"
+	"github.com/andycai/unitool/utils"
 )
 
 type FTPModule struct {

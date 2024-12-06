@@ -1,8 +1,8 @@
 package dao
 
 import (
+	"github.com/andycai/unitool/models"
 	"gorm.io/gorm"
-	"mind.com/log/models"
 )
 
 type MenuDao struct {
