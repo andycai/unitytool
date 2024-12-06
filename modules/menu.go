@@ -3,6 +3,7 @@ package modules
 import (
 	"github.com/gofiber/fiber/v2"
 	"mind.com/log/dao"
+	"mind.com/log/middleware"
 	"mind.com/log/models"
 )
 
@@ -17,7 +18,7 @@ func InitMenuModule(app *fiber.App, d *dao.MenuDao) {
 // RegisterMenuRoutes 注册菜单路由
 func RegisterMenuRoutes(app *fiber.App) {
 	// 菜单管理页面路由
-	adminGroup.Get("/menus", func(c *fiber.Ctx) error {
+	adminGroup.Get("/menus", middleware.HasPermission("menu:list"), func(c *fiber.Ctx) error {
 		user := c.Locals("user").(models.User)
 		return c.Render("admin/menus", fiber.Map{
 			"Title": "菜单管理",
@@ -29,11 +30,11 @@ func RegisterMenuRoutes(app *fiber.App) {
 	})
 
 	// 菜单 API 路由
-	apiGroup.Get("/menus", listMenus)
-	apiGroup.Get("/menus/tree", getMenuTree)
-	apiGroup.Post("/menus", createMenu)
-	apiGroup.Put("/menus/:id", updateMenu)
-	apiGroup.Delete("/menus/:id", deleteMenu)
+	apiGroup.Get("/menus", middleware.HasPermission("menu:list"), listMenus)
+	apiGroup.Get("/menus/tree", middleware.HasPermission("menu:list"), getMenuTree)
+	apiGroup.Post("/menus", middleware.HasPermission("menu:create"), createMenu)
+	apiGroup.Put("/menus/:id", middleware.HasPermission("menu:update"), updateMenu)
+	apiGroup.Delete("/menus/:id", middleware.HasPermission("menu:delete"), deleteMenu)
 }
 
 // listMenus 获取菜单列表
