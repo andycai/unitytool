@@ -125,7 +125,7 @@
                 return;
             }
 
-            fetch('/admin/browse/' + path, {
+            fetch('/admin/browse/' + encodeURIComponent(path), {
                 method: 'DELETE'
             })
             .then(response => {
@@ -140,15 +140,16 @@
                 alert('删除失败: ' + error.message);
             });
         }
+
         function uploadToFTP(path, type, event) {
             event.preventDefault();
             event.stopPropagation();
             
-            if (!confirm(`确定要上传这个${type.toUpperCase()}文件吗？`)) {
+            if (!confirm('确定要上传这个' + type.toUpperCase() + '文件吗？')) {
                 return;
             }
 
-            fetch(`/admin/ftp/upload?file=${path}&type=${type}`, {
+            fetch('/admin/ftp/upload?file=' + encodeURIComponent(path) + '&type=' + type, {
                 method: 'POST'
             })
             .then(response => response.json())
@@ -171,63 +172,66 @@
         <div class="breadcrumb-item">
             <a href="/admin/browse/">根目录</a>
         </div>
-        {{if ne .Path "."}}
-            {{$paths := .BreadcrumbPaths}}
-            {{range $index, $element := $paths}}
-                <span class="breadcrumb-separator">/</span>
-                <div class="breadcrumb-item">
-                    {{if eq $index (len $paths)}}
-                        <span class="breadcrumb-current">{{$element.Name}}</span>
-                    {{else}}
-                        <a href="/admin/browse/{{$element.Path}}">{{$element.Name}}</a>
-                    {{end}}
-                </div>
+        {{if ne .Path ""}}
+            {{$paths := splitPath .Path}}
+            {{$fullPath := ""}}
+            {{range $index, $part := $paths}}
+                {{if ne $part ""}}
+                    {{$fullPath = printf "%s/%s" $fullPath $part}}
+                    <span class="breadcrumb-separator">/</span>
+                    <div class="breadcrumb-item">
+                        {{if eq $index (sub (len $paths) 1)}}
+                            <span class="breadcrumb-current">{{$part}}</span>
+                        {{else}}
+                            <a href="/admin/browse{{$fullPath}}">{{$part}}</a>
+                        {{end}}
+                    </div>
+                {{end}}
             {{end}}
         {{end}}
     </div>
-    <h1>Directory listing for {{.Path}}</h1>
-    {{if .Files}}
+    <h1>目录：{{.Path}}</h1>
+    {{if .Entries}}
     <ul class="list">
-        {{if ne .Path "."}}
+        {{if ne .Path ""}}
         <li>
             <div class="file-info">
-                <a href="/admin/browse/{{.ParentPath}}" class="dir">📁 ..</a>
+                <a href="/admin/browse/{{if eq .Path ""}}..{{else}}{{.Path}}/..{{end}}" class="dir">📁 ..</a>
             </div>
         </li>
         {{end}}
-        {{range .Files}}
+        {{range .Entries}}
         <li>
             <div class="file-info">
                 {{if .IsDir}}
-                <a href="/admin/browse/{{.Path}}" class="dir">📁 {{.Name}}/</a>
+                <a href="/admin/browse/{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="dir">📁 {{.Name}}/</a>
                 {{else}}
-                <a href="/admin/browse/{{.Path}}" class="file">📄 {{.Name}}</a>
-                <span class="size">{{.FormatSize}}</span>
+                <a href="/admin/browse/{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="file">📄 {{.Name}}</a>
+                <span class="size">{{.Size}} bytes</span>
                 {{end}}
-                <span class="time">{{.ModTime}}</span>
+                <span class="time">{{.ModTime.Format "2006-01-02 15:04:05"}}</span>
             </div>
             {{if not .IsDir}}
             <div class="file-actions">
-                <button onclick="deleteFile('{{.Path}}', event)" class="delete-btn">
+                <button onclick="deleteFile('{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}', event)" class="delete-btn">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                        </path>
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     删除
                 </button>
-                {{if eq .FileType "apk"}}
-                <button onclick="uploadToFTP('{{.Path}}', 'apk', event)" class="upload-btn apk-upload">
+                {{if hasSuffix .Name ".apk"}}
+                <button onclick="uploadToFTP('{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}', 'apk', event)" class="upload-btn apk-upload">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                     上传APK
                 </button>
                 {{end}}
-                {{if eq .FileType "zip"}}
-                <button onclick="uploadToFTP('{{.Path}}', 'zip', event)" class="upload-btn zip-upload">
+                {{if hasSuffix .Name ".zip"}}
+                <button onclick="uploadToFTP('{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}', 'zip', event)" class="upload-btn zip-upload">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                     上传ZIP
                 </button>

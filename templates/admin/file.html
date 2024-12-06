@@ -15,11 +15,23 @@
             max-width: 100%;             /* 确保不会超出父容器 */
         }
         .back { margin-bottom: 20px; }
+        .back a {
+            color: #3b82f6;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .back a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <div class="back"><a href="/admin/browse/{{.DirPath}}">← Back to directory</a></div>
-    <h2>File: {{.Path}}</h2>
+    <div class="back">
+        <a href="/admin/browse/{{.DirPath}}">← 返回目录</a>
+    </div>
+    <h2>文件: {{.Path}}</h2>
     <pre>{{.Content}}</pre>
 </body>
 </html> 

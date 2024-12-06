@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"strings"
 
 	"github.com/andycai/unitool/modules"
 	"github.com/andycai/unitool/utils"
@@ -32,6 +33,19 @@ func main() {
 	engine.AddFunc("yield", func() string { return "" })
 	engine.AddFunc("partial", func(name string, data interface{}) template.HTML {
 		return template.HTML("")
+	})
+	// 添加 hasSuffix 函数用于检查文件扩展名
+	engine.AddFunc("hasSuffix", strings.HasSuffix)
+	// 添加 splitPath 函数用于分割路径
+	engine.AddFunc("splitPath", func(path string) []string {
+		if path == "" {
+			return []string{}
+		}
+		return strings.Split(path, "/")
+	})
+	// 添加 sub 函数用于数字减法
+	engine.AddFunc("sub", func(a, b int) int {
+		return a - b
 	})
 
 	// 创建 Fiber 应用，并配置模板引擎
