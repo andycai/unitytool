@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"html/template"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -10,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/andycai/unitool/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jlaffaye/ftp"
-	"github.com/andycai/unitool/utils"
 )
 
 // FileInfo 存储文件信息的结构体
@@ -46,20 +45,11 @@ type FTPConfig struct {
 }
 
 var outputPath string
-var templates *template.Template
 var ftpConfig FTPConfig
 
 const logTimeFormat = "20060102150405"
 
 var currentLogFile string
-
-func init() {
-	// 初始化模板
-	templates = template.Must(template.ParseFiles(
-		"templates/directory.html",
-		"templates/file.html",
-	))
-}
 
 // 初始化 FTP 配置
 func InitFTP(config FTPConfig) {
@@ -199,44 +189,7 @@ func HandleFTPUpload(c *fiber.Ctx, output string) error {
 	})
 }
 
-// HandleFileServer 处理文件服务器请求
-func HandleFileServer(c *fiber.Ctx, output string) error {
-	requestPath := c.Params("*")
-	if requestPath == "" {
-		requestPath = "."
-	}
-
-	// URL 解码路径
-	decodedPath, err := url.QueryUnescape(requestPath)
-	if err != nil {
-		return c.Status(400).SendString("Invalid path encoding")
-	}
-
-	outputPath = output
-
-	// 处理删除请求
-	if c.Method() == "DELETE" {
-		fullPath := filepath.Join(outputPath, decodedPath)
-		return handleDelete(c, fullPath)
-	}
-
-	// 获取文件信息
-	fullPath := filepath.Join(outputPath, decodedPath)
-	fileInfo, err := os.Stat(fullPath)
-	if err != nil {
-		return c.Status(404).SendString(fmt.Sprintf("File not found: %s", fullPath))
-	}
-
-	// 如果是目录，显示目录内容
-	if fileInfo.IsDir() {
-		return handleDirectory(c, fullPath)
-	}
-
-	// 如果是文件，显示文件内容
-	return handleFile(c, fullPath)
-}
-
-func handleDirectory(c *fiber.Ctx, path string) error {
+func HandleBrowseDirectory(c *fiber.Ctx, path string) error {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return c.Status(500).SendString("Error reading directory")
@@ -313,16 +266,15 @@ func handleDirectory(c *fiber.Ctx, path string) error {
 		BreadcrumbPaths: generateBreadcrumbs(path),
 	}
 
-	var buf strings.Builder
-	if err := templates.ExecuteTemplate(&buf, "directory.html", data); err != nil {
-		return c.Status(500).SendString("Error rendering template")
-	}
-
-	c.Set("Content-Type", "text/html; charset=utf-8")
-	return c.SendString(buf.String())
+	return c.Render("admin/directory", fiber.Map{
+		"Path":            data.Path,
+		"ParentPath":      data.ParentPath,
+		"Files":           data.Files,
+		"BreadcrumbPaths": data.BreadcrumbPaths,
+	})
 }
 
-func handleFile(c *fiber.Ctx, path string) error {
+func HandleBrowseFile(c *fiber.Ctx, path string) error {
 	ext := strings.ToLower(filepath.Ext(path))
 
 	textExts := map[string]bool{
@@ -351,13 +303,11 @@ func handleFile(c *fiber.Ctx, path string) error {
 			Content: string(content),
 		}
 
-		var buf strings.Builder
-		if err := templates.ExecuteTemplate(&buf, "file.html", data); err != nil {
-			return c.Status(500).SendString("Error rendering template")
-		}
-
-		c.Set("Content-Type", "text/html; charset=utf-8")
-		return c.SendString(buf.String())
+		return c.Render("admin/file", fiber.Map{
+			"Path":    data.Path,
+			"DirPath": data.DirPath,
+			"Content": data.Content,
+		})
 	}
 
 	return c.SendFile(path)
@@ -388,7 +338,7 @@ func trimPrefix(path string) string {
 }
 
 // 添加处理删除请求的函数
-func handleDelete(c *fiber.Ctx, path string) error {
+func HandleBrowseDelete(c *fiber.Ctx, path string) error {
 	// 添加路径日志，帮助调试
 	fmt.Printf("Attempting to delete file: %s\n", path)
 

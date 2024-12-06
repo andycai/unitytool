@@ -25,7 +25,7 @@ func (m *ServerConfModule) RegisterRoutes(app *fiber.App) {
 
 	// 配置页面路由
 	adminGroup.Get("/game/serverconf", func(c *fiber.Ctx) error {
-		return c.SendFile("templates/serverconf.html")
+		return c.Render("admin/serverconf", fiber.Map{})
 	})
 
 	// 私有 API 路由

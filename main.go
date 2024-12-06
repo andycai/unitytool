@@ -36,8 +36,8 @@ func main() {
 
 	// 创建 Fiber 应用，并配置模板引擎
 	app := fiber.New(fiber.Config{
-		Views:       engine,
-		ViewsLayout: "admin/layout", // 设置默认布局
+		Views: engine,
+		// ViewsLayout: "admin/layout", // 设置默认布局
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			code := fiber.StatusInternalServerError
 			if e, ok := err.(*fiber.Error); ok {
