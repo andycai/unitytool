@@ -38,6 +38,22 @@ func main() {
 	app := fiber.New(fiber.Config{
 		Views:       engine,
 		ViewsLayout: "admin/layout", // 设置默认布局
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			code := fiber.StatusInternalServerError
+			if e, ok := err.(*fiber.Error); ok {
+				code = e.Code
+			}
+
+			// 根据错误码返回对应的错误页面
+			switch code {
+			case fiber.StatusForbidden:
+				return c.Status(code).Render("errors/403", fiber.Map{}, "")
+			case fiber.StatusNotFound:
+				return c.Status(code).Render("errors/404", fiber.Map{}, "")
+			default:
+				return c.Status(code).Render("errors/500", fiber.Map{}, "")
+			}
+		},
 	})
 
 	// 注册静态路由
