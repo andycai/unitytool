@@ -1,248 +1,95 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>目录列表：{{.Path}}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .list { list-style: none; padding: 0; }
-        .list li { 
-            padding: 8px; 
-            border-bottom: 1px solid #eee; 
-            display: flex; 
-            align-items: center;
-            justify-content: space-between;
-        }
-        .list li:hover { background-color: #f5f5f5; }
-        .dir { color: #2c3e50; font-weight: bold; }
-        .file { color: #34495e; }
-        .size { color: #7f8c8d; margin-left: 10px; }
-        .time { color: #95a5a6; margin-left: 10px; }
-        .empty-message { color: #666; text-align: center; padding: 20px; }
-        .file-info { 
-            display: flex;
-            align-items: center;
-            flex: 1;
-        }
-        .delete-btn {
-            visibility: hidden;
-            padding: 4px 8px;
-            background-color: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            transition: background-color 0.2s;
-        }
-        .list li:hover .delete-btn { 
-            visibility: visible; 
-        }
-        .delete-btn:hover { 
-            background-color: #dc2626; 
-        }
-        .delete-btn svg {
-            width: 16px;
-            height: 16px;
-        }
-        .breadcrumb {
-            display: flex;
-            align-items: center;
-            padding: 8px 0;
-            margin-bottom: 16px;
-            border-bottom: 1px solid #eee;
-        }
-        .breadcrumb-item {
-            display: flex;
-            align-items: center;
-        }
-        .breadcrumb-item a {
-            color: #3b82f6;
-            text-decoration: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-        .breadcrumb-item a:hover {
-            background-color: #f0f9ff;
-        }
-        .breadcrumb-separator {
-            color: #9ca3af;
-            margin: 0 4px;
-        }
-        .breadcrumb-current {
-            color: #4b5563;
-            padding: 4px 8px;
-        }
-        .file-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            white-space: nowrap;
-        }
-        .upload-btn {
-            visibility: hidden;
-            padding: 4px 8px;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            transition: background-color 0.2s;
-            min-width: 90px;
-            justify-content: center;
-        }
-        .list li:hover .upload-btn {
-            visibility: visible;
-        }
-        .apk-upload {
-            background-color: #3b82f6;
-        }
-        .apk-upload:hover {
-            background-color: #2563eb;
-        }
-        .zip-upload {
-            background-color: #10b981;
-        }
-        .zip-upload:hover {
-            background-color: #059669;
-        }
-        .upload-btn svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-    </style>
-    <script>
-        function deleteFile(path, event) {
-            event.preventDefault();
-            event.stopPropagation();
-            
-            if (!confirm('确定要删除这个文件吗？')) {
-                return;
-            }
-
-            fetch('/admin/browse/' + encodeURIComponent(path), {
-                method: 'DELETE'
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    alert('删除失败: ' + response.statusText);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('删除失败: ' + error.message);
-            });
-        }
-
-        function uploadToFTP(path, type, event) {
-            event.preventDefault();
-            event.stopPropagation();
-            
-            if (!confirm('确定要上传这个' + type.toUpperCase() + '文件吗？')) {
-                return;
-            }
-
-            fetch('/admin/ftp/upload?file=' + encodeURIComponent(path) + '&type=' + type, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('上传成功');
-                } else {
-                    alert('上传失败: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('上传失败: ' + error.message);
-            });
-        }
-    </script>
-</head>
-<body>
-    <div class="breadcrumb">
-        <div class="breadcrumb-item">
-            <a href="/admin/browse/">根目录</a>
-        </div>
-        {{if ne .Path ""}}
-            {{$paths := splitPath .Path}}
-            {{$fullPath := ""}}
-            {{range $index, $part := $paths}}
-                {{if ne $part ""}}
-                    {{$fullPath = printf "%s/%s" $fullPath $part}}
-                    <span class="breadcrumb-separator">/</span>
-                    <div class="breadcrumb-item">
-                        {{if eq $index (sub (len $paths) 1)}}
-                            <span class="breadcrumb-current">{{$part}}</span>
-                        {{else}}
-                            <a href="/admin/browse{{$fullPath}}">{{$part}}</a>
-                        {{end}}
-                    </div>
+<div class="mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <!-- 面包屑导航 -->
+        <div class="flex items-center flex-wrap px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center text-sm">
+                <a href="{{.RootPath}}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">根目录</a>
+            </div>
+            {{if ne .Path ""}}
+                {{$paths := splitPath .Path}}
+                {{$fullPath := ""}}
+                {{range $index, $part := $paths}}
+                    {{if ne $part ""}}
+                        {{$fullPath = printf "%s/%s" $fullPath $part}}
+                        <span class="mx-2 text-gray-400 dark:text-gray-500">/</span>
+                        <div class="flex items-center text-sm">
+                            {{if eq $index (sub (len $paths) 1)}}
+                                <span class="text-gray-700 dark:text-gray-300">{{$part}}</span>
+                            {{else}}
+                                <a href="{{$.RootPath}}{{$fullPath}}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">{{$part}}</a>
+                            {{end}}
+                        </div>
+                    {{end}}
                 {{end}}
             {{end}}
+        </div>
+
+        <!-- 文件列表 -->
+        {{if .Entries}}
+        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+            {{if ne .Path ""}}
+            <div class="flex items-center justify-between px-4 py-1 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
+                <div class="flex items-center flex-1 min-w-0 gap-4">
+                    <a href="{{.RootPath}}{{if eq .Path ""}}..{{else}}{{.Path}}/..{{end}}" class="flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">
+                        <span class="mr-2">📁</span>
+                        <span>..</span>
+                    </a>
+                </div>
+            </div>
+            {{end}}
+            {{range .Entries}}
+            <div class="flex items-center justify-between px-4 py-1 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 group">
+                <div class="flex items-center flex-1 min-w-0 gap-4">
+                    {{if .IsDir}}
+                    <a href="{{$.RootPath}}{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">
+                        <span class="mr-2">📁</span>
+                        <span>{{.Name}}</span>
+                    </a>
+                    {{else}}
+                    <a href="{{$.RootPath}}{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="flex items-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200">
+                        <span class="mr-2">📄</span>
+                        <span>{{.Name}}</span>
+                    </a>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 shrink-0">{{.Size}} bytes</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 shrink-0 hidden sm:inline">{{.ModTime.Format "2006-01-02 15:04:05"}}</span>
+                    {{end}}
+                </div>
+                {{if not .IsDir}}
+                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button onclick="deleteFile('{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}', event)" 
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        删除
+                    </button>
+                    {{if hasSuffix .Name ".apk"}}
+                    <button onclick="uploadToFTP('{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}', 'apk', event)" 
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        上传APK
+                    </button>
+                    {{end}}
+                    {{if hasSuffix .Name ".zip"}}
+                    <button onclick="uploadToFTP('{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}', 'zip', event)" 
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        上传ZIP
+                    </button>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+            {{end}}
+        </div>
+        {{else}}
+        <div class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+            此文件夹为空
+        </div>
         {{end}}
     </div>
-    <h1>目录：{{.Path}}</h1>
-    {{if .Entries}}
-    <ul class="list">
-        {{if ne .Path ""}}
-        <li>
-            <div class="file-info">
-                <a href="/admin/browse/{{if eq .Path ""}}..{{else}}{{.Path}}/..{{end}}" class="dir">📁 ..</a>
-            </div>
-        </li>
-        {{end}}
-        {{range .Entries}}
-        <li>
-            <div class="file-info">
-                {{if .IsDir}}
-                <a href="/admin/browse/{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="dir">📁 {{.Name}}/</a>
-                {{else}}
-                <a href="/admin/browse/{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="file">📄 {{.Name}}</a>
-                <span class="size">{{.Size}} bytes</span>
-                {{end}}
-                <span class="time">{{.ModTime.Format "2006-01-02 15:04:05"}}</span>
-            </div>
-            {{if not .IsDir}}
-            <div class="file-actions">
-                <button onclick="deleteFile('{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}', event)" class="delete-btn">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    删除
-                </button>
-                {{if hasSuffix .Name ".apk"}}
-                <button onclick="uploadToFTP('{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}', 'apk', event)" class="upload-btn apk-upload">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    上传APK
-                </button>
-                {{end}}
-                {{if hasSuffix .Name ".zip"}}
-                <button onclick="uploadToFTP('{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}', 'zip', event)" class="upload-btn zip-upload">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    上传ZIP
-                </button>
-                {{end}}
-            </div>
-            {{end}}
-        </li>
-        {{end}}
-    </ul>
-    {{else}}
-    <p class="empty-message">此文件夹为空</p>
-    {{end}}
-</body>
-</html> 
+</div>

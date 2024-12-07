@@ -1,37 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>文件:{{.Path}}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        pre { 
-            background-color: #f5f5f5; 
-            padding: 15px; 
-            border-radius: 5px;
-            white-space: pre-wrap;       /* 保留空格和换行，但允许自动换行 */
-            word-wrap: break-word;       /* 允许在单词内部换行 */
-            overflow-wrap: break-word;   /* 现代浏览器的单词换行 */
-            max-width: 100%;             /* 确保不会超出父容器 */
-        }
-        .back { margin-bottom: 20px; }
-        .back a {
-            color: #3b82f6;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .back a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <div class="back">
-        <a href="/admin/browse/{{.DirPath}}">← 返回目录</a>
+<div class="mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <!-- 面包屑导航 -->
+        <div class="flex items-center flex-wrap px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center text-sm">
+                <a href="{{.RootPath}}{{.DirPath}}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 inline-flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    返回目录
+                </a>
+            </div>
+        </div>
+
+        <!-- 文件内容 -->
+        <div class="p-4">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">文件：{{.Path}}</h2>
+            <pre class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg whitespace-pre-wrap break-words overflow-x-auto text-sm font-mono text-gray-700 dark:text-gray-300">{{.Content}}</pre>
+        </div>
     </div>
-    <h2>文件: {{.Path}}</h2>
-    <pre>{{.Content}}</pre>
-</body>
-</html> 
+</div>

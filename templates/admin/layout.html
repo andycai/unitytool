@@ -195,6 +195,13 @@
             animation: shimmer 2s infinite linear;
         }
     </style>
+
+    <!-- 页面特定的样式 -->
+    {{if .Styles}}
+        {{range .Styles}}
+            <link rel="stylesheet" href="{{.}}">
+        {{end}}
+    {{end}}
 </head>
 <body x-data="adminLayout()" 
       :class="{'dark': theme === 'dark'}"
@@ -530,7 +537,7 @@
             </div>
 
             <!-- 页面内容 -->
-            <main class="flex-1 p-6 overflow-auto bg-gray-50 dark:bg-gray-900 relative">
+            <main class="flex-1 p-4 overflow-auto bg-gray-50 dark:bg-gray-900 relative">
                 {{ embed }}
             </main>
         </div>

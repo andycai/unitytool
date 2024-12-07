@@ -1,9 +1,9 @@
 package modules
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"github.com/andycai/unitool/handlers"
 	"github.com/andycai/unitool/middleware"
+	"github.com/gofiber/fiber/v2"
 )
 
 type AuthModule struct {
