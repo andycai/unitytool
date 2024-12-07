@@ -104,16 +104,12 @@ func HandleBrowseDirectory(c *fiber.Ctx, path string) error {
 	rootPath := "/admin/browse/"
 
 	return c.Render("admin/directory", fiber.Map{
-		"RootPath":   rootPath,
-		"Path":       relPath,
-		"Entries":    entries,
-		"ScriptName": "directory_script",
+		"Title":    "目录浏览",
+		"RootPath": rootPath,
+		"Path":     relPath,
+		"Entries":  entries,
 		"Scripts": []string{
 			"/static/js/admin/directory.js",
-		},
-		"StyleName": "directory_style",
-		"Styles": []string{
-			"/static/css/admin/directory.css",
 		},
 	}, "admin/layout")
 }
@@ -157,13 +153,11 @@ func HandleBrowseFile(c *fiber.Ctx, path string) error {
 	rootPath := "/admin/browse/"
 
 	return c.Render("admin/file", fiber.Map{
+		"Title":    "文件内容",
 		"Path":     filepath.Base(relPath),
 		"DirPath":  dirPath,
 		"Content":  string(content),
 		"RootPath": rootPath,
-		"Styles": []string{
-			"/static/css/admin/file.css",
-		},
 	}, "admin/layout")
 }
 

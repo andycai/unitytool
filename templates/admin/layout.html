@@ -5,6 +5,7 @@
     <title>管理后台 - {{ .Title }}</title>
     <script src="/static/js/alpine-3.14.1.js" defer></script>
     <script src="/static/js/tailwind-3.4.5.js"></script>
+    <link rel="stylesheet" href="/static/css/admin/layout.css">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -21,7 +22,7 @@
                             600: '#4B5563',
                             700: '#374151',
                             800: '#1F2937',
-                            900: '#111827',
+                            900: '#111827'
                         },
                         blue: {
                             50: '#EFF6FF',
@@ -33,7 +34,7 @@
                             600: '#2563EB',
                             700: '#1D4ED8',
                             800: '#1E40AF',
-                            900: '#1E3A8A',
+                            900: '#1E3A8A'
                         }
                     }
                 }
@@ -82,130 +83,17 @@
                     addUtilities(newUtilities, ['responsive', 'dark']);
                 }
             ]
-        }
+        };
     </script>
-    <style>
-        [x-cloak] { display: none !important; }
-        * {
-            transition-property: color, background-color, border-color, transform, opacity;
-            transition-duration: 200ms;
-            transition-timing-function: ease-in-out;
-        }
-
-        /* 自定义滚动条样式 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #666;
-        }
-
-        /* 暗色模式滚动条 */
-        .dark ::-webkit-scrollbar-track {
-            background: #1F2937;
-        }
-
-        .dark ::-webkit-scrollbar-thumb {
-            background: #4B5563;
-        }
-
-        .dark ::-webkit-scrollbar-thumb:hover {
-            background: #374151;
-        }
-
-        /* Firefox 滚动条样式 */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: #888 #f1f1f1;
-        }
-
-        .dark * {
-            scrollbar-color: #4B5563 #1F2937;
-        }
-
-        .page-enter {
-            opacity: 0;
-            transform: translateY(1rem);
-        }
-        .page-enter-active {
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 300ms ease-out, transform 300ms ease-out;
-        }
-        .menu-item-enter {
-            opacity: 0;
-            transform: translateX(-1rem);
-        }
-        .menu-item-enter-active {
-            opacity: 1;
-            transform: translateX(0);
-            transition: opacity 300ms ease-out, transform 300ms ease-out;
-        }
-        .fade-enter {
-            opacity: 0;
-            transform: translateY(0.5rem);
-        }
-        .fade-enter-active {
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 300ms ease-out, transform 300ms ease-out;
-        }
-        /* 优化页面过渡 */
-        .page-transition {
-            @apply transition-all duration-300 ease-in-out;
-        }
-        .page-enter {
-            @apply opacity-0 translate-y-4;
-        }
-        .page-enter-active {
-            @apply opacity-100 translate-y-0;
-        }
-        .page-leave {
-            @apply opacity-100 translate-y-0;
-        }
-        .page-leave-active {
-            @apply opacity-0 -translate-y-4;
-        }
-
-        /* 页面过渡动画 */
-        .animate-enter {
-            opacity: 0;
-            transform: translateY(1rem);
-            transition: opacity 300ms ease-out, transform 300ms ease-out;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        .animate-shimmer {
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite linear;
-        }
-    </style>
-
-    <!-- 页面特定的样式 -->
-    {{if .Styles}}
-        {{range .Styles}}
-            <link rel="stylesheet" href="{{.}}">
-        {{end}}
+    
+    <!-- 页面特定的头部内容 -->
+    {{if .Head}}
+        {{.Head}}
     {{end}}
 </head>
-<body x-data="adminLayout()" 
-      :class="{'dark': theme === 'dark'}"
-      class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body class="h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased" 
+      x-data="adminLayout()" 
+      :class="{ 'dark': theme === 'dark', 'overflow-hidden': mobileMenuOpen }">
     <!-- 通知组件 -->
     <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center space-y-2">
         <template x-for="notification in $store.notification.notifications" :key="notification.id">

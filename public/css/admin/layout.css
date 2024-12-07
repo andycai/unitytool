@@ -1,0 +1,107 @@
+/* 页面过渡动画 */
+.page-transition {
+    transition-property: all;
+    transition-duration: 300ms;
+    transition-timing-function: ease-in-out;
+}
+
+.page-enter {
+    opacity: 0;
+    transform: translateY(1rem);
+}
+
+.page-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+.page-leave {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.page-leave-active {
+    opacity: 0;
+    transform: translateY(-1rem);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+/* 菜单项动画 */
+.menu-item-enter {
+    opacity: 0;
+    transform: translateX(-1rem);
+}
+
+.menu-item-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+/* 淡入淡出动画 */
+.fade-enter {
+    opacity: 0;
+    transform: translateY(0.5rem);
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+/* 暗色模式滚动条 */
+.dark ::-webkit-scrollbar-track {
+    background: #1F2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #4B5563;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #374151;
+}
+
+/* Firefox 滚动条样式 */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+.dark * {
+    scrollbar-color: #4B5563 #1F2937;
+}
+
+/* Alpine.js 相关样式 */
+[x-cloak] {
+    display: none !important;
+}
+
+/* 全局过渡效果 */
+* {
+    transition-property: color, background-color, border-color, transform, opacity;
+    transition-duration: 200ms;
+    transition-timing-function: ease-in-out;
+} 
