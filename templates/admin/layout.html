@@ -94,7 +94,7 @@
 <body class="h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased" 
       x-data="adminLayout()" 
       :class="{ 'dark': theme === 'dark', 'overflow-hidden': mobileMenuOpen }">
-    <!-- 通知组件 -->
+    <!-- 通���组件 -->
     <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center space-y-2">
         <template x-for="notification in $store.notification.notifications" :key="notification.id">
             <div x-show="notification.show"
@@ -547,24 +547,61 @@
                     return path;
                 },
                 addTab(path) {
-                    // 如果标签已存在，不做任何改变
-                    if (this.recentTabs.some(tab => tab.path === path)) {
-                        return;
+                    // 检查路径是否在菜单中定义
+                    const isMenuPath = this.isPathInMenu(path);
+                    if (!isMenuPath) {
+                        return; // 如果路径不在菜单中，不添加标签
                     }
 
-                    // 如果超过最大数量，移除最老的标签
-                    if (this.recentTabs.length >= this.maxTabs) {
-                        this.recentTabs.shift();
+                    // 查找菜单项以获取标题
+                    const menuItem = this.findMenuItemByPath(path);
+                    if (!menuItem) {
+                        return; // 如果找不到对应的菜单项，不添加标签
                     }
 
-                    // 添加新标签到末尾
-                    this.recentTabs.push({
-                        name: this.getMenuName(path),
-                        path: path
-                    });
+                    // 检查标签是否已存在
+                    const existingTabIndex = this.recentTabs.findIndex(tab => tab.path === path);
+                    if (existingTabIndex !== -1) {
+                        // 如果标签已存在，将其移动到最后
+                        const tab = this.recentTabs.splice(existingTabIndex, 1)[0];
+                        this.recentTabs.push(tab);
+                    } else {
+                        // 如果标签不存在，添加新标签
+                        this.recentTabs.push({
+                            path: path,
+                            title: menuItem.name
+                        });
+
+                        // 如果标签数量超过最大值，移除最早的标签
+                        if (this.recentTabs.length > this.maxTabs) {
+                            this.recentTabs.shift();
+                        }
+                    }
 
                     // 保存到 localStorage
                     localStorage.setItem('recentTabs', JSON.stringify(this.recentTabs));
+                },
+                // 检查路径是否在菜单中定义
+                isPathInMenu(path) {
+                    return this.findMenuItemByPath(path) !== null;
+                },
+                // 在菜单树中查找指定路径的菜单项
+                findMenuItemByPath(path) {
+                    const searchInMenu = (items) => {
+                        for (const item of items) {
+                            // 检查当前菜单项
+                            if (item.menu && item.menu.path === path) {
+                                return item.menu;
+                            }
+                            // 检查子菜单项
+                            if (item.children && item.children.length > 0) {
+                                const found = searchInMenu(item.children);
+                                if (found) return found;
+                            }
+                        }
+                        return null;
+                    };
+                    return searchInMenu(this.menuTree);
                 },
                 closeTab(path) {
                     const index = this.recentTabs.findIndex(tab => tab.path === path);
