@@ -16,7 +16,7 @@
                             {{if eq $index (sub (len $paths) 1)}}
                                 <span class="text-gray-700 dark:text-gray-300">{{$part}}</span>
                             {{else}}
-                                <a href="{{$.RootPath}}{{$fullPath}}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">{{$part}}</a>
+                                <a href="{{$.RootPath}}/{{$fullPath}}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">{{$part}}</a>
                             {{end}}
                         </div>
                     {{end}}
@@ -30,7 +30,7 @@
             {{if ne .Path ""}}
             <div class="flex items-center justify-between px-4 py-1 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
                 <div class="flex items-center flex-1 min-w-0 gap-4">
-                    <a href="{{.RootPath}}{{if eq .Path ""}}..{{else}}{{.Path}}/..{{end}}" class="flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">
+                    <a href="{{.RootPath}}/{{if eq .Path ""}}..{{else}}{{.Path}}/..{{end}}" class="flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">
                         <span class="mr-2">📁</span>
                         <span>..</span>
                     </a>
@@ -41,12 +41,12 @@
             <div class="flex items-center justify-between px-4 py-1 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 group">
                 <div class="flex items-center flex-1 min-w-0 gap-4">
                     {{if .IsDir}}
-                    <a href="{{$.RootPath}}{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">
+                    <a href="{{$.RootPath}}/{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">
                         <span class="mr-2">📁</span>
                         <span>{{.Name}}</span>
                     </a>
                     {{else}}
-                    <a href="{{$.RootPath}}{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="flex items-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200">
+                    <a href="{{$.RootPath}}/{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="flex items-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200">
                         <span class="mr-2">📄</span>
                         <span>{{.Name}}</span>
                     </a>

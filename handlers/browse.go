@@ -101,7 +101,7 @@ func HandleBrowseDirectory(c *fiber.Ctx, path string) error {
 		relPath = ""
 	}
 
-	rootPath := "/admin/browse/"
+	rootPath := "/admin/browse"
 
 	return c.Render("admin/directory", fiber.Map{
 		"Title":    "目录浏览",
@@ -150,7 +150,7 @@ func HandleBrowseFile(c *fiber.Ctx, path string) error {
 		dirPath = ""
 	}
 
-	rootPath := "/admin/browse/"
+	rootPath := "/admin/browse"
 
 	return c.Render("admin/file", fiber.Map{
 		"Title":    "文件内容",
