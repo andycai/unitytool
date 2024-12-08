@@ -1,8 +1,8 @@
 package modules
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"github.com/andycai/unitool/handlers"
+	"github.com/gofiber/fiber/v2"
 )
 
 type GameLogsModule struct {
@@ -18,19 +18,28 @@ func (m *GameLogsModule) RegisterRoutes(app *fiber.App) {
 		return
 	}
 
-	apiGroup.Post("/game_logs", func(c *fiber.Ctx) error {
+	adminGroup.Get("/game/logs", func(c *fiber.Ctx) error {
+		return c.Render("admin/game_logs", fiber.Map{
+			"Title": "游戏日志",
+			"Scripts": []string{
+				"/static/js/admin/game_logs.js",
+			},
+		}, "admin/layout")
+	})
+
+	apiGroup.Post("/game/logs", func(c *fiber.Ctx) error {
 		return handlers.CreateLog(c, m.DB)
 	})
 
-	apiGroup.Get("/game_logs", func(c *fiber.Ctx) error {
+	apiGroup.Get("/game/logs", func(c *fiber.Ctx) error {
 		return handlers.GetLogs(c, m.DB)
 	})
 
-	apiGroup.Delete("/game_logs/before", func(c *fiber.Ctx) error {
+	apiGroup.Delete("/game/logs/before", func(c *fiber.Ctx) error {
 		return handlers.DeleteLogsBefore(c, m.DB)
 	})
 
-	apiGroup.Delete("/game_logs/:id", func(c *fiber.Ctx) error {
+	apiGroup.Delete("/game/logs/:id", func(c *fiber.Ctx) error {
 		return handlers.DeleteLog(c, m.DB)
 	})
 }

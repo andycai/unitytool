@@ -487,7 +487,7 @@ function logSystem() {
         },
 
         async fetchLogs() {
-            const response = await fetch(`/api/game_logs?page=${this.page}&limit=${this.limit}&search=${this.searchQuery}`);
+            const response = await fetch(`/api/game/logs?page=${this.page}&limit=${this.limit}&search=${this.searchQuery}`);
             const data = await response.json();
             this.logs = data.logs;
             this.total = data.total;
@@ -505,7 +505,7 @@ function logSystem() {
                 return;
             }
 
-            const response = await fetch(`/api/game_logs/before?date=${this.selectedDate}`, {
+            const response = await fetch(`/api/game/logs/before?date=${this.selectedDate}`, {
                 method: 'DELETE'
             });
             const data = await response.json();
@@ -522,7 +522,7 @@ function logSystem() {
                 return;
             }
 
-            fetch(`/api/game_logs/${id}`, { method: 'DELETE' })
+            fetch(`/api/game/logs/${id}`, { method: 'DELETE' })
                 .then(response => response.json())
                 .then(data => {
                     if (data.code === 0) {

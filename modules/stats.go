@@ -1,8 +1,8 @@
 package modules
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"github.com/andycai/unitool/handlers"
+	"github.com/gofiber/fiber/v2"
 )
 
 type StatsModule struct {
@@ -17,6 +17,19 @@ func (m *StatsModule) RegisterRoutes(app *fiber.App) {
 	if !m.Config.IsEnabled() {
 		return
 	}
+
+	adminGroup.Get("/game/stats", func(c *fiber.Ctx) error {
+		return c.Render("admin/stats", fiber.Map{
+			"Title": "游戏统计",
+			"Scripts": []string{
+				"/static/js/chart-4.4.4.js",
+				"/static/js/hammer-2.0.8.js",
+				"/static/js/chartjs-plugin-zoom.min.js",
+				"/static/js/chartjs-adapter-date-fns.bundle.min.js",
+				"/static/js/admin/stats.js",
+			},
+		}, "admin/layout")
+	})
 
 	// 创建统计记录
 	apiGroup.Post("/stats", func(c *fiber.Ctx) error {
