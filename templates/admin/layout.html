@@ -94,7 +94,7 @@
 <body class="h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased" 
       x-data="adminLayout()" 
       :class="{ 'dark': theme === 'dark', 'overflow-hidden': mobileMenuOpen }">
-    <!-- 通���组件 -->
+    <!-- 通知组件 -->
     <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center space-y-2">
         <template x-for="notification in $store.notification.notifications" :key="notification.id">
             <div x-show="notification.show"

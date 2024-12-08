@@ -17,27 +17,42 @@ function menuManagement() {
         },
         loading: false,
 
+        get flattenedMenus() {
+            if (!this.menuTree || !Array.isArray(this.menuTree) || this.menuTree.length === 0) {
+                return [];
+            }
+            
+            const flattened = [];
+            const processMenu = (menuNode, level = 0) => {
+                if (!menuNode || !menuNode.menu) return;
+                
+                flattened.push({ ...menuNode.menu, level });
+                if (menuNode.children && Array.isArray(menuNode.children) && menuNode.children.length > 0) {
+                    menuNode.children.forEach(child => {
+                        processMenu(child, level + 1);
+                    });
+                }
+            };
+            
+            this.menuTree.forEach(menuNode => processMenu(menuNode));
+            return flattened;
+        },
+
         init() {
             this.fetchMenus();
         },
 
         async fetchMenus() {
             try {
-                // 获取菜单树
                 const treeResponse = await fetch('/api/menus/tree');
                 if (!treeResponse.ok) throw new Error('获取菜单树失败');
-                const treeData = await treeResponse.json();
-                console.log('Menu Tree:', treeData); // Debug log
-                this.menuTree = treeData;
+                this.menuTree = await treeResponse.json();
 
-                // 获取父级菜单列表（仅一级菜单）
                 const response = await fetch('/api/menus');
                 if (!response.ok) throw new Error('获取菜单列表失败');
                 const menus = await response.json();
                 this.parentMenus = menus.filter(menu => menu.parent_id === 0);
-                console.log('Parent Menus:', this.parentMenus); // Debug log
             } catch (error) {
-                console.error('Menu fetch error:', error); // Debug log
                 Alpine.store('notification').show(error.message, 'error');
             }
         },
@@ -58,7 +73,6 @@ function menuManagement() {
         },
 
         editMenu(menu) {
-            console.log('Editing menu:', menu); // Debug log
             this.editMode = true;
             this.currentMenu = menu;
             this.form = {
@@ -96,7 +110,6 @@ function menuManagement() {
                 const url = this.editMode ? `/api/menus/${this.currentMenu.id}` : '/api/menus';
                 const method = this.editMode ? 'PUT' : 'POST';
                 
-                console.log('Submitting form:', this.form); // Debug log
                 const response = await fetch(url, {
                     method,
                     headers: {
@@ -117,7 +130,6 @@ function menuManagement() {
                 this.closeModal();
                 this.fetchMenus();
             } catch (error) {
-                console.error('Submit error:', error); // Debug log
                 Alpine.store('notification').show(error.message, 'error');
             } finally {
                 this.loading = false;
@@ -128,7 +140,6 @@ function menuManagement() {
             if (!confirm('确定要删除这个菜单吗？如果是父级菜单，其下的子菜单也会被删除。')) return;
 
             try {
-                console.log('Deleting menu:', id); // Debug log
                 const response = await fetch(`/api/menus/${id}`, {
                     method: 'DELETE'
                 });
@@ -141,7 +152,6 @@ function menuManagement() {
                 Alpine.store('notification').show('菜单删除成功', 'success');
                 this.fetchMenus();
             } catch (error) {
-                console.error('Delete error:', error); // Debug log
                 Alpine.store('notification').show(error.message, 'error');
             }
         }
