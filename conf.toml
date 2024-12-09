@@ -20,9 +20,10 @@ browse = true     # 文件浏览模块
 ftp = true        # FTP上传模块
 serverconf = true # 服务器配置模块
 cmd = true        # 命令模块
-pack = true       # 打包模块
+package = true    # 打包模块
 auth = true       # 认证模块
 adminlog = true   # 管理日志模块
+citask = true     # 任务管理模块
 
 [database]
 driver = "sqlite"

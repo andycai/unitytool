@@ -111,7 +111,7 @@ func InitModules(app *fiber.App, db *gorm.DB) {
 		&PackModule{
 			BaseModule: BaseModule{
 				DB:     db,
-				Config: utils.GetModuleConfig("pack"),
+				Config: utils.GetModuleConfig("package"),
 			},
 		},
 		&AuthModule{
@@ -124,6 +124,12 @@ func InitModules(app *fiber.App, db *gorm.DB) {
 			BaseModule: BaseModule{
 				DB:     db,
 				Config: utils.GetModuleConfig("adminlog"),
+			},
+		},
+		&CITaskModule{
+			BaseModule: BaseModule{
+				DB:     db,
+				Config: utils.GetModuleConfig("citask"),
 			},
 		},
 	}

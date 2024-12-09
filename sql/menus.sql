@@ -20,4 +20,5 @@ INSERT INTO menus (id, parent_id, name, path, icon, permission, sort, is_show) V
 (12, 10, 'FTP上传', '/admin/tools/upload', 'upload', 'tools:upload', 2, 1),
 (13, 10, '服务器配置', '/admin/tools/serverconf', 'serverconf', 'serverconf:list', 3, 1),
 (14, 10, '命令执行', '/admin/tools/terminal', 'terminal', 'tools:terminal', 4, 1),
-(15, 10, '打包工具', '/admin/tools/package', 'package', 'package:list', 5, 1); 
+(15, 10, '打包工具', '/admin/tools/package', 'package', 'package:list', 5, 1),
+(16, 10, '任务管理', '/admin/citask', 'task', 'citask:list', 6, 1); 
