@@ -18,7 +18,7 @@ func (m *StatsModule) RegisterRoutes(app *fiber.App) {
 		return
 	}
 
-	adminGroup.Get("/game/stats", func(c *fiber.Ctx) error {
+	adminGroup.Get("/stats", func(c *fiber.Ctx) error {
 		return c.Render("admin/stats", fiber.Map{
 			"Title": "游戏统计",
 			"Scripts": []string{

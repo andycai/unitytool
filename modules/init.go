@@ -69,7 +69,7 @@ func InitModules(app *fiber.App, db *gorm.DB) {
 		&GameLogsModule{
 			BaseModule: BaseModule{
 				DB:     db,
-				Config: utils.GetModuleConfig("game_logs"),
+				Config: utils.GetModuleConfig("gamelog"),
 			},
 		},
 		&StatsModule{
@@ -123,7 +123,7 @@ func InitModules(app *fiber.App, db *gorm.DB) {
 		&AdminLogsModule{
 			BaseModule: BaseModule{
 				DB:     db,
-				Config: utils.GetModuleConfig("admin_logs"),
+				Config: utils.GetModuleConfig("adminlog"),
 			},
 		},
 	}

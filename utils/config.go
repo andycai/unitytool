@@ -51,7 +51,7 @@ type JSONPathConfig struct {
 }
 
 type ModulesConfig struct {
-	GameLogs   bool `toml:"game_logs"`
+	GameLog    bool `toml:"gamelog"`
 	Stats      bool `toml:"stats"`
 	Browse     bool `toml:"browse"`
 	FTP        bool `toml:"ftp"`
@@ -59,7 +59,7 @@ type ModulesConfig struct {
 	Cmd        bool `toml:"cmd"`
 	Pack       bool `toml:"pack"`
 	Auth       bool `toml:"auth"`
-	AdminLogs  bool `toml:"admin_logs"`
+	AdminLog   bool `toml:"adminlog"`
 }
 
 type StaticPathConfig struct {
@@ -170,8 +170,8 @@ func (c ModuleConfig) IsEnabled() bool {
 
 func GetModuleConfig(name string) ModuleConfig {
 	switch name {
-	case "game_logs":
-		return ModuleConfig{enabled: config.Modules.GameLogs}
+	case "gamelog":
+		return ModuleConfig{enabled: config.Modules.GameLog}
 	case "stats":
 		return ModuleConfig{enabled: config.Modules.Stats}
 	case "browse":
@@ -186,8 +186,8 @@ func GetModuleConfig(name string) ModuleConfig {
 		return ModuleConfig{enabled: config.Modules.Pack}
 	case "auth":
 		return ModuleConfig{enabled: config.Modules.Auth}
-	case "admin_logs":
-		return ModuleConfig{enabled: config.Modules.AdminLogs}
+	case "adminlog":
+		return ModuleConfig{enabled: config.Modules.AdminLog}
 	default:
 		return ModuleConfig{enabled: false}
 	}

@@ -24,7 +24,7 @@ function adminLogManagement() {
                     ...this.searchForm
                 });
 
-                const response = await fetch(`/api/logs?${params}`);
+                const response = await fetch(`/api/adminlog?${params}`);
                 if (!response.ok) throw new Error('获取日志列表失败');
                 const data = await response.json();
                 this.logs = data.data;
@@ -41,7 +41,7 @@ function adminLogManagement() {
             if (!confirm('确定要清理日志吗？此操作将删除所选日期之前的所有日志。')) return;
 
             try {
-                const response = await fetch(`/api/logs?beforeDate=${this.searchForm.endDate || new Date().toISOString()}`, {
+                const response = await fetch(`/api/adminlog?beforeDate=${this.searchForm.endDate || new Date().toISOString()}`, {
                     method: 'DELETE'
                 });
 

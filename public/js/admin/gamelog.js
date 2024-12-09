@@ -39,7 +39,7 @@ function gameLogManagement() {
                     ...this.filters
                 });
 
-                const response = await fetch(`/api/game/logs?${params}`);
+                const response = await fetch(`/api/gamelog?${params}`);
                 if (!response.ok) throw new Error('获取日志列表失败');
                 const data = await response.json();
                 
@@ -88,7 +88,7 @@ function gameLogManagement() {
             if (!confirm('确定要删除这条日志记录吗？')) return;
 
             try {
-                const response = await fetch(`/api/game/logs/${id}`, {
+                const response = await fetch(`/api/gamelog/${id}`, {
                     method: 'DELETE'
                 });
 
@@ -108,7 +108,7 @@ function gameLogManagement() {
             if (!confirm('确定要清理旧日志数据吗？此操作不可恢复。')) return;
 
             try {
-                const response = await fetch(`/api/game/logs/before?date=${this.filters.endDate}`, {
+                const response = await fetch(`/api/gamelog/before?date=${this.filters.endDate}`, {
                     method: 'DELETE'
                 });
 

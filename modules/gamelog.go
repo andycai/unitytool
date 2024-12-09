@@ -18,28 +18,28 @@ func (m *GameLogsModule) RegisterRoutes(app *fiber.App) {
 		return
 	}
 
-	adminGroup.Get("/game/logs", func(c *fiber.Ctx) error {
-		return c.Render("admin/game_logs", fiber.Map{
+	adminGroup.Get("/gamelog", func(c *fiber.Ctx) error {
+		return c.Render("admin/gamelog", fiber.Map{
 			"Title": "游戏日志",
 			"Scripts": []string{
-				"/static/js/admin/game_logs.js",
+				"/static/js/admin/gamelog.js",
 			},
 		}, "admin/layout")
 	})
 
-	apiGroup.Post("/game/logs", func(c *fiber.Ctx) error {
+	apiGroup.Post("/gamelog", func(c *fiber.Ctx) error {
 		return handlers.CreateLog(c, m.DB)
 	})
 
-	apiGroup.Get("/game/logs", func(c *fiber.Ctx) error {
+	apiGroup.Get("/gamelog", func(c *fiber.Ctx) error {
 		return handlers.GetLogs(c, m.DB)
 	})
 
-	apiGroup.Delete("/game/logs/before", func(c *fiber.Ctx) error {
+	apiGroup.Delete("/gamelog/before", func(c *fiber.Ctx) error {
 		return handlers.DeleteLogsBefore(c, m.DB)
 	})
 
-	apiGroup.Delete("/game/logs/:id", func(c *fiber.Ctx) error {
+	apiGroup.Delete("/gamelog/:id", func(c *fiber.Ctx) error {
 		return handlers.DeleteLog(c, m.DB)
 	})
 }

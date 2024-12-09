@@ -14,7 +14,7 @@ static_paths = [
 ]
 
 [modules]
-game_logs = true  # 游戏日志模块
+gamelog = true    # 游戏日志模块
 stats = true      # 统计模块
 browse = true     # 文件浏览模块
 ftp = true        # FTP上传模块
@@ -22,7 +22,7 @@ serverconf = true # 服务器配置模块
 cmd = true        # 命令模块
 pack = true       # 打包模块
 auth = true       # 认证模块
-admin_logs = true # 管理日志模块
+adminlog = true   # 管理日志模块
 
 [database]
 driver = "sqlite"
