@@ -269,25 +269,88 @@ function statsManagement() {
             this.chartInstances = {};
 
             const chartConfigs = [
-                { id: 'detailFpsChart', label: 'FPS', dataKey: 'fps', color: 'rgba(75, 192, 192, 1)' },
+                { 
+                    id: 'detailFpsChart', 
+                    label: 'FPS', 
+                    dataKey: 'fps', 
+                    color: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    borderWidth: 2
+                },
                 { 
                     id: 'detailMemoryChart', 
                     label: 'Memory', 
                     dataKeys: ['total_mem', 'used_mem', 'mono_used_mem', 'mono_heap_mem'],
                     colors: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(153, 102, 255, 1)'
-                    ]
+                        'rgba(75, 192, 192, 1)',   // 青绿色 - 总内存
+                        'rgba(255, 99, 132, 1)',   // 红色 - 已用内存
+                        'rgba(255, 159, 64, 1)',   // 橙色 - Mono已用内存
+                        'rgba(153, 102, 255, 1)'   // 紫色 - Mono堆内存
+                    ],
+                    backgroundColors: [
+                        'rgba(75, 192, 192, 0.1)',
+                        'rgba(255, 99, 132, 0.1)',
+                        'rgba(255, 159, 64, 0.1)',
+                        'rgba(153, 102, 255, 0.1)'
+                    ],
+                    borderWidth: 2
                 },
-                { id: 'detailTextureChart', label: 'Texture', dataKey: 'texture', color: 'rgba(255, 159, 64, 1)' },
-                { id: 'detailMeshChart', label: 'Mesh', dataKey: 'mesh', color: 'rgba(255, 99, 71, 1)' },
-                { id: 'detailAnimationChart', label: 'Animation', dataKey: 'animation', color: 'rgba(50, 205, 50, 1)' },
-                { id: 'detailAudioChart', label: 'Audio', dataKey: 'audio', color: 'rgba(0, 191, 255, 1)' },
-                { id: 'detailFontChart', label: 'Font', dataKey: 'font', color: 'rgba(255, 140, 0, 1)' },
-                { id: 'detailTextAssetChart', label: 'Text Asset', dataKey: 'text_asset', color: 'rgba(186, 85, 211, 1)' },
-                { id: 'detailShaderChart', label: 'Shader', dataKey: 'shader', color: 'rgba(0, 128, 128, 1)' }
+                { 
+                    id: 'detailTextureChart', 
+                    label: 'Texture', 
+                    dataKey: 'texture', 
+                    color: 'rgba(255, 206, 86, 1)',
+                    backgroundColor: 'rgba(255, 206, 86, 0.1)',
+                    borderWidth: 2
+                },
+                { 
+                    id: 'detailMeshChart', 
+                    label: 'Mesh', 
+                    dataKey: 'mesh', 
+                    color: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    borderWidth: 2
+                },
+                { 
+                    id: 'detailAnimationChart', 
+                    label: 'Animation', 
+                    dataKey: 'animation', 
+                    color: 'rgba(153, 102, 255, 1)',
+                    backgroundColor: 'rgba(153, 102, 255, 0.1)',
+                    borderWidth: 2
+                },
+                { 
+                    id: 'detailAudioChart', 
+                    label: 'Audio', 
+                    dataKey: 'audio', 
+                    color: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    borderWidth: 2
+                },
+                { 
+                    id: 'detailFontChart', 
+                    label: 'Font', 
+                    dataKey: 'font', 
+                    color: 'rgba(255, 159, 64, 1)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                    borderWidth: 2
+                },
+                { 
+                    id: 'detailTextAssetChart', 
+                    label: 'Text Asset', 
+                    dataKey: 'text_asset', 
+                    color: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    borderWidth: 2
+                },
+                { 
+                    id: 'detailShaderChart', 
+                    label: 'Shader', 
+                    dataKey: 'shader', 
+                    color: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    borderWidth: 2
+                }
             ];
 
             const zoomOptions = {
@@ -325,11 +388,17 @@ function statsManagement() {
                             label: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
                             data: chartData,
                             borderColor: config.colors[index],
+                            backgroundColor: config.backgroundColors[index],
+                            borderWidth: config.borderWidth,
+                            tension: 0.4,
+                            fill: true,
                             pointStyle: 'circle',
-                            pointRadius: 5,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: config.colors[index],
+                            pointBorderColor: 'white',
+                            pointBorderWidth: 2,
                             spanGaps: true,
-                            showLine: true,
-                            pointHoverRadius: 7,
                             pic: statsInfo.map(info => info.pic),
                             process: statsInfo.map(info => info.process)
                         };
@@ -432,11 +501,17 @@ function statsManagement() {
                                 label: config.label,
                                 data: chartData,
                                 borderColor: config.color,
+                                backgroundColor: config.backgroundColor,
+                                borderWidth: config.borderWidth,
+                                tension: 0.4,
+                                fill: true,
                                 pointStyle: 'circle',
-                                pointRadius: 5,
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                pointBackgroundColor: config.color,
+                                pointBorderColor: 'white',
+                                pointBorderWidth: 2,
                                 spanGaps: true,
-                                showLine: true,
-                                pointHoverRadius: 7,
                                 pic: statsInfo.map(info => info.pic),
                                 process: statsInfo.map(info => info.process)
                             }]
