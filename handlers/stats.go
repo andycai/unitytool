@@ -78,7 +78,7 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 // 获取资源占用记录
 func GetStats(c *fiber.Ctx, db *gorm.DB) error {
 	page := c.QueryInt("page", 1)
-	limit := c.QueryInt("limit", 10)
+	pageSize := c.QueryInt("pageSize", 20)
 	searchQuery := c.Query("search", "")
 	dateStr := c.Query("date", "")
 
@@ -100,16 +100,16 @@ func GetStats(c *fiber.Ctx, db *gorm.DB) error {
 	query.Count(&total)
 
 	var stats []models.StatsRecord
-	offset := (page - 1) * limit
-	if err := query.Offset(offset).Order("created_at desc").Limit(limit).Find(&stats).Error; err != nil {
+	offset := (page - 1) * pageSize
+	if err := query.Offset(offset).Order("created_at desc").Limit(pageSize).Find(&stats).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot fetch stats records"})
 	}
 
 	return c.JSON(fiber.Map{
-		"stats": stats,
-		"total": total,
-		"page":  page,
-		"limit": limit,
+		"stats":    stats,
+		"total":    total,
+		"page":     page,
+		"pageSize": pageSize,
 	})
 }
 

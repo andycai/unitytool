@@ -8,6 +8,8 @@ function statsManagement() {
         chartInstances: {},
         currentPointIndex: {},
         total: 0,
+        currentPage: 1,
+        pageSize: 50,
         detailData: null,
         filters: {
             startDate: '',
@@ -212,6 +214,8 @@ function statsManagement() {
         async fetchStats() {
             try {
                 const params = new URLSearchParams({
+                    page: this.currentPage,
+                    pageSize: this.pageSize,
                     ...this.filters
                 });
 
@@ -675,6 +679,20 @@ function statsManagement() {
 
         refreshData() {
             this.fetchStats();
+        },
+
+        previousPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.fetchStats();
+            }
+        },
+
+        nextPage() {
+            if (this.currentPage * this.pageSize < this.total) {
+                this.currentPage++;
+                this.fetchStats();
+            }
         },
 
         formatDateTime(timestamp) {

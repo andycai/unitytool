@@ -2,9 +2,9 @@
 function gameLogManagement() {
     return {
         logs: [],
-        totalLogs: 0,
+        total: 0,
         currentPage: 1,
-        pageSize: 20,
+        pageSize: 50,
         showModal: false,
         currentLog: null,
         currentLogIndex: -1,
@@ -44,7 +44,7 @@ function gameLogManagement() {
                 const data = await response.json();
                 
                 this.logs = data.logs;
-                this.totalLogs = data.total;
+                this.total = data.total;
             } catch (error) {
                 Alpine.store('notification').show(error.message, 'error');
             }
@@ -136,7 +136,7 @@ function gameLogManagement() {
         },
 
         nextPage() {
-            if (this.currentPage * this.pageSize < this.totalLogs) {
+            if (this.currentPage * this.pageSize < this.total) {
                 this.currentPage++;
                 this.fetchLogs();
             }

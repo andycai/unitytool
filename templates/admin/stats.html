@@ -90,6 +90,29 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- 分页 -->
+        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                    显示 <span x-text="(currentPage - 1) * pageSize + 1"></span> 到 
+                    <span x-text="Math.min(currentPage * pageSize, total)"></span> 条，
+                    共 <span x-text="total"></span> 条
+                </div>
+                <div class="flex space-x-2">
+                    <button @click="previousPage" 
+                            :disabled="currentPage === 1"
+                            class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50">
+                        上一页
+                    </button>
+                    <button @click="nextPage" 
+                            :disabled="currentPage * pageSize >= total"
+                            class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50">
+                        下一页
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 详情模态框 -->

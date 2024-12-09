@@ -69,12 +69,12 @@ function logSystem() {
         },
 
         async fetchStats() {
-            const response = await fetch(`/api/stats?page=${this.statsPage}&limit=${this.statsLimit}&search=${this.statsSearchQuery}`);
+            const response = await fetch(`/api/stats?page=${this.statsPage}&pageSize=${this.statsLimit}&search=${this.statsSearchQuery}`);
             const data = await response.json();
             this.stats = data.stats;
             this.statsTotal = data.total;
             this.statsPage = data.page;
-            this.statsLimit = data.limit;
+            this.statsLimit = data.pageSize;
         },
 
         showLogDetails(log) {
@@ -487,12 +487,12 @@ function logSystem() {
         },
 
         async fetchLogs() {
-            const response = await fetch(`/api/game/logs?page=${this.page}&limit=${this.limit}&search=${this.searchQuery}`);
+            const response = await fetch(`/api/game/logs?page=${this.page}&pageSize=${this.limit}&search=${this.searchQuery}`);
             const data = await response.json();
             this.logs = data.logs;
             this.total = data.total;
             this.page = data.page;
-            this.limit = data.limit;
+            this.limit = data.pageSize;
         },
 
         async deleteLogsBefore() {

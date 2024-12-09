@@ -44,7 +44,7 @@ func CreateLog(c *fiber.Ctx, db *gorm.DB) error {
 // 获取日志记录
 func GetLogs(c *fiber.Ctx, db *gorm.DB) error {
 	page := c.QueryInt("page", 1)
-	limit := c.QueryInt("limit", 10)
+	pageSize := c.QueryInt("pageSize", 20)
 	search := c.Query("search", "")
 
 	var logs []models.GameLog
@@ -58,17 +58,17 @@ func GetLogs(c *fiber.Ctx, db *gorm.DB) error {
 
 	query.Count(&total)
 
-	offset := (page - 1) * limit
-	result := query.Offset(offset).Order("create_at DESC").Limit(limit).Find(&logs)
+	offset := (page - 1) * pageSize
+	result := query.Offset(offset).Order("create_at DESC").Limit(pageSize).Find(&logs)
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch logs"})
 	}
 
 	return c.JSON(fiber.Map{
-		"logs":  logs,
-		"total": total,
-		"page":  page,
-		"limit": limit,
+		"logs":     logs,
+		"total":    total,
+		"page":     page,
+		"pageSize": pageSize,
 	})
 }
 
