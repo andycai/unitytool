@@ -18,6 +18,7 @@ function gameLogManagement() {
         init() {
             this.fetchLogs();
             this.initDateRange();
+            this.watchFilters();
         },
 
         initDateRange() {
@@ -156,6 +157,12 @@ function gameLogManagement() {
         formatStack(stack) {
             if (!stack) return '';
             return stack.replace(/\\n/g, '\n').replace(/\\t/g, '    ');
+        },
+
+        watchFilters() {
+            this.$watch('filters', () => {
+                this.fetchLogs();
+            });
         }
     }
 } 
