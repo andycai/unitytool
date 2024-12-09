@@ -35,15 +35,15 @@ function statsManagement() {
 
         initCharts() {
             const chartConfigs = [
-                { id: 'memoryChart', label: 'Memory', dataKeys: ['total_mem', 'used_mem', 'mono_used_mem'], colors: ['rgb(59, 130, 246)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)'] },
-                { id: 'fpsChart', label: 'FPS', dataKey: 'fps', color: 'rgb(99, 102, 241)' },
-                { id: 'textureChart', label: 'Texture', dataKey: 'texture', color: 'rgb(255, 159, 64)' },
-                { id: 'meshChart', label: 'Mesh', dataKey: 'mesh', color: 'rgb(255, 99, 71)' },
-                { id: 'animationChart', label: 'Animation', dataKey: 'animation', color: 'rgb(50, 205, 50)' },
-                { id: 'audioChart', label: 'Audio', dataKey: 'audio', color: 'rgb(0, 191, 255)' },
-                { id: 'fontChart', label: 'Font', dataKey: 'font', color: 'rgb(255, 140, 0)' },
-                { id: 'textAssetChart', label: 'Text Asset', dataKey: 'text_asset', color: 'rgb(186, 85, 211)' },
-                { id: 'shaderChart', label: 'Shader', dataKey: 'shader', color: 'rgb(0, 128, 128)' }
+                { id: 'detailMemoryChart', label: 'Memory', dataKeys: ['total_mem', 'used_mem', 'mono_used_mem'], colors: ['rgb(59, 130, 246)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)'] },
+                { id: 'detailFpsChart', label: 'FPS', dataKey: 'fps', color: 'rgb(99, 102, 241)' },
+                { id: 'detailTextureChart', label: 'Texture', dataKey: 'texture', color: 'rgb(255, 159, 64)' },
+                { id: 'detailMeshChart', label: 'Mesh', dataKey: 'mesh', color: 'rgb(255, 99, 71)' },
+                { id: 'detailAnimationChart', label: 'Animation', dataKey: 'animation', color: 'rgb(50, 205, 50)' },
+                { id: 'detailAudioChart', label: 'Audio', dataKey: 'audio', color: 'rgb(0, 191, 255)' },
+                { id: 'detailFontChart', label: 'Font', dataKey: 'font', color: 'rgb(255, 140, 0)' },
+                { id: 'detailTextAssetChart', label: 'Text Asset', dataKey: 'text_asset', color: 'rgb(186, 85, 211)' },
+                { id: 'detailShaderChart', label: 'Shader', dataKey: 'shader', color: 'rgb(0, 128, 128)' }
             ];
 
             chartConfigs.forEach(config => {
@@ -113,7 +113,7 @@ function statsManagement() {
                     }
                 };
 
-                if (config.id === 'memoryChart' || config.id === 'detailMemoryChart') {
+                if (config.id === 'detailMemoryChart') {
                     const datasets = config.dataKeys.map((key, index) => ({
                         label: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
                         data: [],
@@ -156,10 +156,10 @@ function statsManagement() {
         updateCharts() {
             if (!this.stats.length) return;
 
-            const timestamps = this.stats.map(stat => new Date(stat.mtime * 1000));
-            const totalMem = this.stats.map(stat => stat.system_mem / (1024 * 1024));
-            const usedMem = this.stats.map(stat => stat.used_mem / (1024 * 1024));
-            const monoMem = this.stats.map(stat => stat.mono_used_mem / (1024 * 1024));
+            const timestamps = this.stats.map(stat => new Date(stat.mtime));
+            const totalMem = this.stats.map(stat => stat.system_mem);
+            const usedMem = this.stats.map(stat => stat.used_mem);
+            const monoMem = this.stats.map(stat => stat.mono_used_mem);
             const fps = this.stats.map(stat => stat.fps);
             const texture = this.stats.map(stat => stat.texture);
             const mesh = this.stats.map(stat => stat.mesh);
@@ -172,7 +172,7 @@ function statsManagement() {
             const processes = this.stats.map(stat => stat.process || '');
 
             // 更新内存图表
-            const memoryChart = this.chartInstances['memoryChart'];
+            const memoryChart = this.chartInstances['detailMemoryChart'];
             if (memoryChart) {
                 memoryChart.data.labels = timestamps;
                 memoryChart.data.datasets[0].data = totalMem;
@@ -187,14 +187,14 @@ function statsManagement() {
 
             // 更新其他图表
             const chartData = {
-                'fpsChart': fps,
-                'textureChart': texture,
-                'meshChart': mesh,
-                'animationChart': animation,
-                'audioChart': audio,
-                'fontChart': font,
-                'textAssetChart': textAsset,
-                'shaderChart': shader
+                'detailFpsChart': fps,
+                'detailTextureChart': texture,
+                'detailMeshChart': mesh,
+                'detailAnimationChart': animation,
+                'detailAudioChart': audio,
+                'detailFontChart': font,
+                'detailTextAssetChart': textAsset,
+                'detailShaderChart': shader
             };
 
             Object.entries(chartData).forEach(([chartId, data]) => {
@@ -300,7 +300,7 @@ function statsManagement() {
                     const datasets = config.dataKeys.map((key, index) => {
                         const chartData = statsInfo.map(info => ({
                             x: new Date(info.mtime).getTime(),
-                            y: info[key] / (1024 * 1024) // Convert to MB
+                            y: info[key]
                         })).filter(point => point.y !== undefined && point.y !== null);
 
                         return {
