@@ -227,6 +227,14 @@ function statsManagement() {
         },
 
         async viewDetails(stat) {
+            // 如果已经有图表实例，先销毁它们
+            Object.values(this.chartInstances).forEach(chart => {
+                if (chart) {
+                    chart.destroy();
+                }
+            });
+            this.chartInstances = {};
+
             this.currentStat = stat;
             this.currentStatIndex = this.stats.findIndex(s => s.id === stat.id);
             this.showModal = true;
@@ -251,6 +259,14 @@ function statsManagement() {
                 console.warn('No stats info available to render charts');
                 return;
             }
+
+            // 确保在更新图表前清理旧的图表实例
+            Object.values(this.chartInstances).forEach(chart => {
+                if (chart) {
+                    chart.destroy();
+                }
+            });
+            this.chartInstances = {};
 
             const chartConfigs = [
                 { id: 'detailFpsChart', label: 'FPS', dataKey: 'fps', color: 'rgba(75, 192, 192, 1)' },
@@ -293,7 +309,9 @@ function statsManagement() {
                     return;
                 }
 
+                // 确保在创建新图表前清理旧的canvas上下文
                 const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                 if (config.dataKeys) {
                     // Memory chart with multiple datasets
@@ -317,92 +335,84 @@ function statsManagement() {
                         };
                     });
 
-                    if (this.chartInstances[config.id]) {
-                        // Update existing chart
-                        const chart = this.chartInstances[config.id];
-                        chart.data.datasets = datasets;
-                        chart.update();
-                    } else {
-                        // Create new chart instance
-                        this.chartInstances[config.id] = new Chart(ctx, {
-                            type: 'line',
-                            data: { datasets },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                spanGaps: true,
-                                showLine: true,
-                                scales: {
-                                    x: {
-                                        type: 'time',
-                                        time: {
-                                            unit: 'second',
-                                            displayFormats: {
-                                                second: 'HH:mm:ss'
-                                            }
-                                        },
-                                        ticks: {
-                                            source: 'auto',
-                                            maxRotation: 0,
-                                            autoSkip: true,
-                                            maxTicksLimit: 10
+                    this.chartInstances[config.id] = new Chart(ctx, {
+                        type: 'line',
+                        data: { datasets },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            spanGaps: true,
+                            showLine: true,
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'second',
+                                        displayFormats: {
+                                            second: 'HH:mm:ss'
                                         }
                                     },
-                                    y: {
-                                        beginAtZero: true
+                                    ticks: {
+                                        source: 'auto',
+                                        maxRotation: 0,
+                                        autoSkip: true,
+                                        maxTicksLimit: 10
                                     }
                                 },
-                                layout: {
-                                    padding: {
-                                        top: 20,
-                                        right: 20,
-                                        bottom: 20,
-                                        left: 20
-                                    }
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            layout: {
+                                padding: {
+                                    top: 20,
+                                    right: 20,
+                                    bottom: 20,
+                                    left: 20
+                                }
+                            },
+                            onClick: (evt, elements) => {
+                                if (elements.length > 0) {
+                                    const index = elements[0].index;
+                                    const datasetIndex = elements[0].datasetIndex;
+                                    const dataset = evt.chart.data.datasets[datasetIndex];
+                                    const pic = dataset.pic[index];
+                                    const process = dataset.process[index];
+                                    this.updateClickedPointInfo(pic, process);
+                                    
+                                    this.currentPointIndex[config.id] = index;
+                                    
+                                    evt.chart.setActiveElements([{
+                                        datasetIndex: datasetIndex,
+                                        index: index
+                                    }]);
+                                    evt.chart.update();
+                                }
+                            },
+                            plugins: {
+                                zoom: zoomOptions,
+                                title: {
+                                    display: true,
+                                    text: 'Memory Usage'
                                 },
-                                onClick: (evt, elements) => {
-                                    if (elements.length > 0) {
-                                        const index = elements[0].index;
-                                        const datasetIndex = elements[0].datasetIndex;
-                                        const dataset = evt.chart.data.datasets[datasetIndex];
-                                        const pic = dataset.pic[index];
-                                        const process = dataset.process[index];
-                                        this.updateClickedPointInfo(pic, process);
-                                        
-                                        this.currentPointIndex[config.id] = index;
-                                        
-                                        evt.chart.setActiveElements([{
-                                            datasetIndex: datasetIndex,
-                                            index: index
-                                        }]);
-                                        evt.chart.update();
-                                    }
-                                },
-                                plugins: {
-                                    zoom: zoomOptions,
-                                    title: {
-                                        display: true,
-                                        text: 'Memory Usage'
-                                    },
-                                    tooltip: {
-                                        usePointStyle: true,
-                                        callbacks: {
-                                            title: function(context) {
-                                                let date = new Date(context[0].parsed.x);
-                                                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                                            }
+                                tooltip: {
+                                    usePointStyle: true,
+                                    callbacks: {
+                                        title: function(context) {
+                                            let date = new Date(context[0].parsed.x);
+                                            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                                         }
-                                    }
-                                },
-                                onHover: (event, chartElement) => {
-                                    if (event.native) {
-                                        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
                                     }
                                 }
                             },
-                            plugins: [ChartZoom]
-                        });
-                    }
+                            onHover: (event, chartElement) => {
+                                if (event.native) {
+                                    event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                                }
+                            }
+                        },
+                        plugins: [ChartZoom]
+                    });
                 } else {
                     // Single dataset charts
                     const chartData = statsInfo.map(info => ({
@@ -415,112 +425,109 @@ function statsManagement() {
                         return;
                     }
 
-                    if (this.chartInstances[config.id]) {
-                        // Update existing chart
-                        const chart = this.chartInstances[config.id];
-                        chart.data.datasets[0].data = chartData;
-                        chart.data.datasets[0].pic = statsInfo.map(info => info.pic);
-                        chart.data.datasets[0].process = statsInfo.map(info => info.process);
-                        chart.update();
-                    } else {
-                        // Create new chart instance
-                        this.chartInstances[config.id] = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                datasets: [{
-                                    label: config.label,
-                                    data: chartData,
-                                    borderColor: config.color,
-                                    pointStyle: 'circle',
-                                    pointRadius: 5,
-                                    spanGaps: true,
-                                    showLine: true,
-                                    pointHoverRadius: 7,
-                                    pic: statsInfo.map(info => info.pic),
-                                    process: statsInfo.map(info => info.process)
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
+                    this.chartInstances[config.id] = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            datasets: [{
+                                label: config.label,
+                                data: chartData,
+                                borderColor: config.color,
+                                pointStyle: 'circle',
+                                pointRadius: 5,
                                 spanGaps: true,
                                 showLine: true,
-                                scales: {
-                                    x: {
-                                        type: 'time',
-                                        time: {
-                                            unit: 'second',
-                                            displayFormats: {
-                                                second: 'HH:mm:ss'
-                                            }
-                                        },
-                                        ticks: {
-                                            source: 'auto',
-                                            maxRotation: 0,
-                                            autoSkip: true,
-                                            maxTicksLimit: 10
+                                pointHoverRadius: 7,
+                                pic: statsInfo.map(info => info.pic),
+                                process: statsInfo.map(info => info.process)
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            spanGaps: true,
+                            showLine: true,
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'second',
+                                        displayFormats: {
+                                            second: 'HH:mm:ss'
                                         }
                                     },
-                                    y: {
-                                        beginAtZero: true
+                                    ticks: {
+                                        source: 'auto',
+                                        maxRotation: 0,
+                                        autoSkip: true,
+                                        maxTicksLimit: 10
                                     }
                                 },
-                                layout: {
-                                    padding: {
-                                        top: 20,
-                                        right: 20,
-                                        bottom: 20,
-                                        left: 20
-                                    }
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            layout: {
+                                padding: {
+                                    top: 20,
+                                    right: 20,
+                                    bottom: 20,
+                                    left: 20
+                                }
+                            },
+                            onClick: (evt, elements) => {
+                                if (elements.length > 0) {
+                                    const index = elements[0].index;
+                                    const datasetIndex = elements[0].datasetIndex;
+                                    const dataset = evt.chart.data.datasets[datasetIndex];
+                                    const pic = dataset.pic[index];
+                                    const process = dataset.process[index];
+                                    this.updateClickedPointInfo(pic, process);
+                                    
+                                    this.currentPointIndex[config.id] = index;
+                                    
+                                    evt.chart.setActiveElements([{
+                                        datasetIndex: datasetIndex,
+                                        index: index
+                                    }]);
+                                    evt.chart.update();
+                                }
+                            },
+                            plugins: {
+                                zoom: zoomOptions,
+                                title: {
+                                    display: true,
+                                    text: config.label
                                 },
-                                onClick: (evt, elements) => {
-                                    if (elements.length > 0) {
-                                        const index = elements[0].index;
-                                        const datasetIndex = elements[0].datasetIndex;
-                                        const dataset = evt.chart.data.datasets[datasetIndex];
-                                        const pic = dataset.pic[index];
-                                        const process = dataset.process[index];
-                                        this.updateClickedPointInfo(pic, process);
-                                        
-                                        this.currentPointIndex[config.id] = index;
-                                        
-                                        evt.chart.setActiveElements([{
-                                            datasetIndex: datasetIndex,
-                                            index: index
-                                        }]);
-                                        evt.chart.update();
-                                    }
-                                },
-                                plugins: {
-                                    zoom: zoomOptions,
-                                    title: {
-                                        display: true,
-                                        text: config.label
-                                    },
-                                    tooltip: {
-                                        usePointStyle: true,
-                                        callbacks: {
-                                            title: function(context) {
-                                                let date = new Date(context[0].parsed.x);
-                                                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                                            }
+                                tooltip: {
+                                    usePointStyle: true,
+                                    callbacks: {
+                                        title: function(context) {
+                                            let date = new Date(context[0].parsed.x);
+                                            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                                         }
-                                    }
-                                },
-                                onHover: (event, chartElement) => {
-                                    if (event.native) {
-                                        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
                                     }
                                 }
                             },
-                            plugins: [ChartZoom]
-                        });
-                    }
+                            onHover: (event, chartElement) => {
+                                if (event.native) {
+                                    event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                                }
+                            }
+                        },
+                        plugins: [ChartZoom]
+                    });
                 }
             });
         },
 
         closeModal() {
+            // 销毁所有图表实例
+            Object.values(this.chartInstances).forEach(chart => {
+                if (chart) {
+                    chart.destroy();
+                }
+            });
+            this.chartInstances = {};
             this.showModal = false;
             this.currentStat = null;
             this.currentStatIndex = -1;
