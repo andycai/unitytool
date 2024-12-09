@@ -613,9 +613,16 @@
                         if (!response.ok) throw new Error('加载菜单失败');
                         this.menuTree = await response.json();
                         
-                        // 加载菜单后，重新初始化标签和展开当前菜单
+                        // 加载菜单后，只初始化标签，不自动展开菜单
                         this.initializeTabs();
-                        this.expandCurrentMenuParent();
+                        
+                        // 如果菜单是展开状态，并且localStorage中有保存的展开组，则恢复
+                        if (!this.collapsed) {
+                            const savedGroup = localStorage.getItem('expandedMenuGroup');
+                            if (savedGroup) {
+                                this.expandedGroup = parseInt(savedGroup);
+                            }
+                        }
                     } catch (error) {
                         console.error('Failed to load menus:', error);
                         Alpine.store('notification').show('加载菜单失败', 'error');
@@ -624,20 +631,7 @@
                 initializeTabs() {
                     // 从 localStorage 获取保存的标签
                     const savedTabs = JSON.parse(localStorage.getItem('recentTabs') || '[]');
-                    
-                    // 使用菜单名称更新标签
-                    this.recentTabs = savedTabs.map(tab => ({
-                        path: tab.path,
-                        name: this.getMenuName(tab.path)
-                    }));
-
-                    // 如果当前页面不是首页且不在标签中，添加它
-                    if (this.currentPath !== '/admin' && !this.recentTabs.some(tab => tab.path === this.currentPath)) {
-                        this.addTab(this.currentPath);
-                    }
-
-                    // 保存更新后的标签
-                    localStorage.setItem('recentTabs', JSON.stringify(this.recentTabs));
+                    this.recentTabs = savedTabs;
                 },
                 hasPermission(permission) {
                     if (!permission) return true;
@@ -801,6 +795,12 @@
 
                     // 加载菜单数据
                     this.loadMenus();
+
+                    // 初始化时不显示浮动子菜单
+                    this.justCollapsed = true;
+                    setTimeout(() => {
+                        this.justCollapsed = false;
+                    }, 300);
                 },
                 // 查找当前路径对应的菜单项及其父菜单
                 findCurrentMenu(items = this.menuTree, parent = null) {
@@ -835,20 +835,11 @@
                     // 更新标签
                     const menuInfo = this.findCurrentMenu();
                     if (menuInfo) {
-                        const { current, parent } = menuInfo;
-                        // 展开父菜单
-                        if (parent) {
-                            this.expandedGroup = parent.id;
-                            localStorage.setItem('expandedMenuGroup', parent.id);
-                        }
+                        const { current } = menuInfo;
                         
                         // 添加到最近标签
                         const existingTabIndex = this.recentTabs.findIndex(tab => tab.path === path);
-                        if (existingTabIndex !== -1) {
-                            // 如果标签已存在，移动到末尾
-                            const tab = this.recentTabs.splice(existingTabIndex, 1)[0];
-                            this.recentTabs.push(tab);
-                        } else {
+                        if (existingTabIndex === -1) {
                             // 添加新标签
                             this.recentTabs.push({
                                 path: current.path,
@@ -858,9 +849,18 @@
                             if (this.recentTabs.length > this.maxTabs) {
                                 this.recentTabs.shift();
                             }
+                            // 保存到 localStorage
+                            localStorage.setItem('recentTabs', JSON.stringify(this.recentTabs));
                         }
-                        // 保存到 localStorage
-                        localStorage.setItem('recentTabs', JSON.stringify(this.recentTabs));
+                    }
+
+                    // 如果菜单是收起状态，确保不会展开
+                    if (this.collapsed) {
+                        this.expandedGroup = null;
+                        this.justCollapsed = true;
+                        setTimeout(() => {
+                            this.justCollapsed = false;
+                        }, 300);
                     }
 
                     try {

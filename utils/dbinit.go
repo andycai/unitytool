@@ -236,7 +236,7 @@ func initMenus(tx *gorm.DB) error {
 		ParentID:   0,
 		Name:       "系统管理",
 		Path:       "/admin",
-		Icon:       "settings",
+		Icon:       "system",
 		Sort:       1,
 		Permission: "",
 		IsShow:     true,
