@@ -4,9 +4,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/andycai/unitool/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"github.com/andycai/unitool/models"
 )
 
 // InitDatabase 初始化数据库
@@ -253,7 +253,7 @@ func initMenus(tx *gorm.DB) error {
 			ParentID:   systemManage.ID,
 			Name:       "用户管理",
 			Path:       "/admin/users",
-			Icon:       "user",
+			Icon:       "users",
 			Sort:       1,
 			Permission: "user:list",
 			IsShow:     true,
@@ -264,7 +264,7 @@ func initMenus(tx *gorm.DB) error {
 			ParentID:   systemManage.ID,
 			Name:       "角色管理",
 			Path:       "/admin/roles",
-			Icon:       "users",
+			Icon:       "roles",
 			Sort:       2,
 			Permission: "role:list",
 			IsShow:     true,
@@ -275,7 +275,7 @@ func initMenus(tx *gorm.DB) error {
 			ParentID:   systemManage.ID,
 			Name:       "权限管理",
 			Path:       "/admin/permissions",
-			Icon:       "key",
+			Icon:       "permissions",
 			Sort:       3,
 			Permission: "permission:list",
 			IsShow:     true,
@@ -297,7 +297,7 @@ func initMenus(tx *gorm.DB) error {
 			ParentID:   systemManage.ID,
 			Name:       "操作日志",
 			Path:       "/admin/logs",
-			Icon:       "list",
+			Icon:       "logs",
 			Sort:       5,
 			Permission: "admin_log:list",
 			IsShow:     true,
@@ -332,7 +332,7 @@ func initMenus(tx *gorm.DB) error {
 			ParentID:   gameManage.ID,
 			Name:       "游戏日志",
 			Path:       "/admin/game/logs",
-			Icon:       "file-text",
+			Icon:       "game-log",
 			Sort:       1,
 			Permission: "",
 			IsShow:     true,
@@ -343,7 +343,7 @@ func initMenus(tx *gorm.DB) error {
 			ParentID:   gameManage.ID,
 			Name:       "性能统计",
 			Path:       "/admin/game/stats",
-			Icon:       "bar-chart",
+			Icon:       "stats",
 			Sort:       2,
 			Permission: "",
 			IsShow:     true,
@@ -361,7 +361,7 @@ func initMenus(tx *gorm.DB) error {
 		ParentID:   0,
 		Name:       "系统工具",
 		Path:       "/admin/tools",
-		Icon:       "tool",
+		Icon:       "tools",
 		Sort:       3,
 		Permission: "",
 		IsShow:     true,
@@ -378,7 +378,7 @@ func initMenus(tx *gorm.DB) error {
 			ParentID:   toolsManage.ID,
 			Name:       "文件浏览",
 			Path:       "/admin/browse",
-			Icon:       "folder",
+			Icon:       "files",
 			Sort:       1,
 			Permission: "",
 			IsShow:     true,
