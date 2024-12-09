@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	"github.com/andycai/unitool/models"
 )
 
 // 创建资源占用记录
@@ -50,7 +50,7 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 		}
 
 		// Create directory if it doesn't exist
-		uploadDir := "./public/uploads"
+		uploadDir := "./uploads/stats"
 		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create upload directory"})
 		}
@@ -65,7 +65,7 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 		}
 
 		// Update the pic field with the file path
-		info.Pic = filepath.Join("uploads", filename)
+		info.Pic = filepath.Join("/uploads/stats", filename)
 	}
 
 	if err := db.Create(&info).Error; err != nil {
