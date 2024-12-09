@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/andycai/unitool/utils"
 	"github.com/gofiber/fiber/v2"
@@ -46,26 +47,78 @@ type ServerInfo struct {
 	ServerIP     string `json:"server_ip"`
 }
 
-// ServerInfo 结构体
+// ServerInfoConfig 结构体
 type ServerInfoConfig struct {
-	PFID              int    `json:"pfid"`
-	PFName            string `json:"pfname"`
-	Child             int    `json:"child"`
-	AdKey             string `json:"adKey"`
-	EntryURL          string `json:"entryURL"`
-	CDNURL            string `json:"cdnURL"`
-	CDNVersion        string `json:"cdnVersion"`
-	LoginAPI          string `json:"loginAPI"`
-	LoginURL          string `json:"loginURL"`
-	ServerListURL     string `json:"serverListURL"`
-	Version           string `json:"version"`
-	Time              string `json:"time"`
-	ServerZoneURL     string `json:"serverZoneURL"`
-	LastServerListURL string `json:"lastServerListURL"`
-	NoticeNumURL      string `json:"noticeNumURL"`
-	NoticeURL         string `json:"noticeURL"`
-	PkgVersion        string `json:"pkgVersion"`
-	DoPatcher         int    `json:"doPatcher"`
+	Fields []Field `json:"fields,omitempty"` // 字段列表，不保存到文件
+}
+
+// Field 字段结构
+type Field struct {
+	Key   string      `json:"key"`   // 字段名
+	Value interface{} `json:"value"` // 字段值
+	Type  string      `json:"type"`  // 字段类型
+}
+
+// NewServerInfoConfig 创建新的服务器配置
+func NewServerInfoConfig() *ServerInfoConfig {
+	return &ServerInfoConfig{
+		Fields: make([]Field, 0),
+	}
+}
+
+// MigrateFromOld 从旧配置迁移
+func (c *ServerInfoConfig) MigrateFromOld(old map[string]interface{}) {
+	// 处理所有字段
+	for key, value := range old {
+		if key != "fields" { // 跳过 fields 字段本身
+			fieldType := "string"
+			switch value.(type) {
+			case float64:
+				fieldType = "number"
+			case bool:
+				fieldType = "boolean"
+			}
+			c.Fields = append(c.Fields, Field{
+				Key:   key,
+				Value: value,
+				Type:  fieldType,
+			})
+		}
+	}
+}
+
+// ToMap 转换为map
+func (c *ServerInfoConfig) ToMap() map[string]interface{} {
+	result := make(map[string]interface{})
+
+	// 添加所有字段
+	for _, field := range c.Fields {
+		var value interface{}
+		switch field.Type {
+		case "number":
+			if v, ok := field.Value.(float64); ok {
+				value = v
+			} else if str, ok := field.Value.(string); ok {
+				if v, err := strconv.ParseFloat(str, 64); err == nil {
+					value = v
+				}
+			}
+		case "boolean":
+			if v, ok := field.Value.(bool); ok {
+				value = v
+			} else if str, ok := field.Value.(string); ok {
+				value = str == "true"
+			}
+		default:
+			value = fmt.Sprintf("%v", field.Value)
+		}
+		result[field.Key] = value
+	}
+
+	// 添加字段列表
+	// result["fields"] = c.Fields
+
+	return result
 }
 
 // 修改公告列表相关结构
@@ -172,21 +225,46 @@ func UpdateLastServer(c *fiber.Ctx) error {
 
 // 获取服务器信息
 func GetServerInfo(c *fiber.Ctx) error {
-	var serverInfo ServerInfoConfig
-	if err := readJSONFile(jsonPaths.ServerInfo, &serverInfo); err != nil {
+	var data map[string]interface{}
+	if err := readJSONFile(jsonPaths.ServerInfo, &data); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.JSON(serverInfo)
+
+	config := NewServerInfoConfig()
+	config.MigrateFromOld(data)
+
+	return c.JSON(config.ToMap())
 }
 
 // 更新服务器信息
 func UpdateServerInfo(c *fiber.Ctx) error {
-	var serverInfo ServerInfoConfig
-	if err := c.BodyParser(&serverInfo); err != nil {
+	var data map[string]interface{}
+	if err := c.BodyParser(&data); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
 	}
 
-	if err := writeJSONFile(jsonPaths.ServerInfo, serverInfo); err != nil {
+	config := NewServerInfoConfig()
+
+	// 处理字段列表
+	if fields, ok := data["fields"].([]interface{}); ok {
+		for _, field := range fields {
+			if fieldMap, ok := field.(map[string]interface{}); ok {
+				key, _ := fieldMap["key"].(string)
+				value := fieldMap["value"]
+				fieldType, _ := fieldMap["type"].(string)
+				if key != "" {
+					config.Fields = append(config.Fields, Field{
+						Key:   key,
+						Value: value,
+						Type:  fieldType,
+					})
+				}
+			}
+		}
+	}
+
+	// 保存时只保存实际的字段值，不保存 fields 数组
+	if err := writeJSONFile(jsonPaths.ServerInfo, config.ToMap()); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 

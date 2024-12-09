@@ -336,129 +336,57 @@
 
     <!-- 服务器信息 -->
     <div x-show="currentTab === 'serverInfo'" x-cloak>
-        <div class="bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-medium text-gray-900">服务器信息</h2>
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">服务器信息</h2>
+                    <button @click="addField"
+                            class="px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors duration-200">
+                        添加字段
+                    </button>
+                </div>
             </div>
             <div class="p-6">
-                <div class="space-y-6">
-                    <!-- 基本信息 -->
-                    <div class="grid grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">PFID</label>
-                            <input type="number" x-model.number="serverInfo.pfid" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md">
+                <div class="space-y-4">
+                    <template x-for="(field, index) in [...serverInfo.fields].reverse()" :key="index">
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">字段名</label>
+                                <input type="text" x-model="serverInfo.fields[serverInfo.fields.length - 1 - index].key"
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">字段值</label>
+                                <input type="text" x-model="serverInfo.fields[serverInfo.fields.length - 1 - index].value"
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md">
+                            </div>
+                            <div class="w-32">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">类型</label>
+                                <select x-model="serverInfo.fields[serverInfo.fields.length - 1 - index].type"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md">
+                                    <option value="string">字符串</option>
+                                    <option value="number">数字</option>
+                                    <option value="boolean">布尔值</option>
+                                </select>
+                            </div>
+                            <div class="pt-6">
+                                <button @click="removeField(serverInfo.fields.length - 1 - index)"
+                                        class="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 rounded-md transition-colors duration-200">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">PF名称</label>
-                            <input type="text" x-model="serverInfo.pfname" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Child</label>
-                            <input type="number" x-model.number="serverInfo.child" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">广告Key</label>
-                            <input type="text" x-model="serverInfo.adKey" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md">
-                        </div>
-                    </div>
+                    </template>
+                </div>
 
-                    <div class="grid grid-cols-5 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">版本</label>
-                            <input type="text" x-model="serverInfo.version" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">包版本号</label>
-                            <input type="text" x-model="serverInfo.pkgVersion" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CDN版本</label>
-                            <input type="text" x-model="serverInfo.cdnVersion" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">热更新状态</label>
-                            <input type="number" x-model.number="serverInfo.doPatcher" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">时间</label>
-                            <input type="text" x-model="serverInfo.time" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md">
-                        </div>
-                    </div>
-
-                    <!-- URL配置 -->
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">入口URL</label>
-                            <input type="text" x-model="serverInfo.entryURL" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CDN URL</label>
-                            <input type="text" x-model="serverInfo.cdnURL" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">登录API</label>
-                            <input type="text" x-model="serverInfo.loginAPI" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">登录URL</label>
-                            <input type="text" x-model="serverInfo.loginURL" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">服务器列表URL</label>
-                            <input type="text" x-model="serverInfo.serverListURL" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">服务器区域URL</label>
-                            <input type="text" x-model="serverInfo.serverZoneURL" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">最后登录服务器URL</label>
-                            <input type="text" x-model="serverInfo.lastServerListURL" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">公告数量URL</label>
-                            <input type="text" x-model="serverInfo.noticeNumURL" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">公告URL</label>
-                            <input type="text" x-model="serverInfo.noticeURL" 
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono">
-                        </div>
-                    </div>
-
-                    <!-- 保存按钮 -->
-                    <div class="flex justify-end">
-                        <button @click="saveServerInfo" 
-                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            保存更改
-                        </button>
-                    </div>
+                <!-- 保存按钮 -->
+                <div class="mt-6 flex justify-end">
+                    <button @click="saveServerInfo"
+                            class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors duration-200">
+                        保存更改
+                    </button>
                 </div>
             </div>
         </div>
