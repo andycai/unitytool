@@ -204,34 +204,24 @@
                 <template x-for="menu in menuTree" :key="menu.menu.id">
                     <div class="relative" 
                          @mouseenter="collapsed && (expandedGroup = menu.menu.id)"
-                         @mouseleave="collapsed && !$el.querySelector('.submenu:hover') && (expandedGroup = null)">
+                         @mouseleave="collapsed && !$el.querySelector('.submenu:hover') && (expandedGroup = null)"
+                         x-show="hasPermission(menu.menu.permission)">
                         <!-- 菜单组标题 -->
                         <button @click="!collapsed ? toggleMenuGroup(menu.menu.id) : null"
                             class="w-full flex items-center h-11 px-3 text-sm font-medium rounded-lg group relative"
                             :class="{
                                 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white': expandedGroup !== menu.menu.id,
                                 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400': expandedGroup === menu.menu.id
-                            }"
-                            x-show="hasPermission(menu.menu.permission)">
+                            }">
                             <span x-html="menuIcons[menu.menu.icon] || menuIcons.default" class="w-6 h-6 flex-shrink-0"></span>
-                            <span x-show="!collapsed" 
-                                  class="ml-3 flex-1 text-left transition-opacity duration-300"
-                                  x-transition:enter="transition-opacity ease-out duration-300"
-                                  x-transition:enter-start="opacity-0"
-                                  x-transition:enter-end="opacity-100"
-                                  x-transition:leave="transition-opacity ease-in duration-200"
-                                  x-transition:leave-start="opacity-100"
-                                  x-transition:leave-end="opacity-0"
-                                  x-text="menu.menu.name">
+                            <span class="ml-3" x-show="!collapsed" x-text="menu.menu.name"></span>
+                            <span x-show="!collapsed && menu.children.length > 0" class="ml-auto">
+                                <svg class="w-4 h-4 transition-transform"
+                                     :class="{ 'rotate-180': expandedGroup === menu.menu.id }"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
                             </span>
-                            <svg x-show="!collapsed" 
-                                 class="ml-2 w-5 h-5 flex-shrink-0 transform transition-transform duration-200"
-                                 :class="expandedGroup === menu.menu.id ? 'rotate-90' : ''"
-                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                    clip-rule="evenodd" />
-                            </svg>
                         </button>
 
                         <!-- 展开状态下的子菜单 -->
@@ -635,7 +625,17 @@
                 },
                 hasPermission(permission) {
                     if (!permission) return true;
-                    const userPermissions = this.user.role?.permissions?.map(p => p.code) || [];
+                    
+                    // 检查用户是否存在且有角色
+                    if (!this.user || !this.user.role) return false;
+                    
+                    // 获取用户权限列表
+                    const userPermissions = this.user.role.permissions?.map(p => p.code) || [];
+                    
+                    // 如果用户有 admin 权限，允许访问所有内容
+                    if (userPermissions.includes('admin')) return true;
+                    
+                    // 检查具体权限
                     return userPermissions.includes(permission);
                 },
                 getMenuName(path) {
