@@ -205,7 +205,7 @@
                     <div class="relative" 
                          @mouseenter="collapsed && (expandedGroup = menu.menu.id)"
                          @mouseleave="collapsed && !$el.querySelector('.submenu:hover') && (expandedGroup = null)"
-                         x-show="hasPermission(menu.menu.permission)">
+                         x-show="hasMenuPermission(menu)">
                         <!-- 菜单组标题 -->
                         <button @click="!collapsed ? toggleMenuGroup(menu.menu.id) : null"
                             class="w-full flex items-center h-11 px-3 text-sm font-medium rounded-lg group relative"
@@ -215,7 +215,7 @@
                             }">
                             <span x-html="menuIcons[menu.menu.icon] || menuIcons.default" class="w-6 h-6 flex-shrink-0"></span>
                             <span class="ml-3" x-show="!collapsed" x-text="menu.menu.name"></span>
-                            <span x-show="!collapsed && menu.children.length > 0" class="ml-auto">
+                            <span x-show="!collapsed && hasVisibleChildren(menu)" class="ml-auto">
                                 <svg class="w-4 h-4 transition-transform"
                                      :class="{ 'rotate-180': expandedGroup === menu.menu.id }"
                                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,7 +238,7 @@
                                     class="flex items-center h-10 px-3 text-sm font-medium rounded-lg transition-colors duration-200"
                                     :class="currentPath === child.menu.path ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'"
                                     @click.prevent="navigate(child.menu.path)"
-                                    x-show="hasPermission(child.menu.permission)">
+                                    x-show="hasMenuPermission(child)">
                                     <span x-html="menuIcons[child.menu.icon] || menuIcons.default" class="w-5 h-5 flex-shrink-0"></span>
                                     <span class="ml-3" x-text="child.menu.name"></span>
                                 </a>
@@ -246,7 +246,7 @@
                         </div>
 
                         <!-- 收起状态下的子菜单浮层 -->
-                        <div x-show="collapsed && expandedGroup === menu.menu.id && !justCollapsed"
+                        <div x-show="collapsed && expandedGroup === menu.menu.id && !justCollapsed && hasVisibleChildren(menu)"
                              x-transition:enter="transition-opacity ease-out duration-200"
                              x-transition:enter-start="opacity-0"
                              x-transition:enter-end="opacity-100"
@@ -263,7 +263,7 @@
                                     class="flex items-center h-10 px-4 text-sm font-medium transition-colors duration-200"
                                     :class="currentPath === child.menu.path ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'"
                                     @click.prevent="navigate(child.menu.path)"
-                                    x-show="hasPermission(child.menu.permission)">
+                                    x-show="hasMenuPermission(child)">
                                     <span x-html="menuIcons[child.menu.icon] || menuIcons.default" class="w-5 h-5 flex-shrink-0"></span>
                                     <span class="ml-3" x-text="child.menu.name"></span>
                                 </a>
@@ -624,7 +624,8 @@
                     this.recentTabs = savedTabs;
                 },
                 hasPermission(permission) {
-                    if (!permission) return true;
+                    // 如果没有配置权限，则不显示
+                    if (!permission) return false;
                     
                     // 检查用户是否存在且有角色
                     if (!this.user || !this.user.role) return false;
@@ -637,6 +638,19 @@
                     
                     // 检查具体权限
                     return userPermissions.includes(permission);
+                },
+                hasMenuPermission(menuItem) {
+                    // 如果是父菜单，检查是否有可见的子菜单
+                    if (menuItem.children && menuItem.children.length > 0) {
+                        return this.hasVisibleChildren(menuItem);
+                    }
+                    
+                    // 如果是子菜单或没有子菜单的菜单项，检查自身权限
+                    return this.hasPermission(menuItem.menu.permission);
+                },
+                hasVisibleChildren(menuItem) {
+                    // 检查是否有任何子菜单有权限显示
+                    return menuItem.children && menuItem.children.some(child => this.hasPermission(child.menu.permission));
                 },
                 getMenuName(path) {
                     // 首页特殊处理
