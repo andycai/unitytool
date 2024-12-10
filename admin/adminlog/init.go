@@ -1,0 +1,4 @@
+package adminlog
+
+func init() {
+}

@@ -1,0 +1,4 @@
+package menu
+
+func init() {
+}

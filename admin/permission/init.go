@@ -1,0 +1,4 @@
+package permission
+
+func init() {
+}

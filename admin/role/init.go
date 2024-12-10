@@ -1,0 +1,4 @@
+package role
+
+func init() {
+}
