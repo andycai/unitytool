@@ -1,4 +1,0 @@
-package serverinfo
-
-func init() {
-}

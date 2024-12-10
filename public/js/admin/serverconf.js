@@ -105,7 +105,7 @@ function serverConfig() {
 
         async loadServerList() {
             try {
-                const response = await fetch('/open/game/serverlist');
+                const response = await fetch('/api/game/serverlist');
                 if (!response.ok) throw new Error('加载失败');
                 this.serverList = await response.json();
             } catch (error) {
@@ -116,7 +116,7 @@ function serverConfig() {
 
         async loadLastServer() {
             try {
-                const response = await fetch('/open/game/lastserver');
+                const response = await fetch('/api/game/lastserver');
                 if (!response.ok) throw new Error('加载失败');
                 this.lastServer = await response.json();
             } catch (error) {
@@ -127,7 +127,7 @@ function serverConfig() {
 
         async loadServerInfo() {
             try {
-                const response = await fetch('/open/game/serverinfo');
+                const response = await fetch('/api/game/serverinfo');
                 if (!response.ok) throw new Error('加载失败');
                 const data = await response.json();
                 this.parseServerInfoFromAPI(data);
@@ -139,7 +139,7 @@ function serverConfig() {
 
         async loadNoticeList() {
             try {
-                const response = await fetch('/open/game/noticelist');
+                const response = await fetch('/api/game/noticelist');
                 if (!response.ok) throw new Error('加载失败');
                 this.noticeList = await response.json();
             } catch (error) {
@@ -150,7 +150,7 @@ function serverConfig() {
 
         async loadNoticeNum() {
             try {
-                const response = await fetch('/open/game/noticenum');
+                const response = await fetch('/api/game/noticenum');
                 if (!response.ok) throw new Error('加载失败');
                 this.noticeNum = await response.json();
             } catch (error) {

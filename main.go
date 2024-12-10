@@ -6,10 +6,13 @@ import (
 	"log"
 	"strings"
 
-	"github.com/andycai/unitool/modules"
+	_ "github.com/andycai/unitool/admin"
+	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/lib/database"
 	"github.com/andycai/unitool/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -19,7 +22,7 @@ func main() {
 	}
 
 	// 初始化数据库
-	db, err := modules.InitDatabase()
+	db, err := database.InitDatabase()
 	if err != nil {
 		log.Fatalf("数据库初始化失败: %v", err)
 	}
@@ -76,11 +79,16 @@ func main() {
 		app.Static(staticPath.Route, staticPath.Path)
 	}
 
+	dbs := []*gorm.DB{db}
+	core.SetupDatabase(dbs)
+	core.InitModules()
+	core.SetupRouter(app, db)
+
 	// 初始化全局路由
-	modules.InitRoutes(app, db)
+	// modules.InitRoutes(app, db)
 
 	// 初始化模块
-	modules.InitModules(app, db)
+	// modules.InitModules(app, db)
 
 	// 启动服务器
 	app.Listen(fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port))
