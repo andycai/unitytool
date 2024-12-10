@@ -8,7 +8,6 @@ import (
 
 type Config struct {
 	Server    ServerConfig   `toml:"server"`
-	Modules   ModulesConfig  `toml:"modules"`
 	Database  DatabaseConfig `toml:"database"`
 	JSONPaths JSONPathConfig `toml:"json_paths"`
 	FTP       FTPConfig      `toml:"ftp"`
@@ -48,19 +47,6 @@ type JSONPathConfig struct {
 	ServerInfo string `toml:"server_info"`
 	NoticeList string `toml:"notice_list"`
 	NoticeNum  string `toml:"notice_num"`
-}
-
-type ModulesConfig struct {
-	GameLog    bool `toml:"gamelog"`
-	Stats      bool `toml:"stats"`
-	Browse     bool `toml:"browse"`
-	FTP        bool `toml:"ftp"`
-	ServerConf bool `toml:"serverconf"`
-	Cmd        bool `toml:"cmd"`
-	Pack       bool `toml:"pack"`
-	Auth       bool `toml:"auth"`
-	AdminLog   bool `toml:"adminlog"`
-	CITask     bool `toml:"citask"`
 }
 
 type StaticPathConfig struct {
@@ -159,41 +145,6 @@ func GetJSONPathConfig() JSONPathConfig {
 
 func UpdateServerConfig(newConfig ServerConfig) {
 	config.Server = newConfig
-}
-
-type ModuleConfig struct {
-	enabled bool
-}
-
-func (c ModuleConfig) IsEnabled() bool {
-	return c.enabled
-}
-
-func GetModuleConfig(name string) ModuleConfig {
-	switch name {
-	case "gamelog":
-		return ModuleConfig{enabled: config.Modules.GameLog}
-	case "stats":
-		return ModuleConfig{enabled: config.Modules.Stats}
-	case "browse":
-		return ModuleConfig{enabled: config.Modules.Browse}
-	case "ftp":
-		return ModuleConfig{enabled: config.Modules.FTP}
-	case "serverconf":
-		return ModuleConfig{enabled: config.Modules.ServerConf}
-	case "cmd":
-		return ModuleConfig{enabled: config.Modules.Cmd}
-	case "pack":
-		return ModuleConfig{enabled: config.Modules.Pack}
-	case "auth":
-		return ModuleConfig{enabled: config.Modules.Auth}
-	case "adminlog":
-		return ModuleConfig{enabled: config.Modules.AdminLog}
-	case "citask":
-		return ModuleConfig{enabled: config.Modules.AdminLog}
-	default:
-		return ModuleConfig{enabled: false}
-	}
 }
 
 func UpdateDatabaseConfig(newConfig DatabaseConfig) {

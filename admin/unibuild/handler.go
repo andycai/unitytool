@@ -39,8 +39,8 @@ func executeSVNOperations(projectPath string) error {
 	return nil
 }
 
-// HandlePackAB 处理AssetBundle打包请求
-func HandlePackAB(c *fiber.Ctx) error {
+// buildResources 处理AssetBundle打包请求
+func buildResources(c *fiber.Ctx) error {
 	config := UnityBuildConfig{
 		ProjectPath:  c.Query("projectPath", ""),
 		OutputPath:   c.Query("outputPath", ""),
@@ -83,8 +83,8 @@ func HandlePackAB(c *fiber.Ctx) error {
 	})
 }
 
-// HandlePackAPK 处理APK打包请求
-func HandlePackAPK(c *fiber.Ctx) error {
+// buildApp 处理APK打包请求
+func buildApp(c *fiber.Ctx) error {
 	config := UnityBuildConfig{
 		ProjectPath:  c.Query("projectPath", ""),
 		OutputPath:   c.Query("outputPath", ""),

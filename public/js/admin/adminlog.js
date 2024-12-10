@@ -74,6 +74,7 @@ function adminLogManagement() {
                 'update': '更新',
                 'delete': '删除',
                 'run': '运行',
+                'ftp': 'FTP上传',
                 'upload': '上传',
                 'download': '下载',
                 'view': '查看'

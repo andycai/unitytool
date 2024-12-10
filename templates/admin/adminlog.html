@@ -24,6 +24,9 @@
                     <option value="create">创建</option>
                     <option value="update">更新</option>
                     <option value="delete">删除</option>
+                    <option value="run">运行</option>
+                    <option value="view">查看</option>
+                    <option value="ftp">FTP上传</option>
                 </select>
             </div>
             <div>
@@ -34,6 +37,11 @@
                     <option value="user">用户</option>
                     <option value="role">角色</option>
                     <option value="permission">权限</option>
+                    <option value="menu">菜单</option>
+                    <option value="gamelog">游戏日志</option>
+                    <option value="stats">数据统计</option>
+                    <option value="file">目录浏览</option>
+                    <option value="serverconf">服务器配置</option>
                 </select>
             </div>
             <div>
@@ -80,7 +88,8 @@
                                   :class="{
                                       'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': log.action === 'create',
                                       'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200': log.action === 'update',
-                                      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': log.action === 'delete'
+                                      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': log.action === 'delete',
+                                      'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200': log.action !== '',
                                   }"
                                   x-text="getActionText(log.action)">
                             </span>

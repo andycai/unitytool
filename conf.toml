@@ -10,20 +10,7 @@ static_paths = [
     { route = "/static", path = "./public" },
     { route = "/uploads", path = "./uploads" },
     { route = "/cdn", path = "./cdn" },
-    { route = "/cdn2", path = "./cdn2" },
 ]
-
-[modules]
-gamelog = true    # 游戏日志模块
-stats = true      # 统计模块
-browse = true     # 文件浏览模块
-ftp = true        # FTP上传模块
-serverconf = true # 服务器配置模块
-cmd = true        # 命令模块
-package = true    # 打包模块
-auth = true       # 认证模块
-adminlog = true   # 管理日志模块
-citask = true     # 任务管理模块
 
 [database]
 driver = "sqlite"
@@ -42,8 +29,8 @@ port = "21"
 user = "TestDQ"
 password = "135ajdq"
 # apk_path = "/DQ1-c/out"
-# zip_path = "/DQ1-cS/CLIENT_DQ1_DQDQ_CN"
-apk_path = "/-=共享你想共享的=-/dqtemp"
+# zip_path = "/DQ1-c/CLIENT_DQ1_DQDQ_CN"
+apk_path = "/PublisherDQ2"
 zip_path = "/PublisherDQ2"
 log_dir = "output/logs/ftp"
 max_log_size = 20971520

@@ -15,8 +15,8 @@ func initModule() {
 
 func initPublicRouter(publicGroup fiber.Router) {
 	// Unity打包接口
-	publicGroup.Post("/api/unibuild/ab", HandlePackAB)
-	publicGroup.Post("/api/unibuild/apk", HandlePackAPK)
+	publicGroup.Post("/api/unibuild/res", buildResources)
+	publicGroup.Post("/api/unibuild/app", buildApp)
 }
 
 func init() {
