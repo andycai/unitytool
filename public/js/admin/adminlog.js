@@ -90,7 +90,7 @@ function adminLogManagement() {
                 'serverconf_info': '服务器信息',
                 'serverconf_notice': '公告管理',
                 'serverconf_notice_num': '公告数量',
-                'citask': '任务管理',
+                'task': '任务管理',
                 'gamelog': '游戏日志',
                 'stats': '统计数据',
                 'browse': '目录浏览',
