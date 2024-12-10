@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/andycai/unitool/models"
@@ -37,6 +38,10 @@ func CreateLog(c *fiber.Ctx, db *gorm.DB) error {
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to create log"})
 	}
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "create", "gamelog", 0, fmt.Sprintf("批量创建游戏日志，角色：%s，数量：%d", logReq.RoleName, len(logReq.Logs)))
 
 	return c.Status(201).JSON(logReq.Logs)
 }
@@ -96,6 +101,10 @@ func DeleteLogsBefore(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(500).JSON(fiber.Map{"code": 3, "error": "Failed to delete logs"})
 	}
 
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "delete", "gamelog", 0, fmt.Sprintf("批量删除%s之前的游戏日志，共%d条", dateStr, result.RowsAffected))
+
 	return c.JSON(fiber.Map{"code": 0, "message": "Logs deleted successfully", "count": result.RowsAffected})
 }
 
@@ -106,7 +115,13 @@ func DeleteLog(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(400).JSON(fiber.Map{"code": 4, "error": "Log ID is required"})
 	}
 
-	result := db.Delete(&models.GameLog{}, id)
+	// 获取日志信息用于记录
+	var log models.GameLog
+	if err := db.First(&log, id).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"code": 6, "error": "Log not found"})
+	}
+
+	result := db.Delete(&log)
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"code": 5, "error": "Failed to delete log"})
 	}
@@ -114,6 +129,10 @@ func DeleteLog(c *fiber.Ctx, db *gorm.DB) error {
 	if result.RowsAffected == 0 {
 		return c.Status(404).JSON(fiber.Map{"code": 6, "error": "Log not found"})
 	}
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "delete", "gamelog", uint(log.ID), fmt.Sprintf("删除游戏日志，角色：%s", log.RoleName))
 
 	return c.JSON(fiber.Map{"code": 0, "message": "Log deleted successfully"})
 }

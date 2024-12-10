@@ -1,7 +1,10 @@
 package modules
 
 import (
+	"fmt"
+
 	"github.com/andycai/unitool/dao"
+	"github.com/andycai/unitool/handlers"
 	"github.com/andycai/unitool/middleware"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
@@ -75,6 +78,10 @@ func createMenu(c *fiber.Ctx) error {
 		})
 	}
 
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	handlers.CreateAdminLog(c, menuDao.DB, currentUser, "create", "menu", menu.ID, fmt.Sprintf("创建菜单：%s", menu.Name))
+
 	return c.JSON(menu)
 }
 
@@ -101,6 +108,10 @@ func updateMenu(c *fiber.Ctx) error {
 		})
 	}
 
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	handlers.CreateAdminLog(c, menuDao.DB, currentUser, "update", "menu", menu.ID, fmt.Sprintf("更新菜单：%s", menu.Name))
+
 	return c.JSON(menu)
 }
 
@@ -113,11 +124,23 @@ func deleteMenu(c *fiber.Ctx) error {
 		})
 	}
 
+	// 获取菜单信息用于日志记录
+	menu, err := menuDao.GetMenuByID(uint(id))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "菜单不存在",
+		})
+	}
+
 	if err := menuDao.DeleteMenu(uint(id)); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "删除菜单失败",
 		})
 	}
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	handlers.CreateAdminLog(c, menuDao.DB, currentUser, "delete", "menu", uint(id), fmt.Sprintf("删除菜单：%s", menu.Name))
 
 	return c.SendStatus(fiber.StatusNoContent)
 }

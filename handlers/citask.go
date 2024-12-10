@@ -42,6 +42,11 @@ func CreateTask(c *fiber.Ctx, db *gorm.DB) error {
 			"error": fmt.Sprintf("创建任务失败: %v", err),
 		})
 	}
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "create", "task", task.ID, fmt.Sprintf("创建任务：%s", task.Name))
+
 	return c.JSON(task)
 }
 
@@ -92,17 +97,34 @@ func UpdateTask(c *fiber.Ctx, db *gorm.DB) error {
 			"error": fmt.Sprintf("更新任务失败: %v", err),
 		})
 	}
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "update", "task", task.ID, fmt.Sprintf("更新任务：%s", task.Name))
+
 	return c.JSON(task)
 }
 
 // DeleteTask 删除任务
 func DeleteTask(c *fiber.Ctx, db *gorm.DB) error {
 	id := c.Params("id")
-	if err := db.Delete(&models.Task{}, id).Error; err != nil {
+	var task models.Task
+	if err := db.First(&task, id).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": fmt.Sprintf("任务不存在: %v", err),
+		})
+	}
+
+	if err := db.Delete(&task).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": fmt.Sprintf("删除任务失败: %v", err),
 		})
 	}
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "delete", "task", task.ID, fmt.Sprintf("删除任务：%s", task.Name))
+
 	return c.JSON(fiber.Map{"message": "删除成功"})
 }
 
@@ -127,6 +149,10 @@ func RunTask(c *fiber.Ctx, db *gorm.DB) error {
 			"error": fmt.Sprintf("创建任务日志失败: %v", err),
 		})
 	}
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "run", "task", task.ID, fmt.Sprintf("执行任务：%s", task.Name))
 
 	// 异步执行任务
 	go executeTask(&task, &taskLog, db)

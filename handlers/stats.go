@@ -72,6 +72,10 @@ func CreateStats(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot create stats record"})
 	}
 
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "create", "stats", record.ID, fmt.Sprintf("创建统计记录：%d", record.LoginID))
+
 	return c.Status(fiber.StatusCreated).JSON(record)
 }
 
@@ -160,6 +164,10 @@ func DeleteStatsBefore(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": 6, "error": "cannot delete stats info records"})
 	}
 
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "delete", "stats", 0, fmt.Sprintf("批量删除%s之前的统计记录，共%d条", dateStr, result.RowsAffected))
+
 	return c.JSON(fiber.Map{"code": 0, "message": "records deleted successfully", "count": result.RowsAffected})
 }
 
@@ -224,6 +232,10 @@ func DeleteStat(c *fiber.Ctx, db *gorm.DB) error {
 	if err := db.Delete(&statsRecord).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"code": 11, "error": "Failed to delete stat record"})
 	}
+
+	// 记录操作日志
+	currentUser := c.Locals("user").(models.User)
+	CreateAdminLog(c, db, currentUser, "delete", "stats", statsRecord.ID, fmt.Sprintf("删除统计记录：%d", statsRecord.LoginID))
 
 	return c.JSON(fiber.Map{"code": 0, "message": "Stat record, associated info, and image files deleted successfully"})
 }

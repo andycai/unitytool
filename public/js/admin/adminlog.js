@@ -72,7 +72,11 @@ function adminLogManagement() {
             const actionMap = {
                 'create': '创建',
                 'update': '更新',
-                'delete': '删除'
+                'delete': '删除',
+                'run': '运行',
+                'upload': '上传',
+                'download': '下载',
+                'view': '查看'
             };
             return actionMap[action] || action;
         },
@@ -80,7 +84,18 @@ function adminLogManagement() {
             const resourceMap = {
                 'user': '用户',
                 'role': '角色',
-                'permission': '权限'
+                'permission': '权限',
+                'serverconf_list': '服务器列表',
+                'serverconf_last': '最后服务器',
+                'serverconf_info': '服务器信息',
+                'serverconf_notice': '公告管理',
+                'serverconf_notice_num': '公告数量',
+                'citask': '任务管理',
+                'gamelog': '游戏日志',
+                'stats': '统计数据',
+                'browse': '目录浏览',
+                'menu': '菜单管理',
+                'adminlog': '操作日志'
             };
             return resourceMap[resource] || resource;
         },

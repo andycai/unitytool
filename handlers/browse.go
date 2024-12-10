@@ -150,6 +150,10 @@ func HandleBrowseFile(c *fiber.Ctx, path string) error {
 		dirPath = ""
 	}
 
+	// 记录操作日志
+	// currentUser := c.Locals("user").(models.User)
+	// CreateAdminLog(c, nil, currentUser, "view", "browse", 0, fmt.Sprintf("查看文件：%s", path))
+
 	rootPath := "/admin/browse"
 
 	return c.Render("admin/file", fiber.Map{
@@ -166,12 +170,16 @@ func HandleBrowseDelete(c *fiber.Ctx, path string) error {
 	err := os.Remove(path)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to delete file",
+			"error": "文件删除失败",
 		})
 	}
 
+	// 记录操作日志
+	// currentUser := c.Locals("user").(models.User)
+	// CreateAdminLog(c, nil, currentUser, "delete", "browse", 0, fmt.Sprintf("删除文件：%s", path))
+
 	return c.JSON(fiber.Map{
-		"message": "File deleted successfully",
+		"message": "文件删除成功",
 	})
 }
 
@@ -182,7 +190,7 @@ func HandleFTPUpload(c *fiber.Ctx, rootPath string) error {
 
 	if filePath == "" || (fileType != "apk" && fileType != "zip") {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "Invalid file path or type",
+			"error": "无效的文件路径或类型",
 		})
 	}
 
@@ -190,7 +198,7 @@ func HandleFTPUpload(c *fiber.Ctx, rootPath string) error {
 	decodedPath, err := url.QueryUnescape(filePath)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "Invalid path encoding",
+			"error": "无效的路径编码",
 		})
 	}
 
@@ -203,9 +211,13 @@ func HandleFTPUpload(c *fiber.Ctx, rootPath string) error {
 		})
 	}
 
+	// 记录操作日志
+	// currentUser := c.Locals("user").(models.User)
+	// CreateAdminLog(c, nil, currentUser, "upload", "browse", 0, fmt.Sprintf("上传文件：%s", fullPath))
+
 	return c.JSON(fiber.Map{
 		"success": true,
-		"message": "File uploaded successfully",
+		"message": "文件上传成功",
 	})
 }
 

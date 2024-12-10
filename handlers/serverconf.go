@@ -197,6 +197,10 @@ func UpdateServerList(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	// 记录操作日志
+	// currentUser := c.Locals("user").(models.User)
+	// CreateAdminLog(c, nil, currentUser, "update", "serverconf_list", 0, "更新服务器信息配置")
+
 	return c.JSON(fiber.Map{"message": "更新成功"})
 }
 
@@ -219,6 +223,10 @@ func UpdateLastServer(c *fiber.Ctx) error {
 	if err := writeJSONFile(jsonPaths.LastServer, lastServer); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
+
+	// 记录操作日志
+	// currentUser := c.Locals("user").(models.User)
+	// CreateAdminLog(c, nil, currentUser, "update", "serverconf_last", 0, "更新服务器信息配置")
 
 	return c.JSON(fiber.Map{"message": "更新成功"})
 }
@@ -268,6 +276,10 @@ func UpdateServerInfo(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	// 记录操作日志
+	// currentUser := c.Locals("user").(models.User)
+	// CreateAdminLog(c, nil, currentUser, "update", "serverconf_info", 0, "更新服务器信息配置")
+
 	return c.JSON(fiber.Map{"message": "更新成功"})
 }
 
@@ -290,6 +302,10 @@ func UpdateNoticeList(c *fiber.Ctx) error {
 	if err := writeJSONFile(jsonPaths.NoticeList, noticeList); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
+
+	// 记录操作日志
+	// currentUser := c.Locals("user").(models.User)
+	// CreateAdminLog(c, nil, currentUser, "update", "serverconf_notice", 0, "更新公告列表配置")
 
 	return c.JSON(fiber.Map{"message": "更新成功"})
 }
@@ -318,6 +334,10 @@ func UpdateNoticeNum(c *fiber.Ctx) error {
 	if err := writeJSONFile(jsonPaths.NoticeNum, noticeNum); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
+
+	// 记录操作日志
+	// currentUser := c.Locals("user").(models.User)
+	// CreateAdminLog(c, nil, currentUser, "update", "serverconf_notice_num", 0, "更新公告数量配置")
 
 	return c.JSON(fiber.Map{"message": "更新成功"})
 }
