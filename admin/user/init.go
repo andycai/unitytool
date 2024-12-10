@@ -32,10 +32,10 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 }
 
 func initAPICheckRouter(apiGroup fiber.Router) {
-	apiGroup.Get("/users", middleware.HasPermission("user:list"), GetUsers)
-	apiGroup.Post("/users", middleware.HasPermission("user:create"), CreateUser)
-	apiGroup.Put("/users/:id", middleware.HasPermission("user:update"), UpdateUser)
-	apiGroup.Delete("/users/:id", middleware.HasPermission("user:delete"), DeleteUser)
+	apiGroup.Get("/users", middleware.HasPermission("user:list"), getUsers)
+	apiGroup.Post("/users", middleware.HasPermission("user:create"), createUser)
+	apiGroup.Put("/users/:id", middleware.HasPermission("user:update"), updateUser)
+	apiGroup.Delete("/users/:id", middleware.HasPermission("user:delete"), deleteUser)
 }
 
 func init() {

@@ -16,7 +16,7 @@ func initModule() {
 
 func initPublicRouter(publicGroup fiber.Router) {
 	publicGroup.Post("/api/shell", func(c *fiber.Ctx) error {
-		return ExecShell(c, utils.GetServerConfig().ScriptPath)
+		return execShell(c, utils.GetServerConfig().ScriptPath)
 	})
 }
 

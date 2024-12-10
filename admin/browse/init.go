@@ -127,7 +127,7 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 
 	// FTP 上传路由
 	adminGroup.Post("/ftp/upload", middleware.HasPermission("file:ftp"), func(c *fiber.Ctx) error {
-		return HandleFTPUpload(c, utils.GetServerConfig().Output)
+		return uploadByFTP(c, utils.GetServerConfig().Output)
 	})
 }
 

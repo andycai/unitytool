@@ -24,8 +24,8 @@ type UpdateUserRequest struct {
 	Status   *int   `json:"status,omitempty"`
 }
 
-// GetUsers 获取用户列表
-func GetUsers(c *fiber.Ctx) error {
+// getUsers 获取用户列表
+func getUsers(c *fiber.Ctx) error {
 	var users []models.User
 	if err := db.Preload("Role").Find(&users).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "获取用户列表失败"})
@@ -33,8 +33,8 @@ func GetUsers(c *fiber.Ctx) error {
 	return c.JSON(users)
 }
 
-// CreateUser 创建用户
-func CreateUser(c *fiber.Ctx) error {
+// createUser 创建用户
+func createUser(c *fiber.Ctx) error {
 	var req CreateUserRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
@@ -73,8 +73,8 @@ func CreateUser(c *fiber.Ctx) error {
 	return c.JSON(user)
 }
 
-// UpdateUser 更新用户
-func UpdateUser(c *fiber.Ctx) error {
+// updateUser 更新用户
+func updateUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var req UpdateUserRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -117,8 +117,8 @@ func UpdateUser(c *fiber.Ctx) error {
 	return c.JSON(user)
 }
 
-// DeleteUser 删除用户
-func DeleteUser(c *fiber.Ctx) error {
+// deleteUser 删除用户
+func deleteUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var user models.User
 

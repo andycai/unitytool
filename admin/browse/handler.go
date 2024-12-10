@@ -170,8 +170,8 @@ func handleBrowseDelete(c *fiber.Ctx, path string) error {
 	})
 }
 
-// HandleFTPUpload 处理 FTP 上传请求
-func HandleFTPUpload(c *fiber.Ctx, rootPath string) error {
+// uploadByFTP 处理 FTP 上传请求
+func uploadByFTP(c *fiber.Ctx, rootPath string) error {
 	filePath := c.Query("file")
 	fileType := c.Query("type")
 

@@ -28,7 +28,7 @@ type ScriptForm struct {
 }
 
 // 执行 shell 脚本
-func ExecShell(c *fiber.Ctx, dir string) error {
+func execShell(c *fiber.Ctx, dir string) error {
 	var form ScriptForm
 	if err := c.BodyParser(&form); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
