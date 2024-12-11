@@ -1,83 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>登录</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 管理系统</title>
     <script src="/static/js/alpine-3.14.1.js" defer></script>
     <script src="/static/js/tailwind-3.4.5.js"></script>
     <style>
-        [x-cloak] { display: none !important; }
+        .login-bg {
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .login-card {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        @media (prefers-color-scheme: dark) {
+            .login-card {
+                background-color: rgba(17, 24, 39, 0.9);
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div x-data="loginForm()" class="min-h-screen flex items-center justify-center">
-        <div class="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
-            <!-- 通知组件 -->
-            <div x-show="notification.show" 
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 transform -translate-y-2"
-                 x-transition:enter-end="opacity-100 transform translate-y-0"
-                 x-transition:leave="transition ease-in duration-300"
-                 x-transition:leave-start="opacity-100 transform translate-y-0"
-                 x-transition:leave-end="opacity-0 transform -translate-y-2"
-                 class="fixed top-4 right-4 z-50"
-                 x-cloak>
-                <div :class="{
-                    'bg-red-500': notification.type === 'error',
-                    'bg-green-500': notification.type === 'success'
-                }" class="rounded-lg shadow-lg p-4 text-white">
-                    <p x-text="notification.message"></p>
-                </div>
-            </div>
-
-            <!-- 登录表单 -->
-            <div>
-                <h2 class="text-center text-3xl font-extrabold text-gray-900">
-                    登录系统
-                </h2>
-            </div>
-            <form class="mt-8 space-y-6" @submit.prevent="login">
-                <div class="rounded-md shadow-sm -space-y-px">
-                    <div>
-                        <label for="username" class="sr-only">用户名</label>
-                        <input id="username" 
-                               name="username" 
-                               type="text" 
-                               x-model="form.username"
-                               required 
-                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
-                               placeholder="用户名">
-                    </div>
-                    <div>
-                        <label for="password" class="sr-only">密码</label>
-                        <input id="password" 
-                               name="password" 
-                               type="password" 
-                               x-model="form.password"
-                               required 
-                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
-                               placeholder="密码">
-                    </div>
-                </div>
-
+<body class="login-bg min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="login-card max-w-md w-full space-y-8 p-10 rounded-xl shadow-2xl" x-data="loginForm()">
+        <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+                管理系统
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                请登录以继续操作
+            </p>
+        </div>
+        <form class="mt-8 space-y-6" @submit.prevent="submitForm">
+            <div class="rounded-md shadow-sm -space-y-px">
                 <div>
-                    <button type="submit" 
-                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                            <svg class="h-5 w-5 text-blue-500 group-hover:text-blue-400" 
-                                 xmlns="http://www.w3.org/2000/svg" 
-                                 viewBox="0 0 20 20" 
-                                 fill="currentColor" 
-                                 aria-hidden="true">
-                                <path fill-rule="evenodd" 
-                                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" 
-                                      clip-rule="evenodd" />
-                            </svg>
-                        </span>
-                        登录
-                    </button>
+                    <label for="username" class="sr-only">用户名</label>
+                    <input id="username" name="username" type="text" required x-model="form.username"
+                           class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+                           placeholder="用户名">
                 </div>
-            </form>
+                <div>
+                    <label for="password" class="sr-only">密码</label>
+                    <input id="password" name="password" type="password" required x-model="form.password"
+                           class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+                           placeholder="密码">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input id="remember-me" name="remember-me" type="checkbox" x-model="form.remember"
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded">
+                    <label for="remember-me" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+                        记住我
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" :disabled="loading"
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-blue-500 group-hover:text-blue-400" 
+                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" 
+                             aria-hidden="true">
+                            <path fill-rule="evenodd" 
+                                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" 
+                                  clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                    <span x-text="loading ? '登录中...' : '登录'"></span>
+                </button>
+            </div>
+        </form>
+
+        <!-- 错误提示 -->
+        <div x-show="error" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95"
+             class="mt-4 bg-red-50 dark:bg-red-900 border-l-4 border-red-400 p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700 dark:text-red-200" x-text="error"></p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -86,61 +101,40 @@
             return {
                 form: {
                     username: '',
-                    password: ''
+                    password: '',
+                    remember: false
                 },
-                notification: {
-                    show: false,
-                    message: '',
-                    type: 'error',
-                    timeout: null
-                },
-                showNotification(message, type = 'error') {
-                    if (this.notification.timeout) {
-                        clearTimeout(this.notification.timeout);
-                    }
-                    this.notification.message = message;
-                    this.notification.type = type;
-                    this.notification.show = true;
-                    this.notification.timeout = setTimeout(() => {
-                        this.notification.show = false;
-                    }, 3000);
-                },
-                async login() {
+                loading: false,
+                error: '',
+                async submitForm() {
+                    this.loading = true;
+                    this.error = '';
+
                     try {
                         const response = await fetch('/api/login', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify(this.form),
+                            body: JSON.stringify(this.form)
                         });
 
                         const result = await response.json();
 
-                        if (!response.ok || result.code !== 0) {
-                            throw new Error(result.error || result.message || '登录失败');
+                        if (!response.ok) {
+                            throw new Error(result.error || '登录失败');
                         }
 
                         // 保存 token 和用户信息
                         localStorage.setItem('token', result.data.token);
                         localStorage.setItem('user', JSON.stringify(result.data.user));
 
-                        // 登录成功，显示成功消息
-                        this.showNotification('登录成功', 'success');
-
-                        // 重定向 /damin
+                        // 登录成功，重定向到首页
                         window.location.href = '/admin';
-
-                        // 使用表单提交方式跳转，这样会带上 cookie
-                        // const form = document.createElement('form');
-                        // form.method = 'GET';
-                        // form.action = '/admin';
-                        // document.body.appendChild(form);
-                        // form.submit();
-
                     } catch (error) {
-                        console.error('Login error:', error);
-                        this.showNotification(error.message);
+                        this.error = error.message;
+                    } finally {
+                        this.loading = false;
                     }
                 }
             }
