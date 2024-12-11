@@ -256,7 +256,7 @@
         </div>
     </div>
 
-    <!-- 日志详情模��框 -->
+    <!-- 日志详情模态框 -->
     <div x-show="showLogDetailModal" 
          class="fixed inset-0 z-50 overflow-y-auto"
          x-transition:enter="transition ease-out duration-300"
@@ -274,18 +274,18 @@
                 </div>
 
                 <div class="px-6 py-4 space-y-4">
-                    <template x-if="currentLog">
+                    <template x-if="currentTaskLog">
                         <div>
                             <!-- 执行状态 -->
                             <div class="mb-4">
                                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">执行状态</h4>
                                 <span class="px-2 py-1 text-xs font-medium rounded-full"
                                       :class="{
-                                          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': currentLog.status === 'success',
-                                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': currentLog.status === 'failed',
-                                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': currentLog.status === 'running'
+                                          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': currentTaskLog.status === 'success',
+                                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': currentTaskLog.status === 'failed',
+                                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': currentTaskLog.status === 'running'
                                       }"
-                                      x-text="currentLog.status === 'success' ? '成功' : (currentLog.status === 'failed' ? '失败' : '执行中')">
+                                      x-text="currentTaskLog.status === 'success' ? '成功' : (currentTaskLog.status === 'failed' ? '失败' : '执行中')">
                                 </span>
                             </div>
 
@@ -293,9 +293,9 @@
                             <div class="mb-4">
                                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">执行时间</h4>
                                 <div class="text-sm text-gray-600 dark:text-gray-400">
-                                    <div>开始时间：<span x-text="formatDate(currentLog.start_time)"></span></div>
-                                    <div>结束时间：<span x-text="formatDate(currentLog.end_time)"></span></div>
-                                    <div>执行时长：<span x-text="currentLog.duration + '秒'"></span></div>
+                                    <div>开始时间：<span x-text="formatDate(currentTaskLog.start_time)"></span></div>
+                                    <div>结束时间：<span x-text="formatDate(currentTaskLog.end_time)"></span></div>
+                                    <div>执行时长：<span x-text="currentTaskLog.duration + '秒'"></span></div>
                                 </div>
                             </div>
 
@@ -303,15 +303,15 @@
                             <div class="mb-4">
                                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">执行输出</h4>
                                 <pre class="mt-1 p-4 bg-gray-100 dark:bg-gray-900 rounded-md overflow-x-auto text-sm font-mono text-gray-800 dark:text-gray-200"
-                                     x-text="currentLog.output || '无输出'"></pre>
+                                     x-text="currentTaskLog.output || '无输出'"></pre>
                             </div>
 
                             <!-- 错误信息 -->
-                            <template x-if="currentLog.error">
+                            <template x-if="currentTaskLog.error">
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">错误信息</h4>
                                     <pre class="mt-1 p-4 bg-red-50 dark:bg-red-900 rounded-md overflow-x-auto text-sm font-mono text-red-800 dark:text-red-200"
-                                         x-text="currentLog.error"></pre>
+                                         x-text="currentTaskLog.error"></pre>
                                 </div>
                             </template>
                         </div>
@@ -320,6 +320,93 @@
 
                 <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex justify-end">
                     <button type="button" @click="showLogDetailModal = false"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 执行进度模态框 -->
+    <div x-show="showProgressModal" 
+         class="fixed inset-0 z-50 overflow-y-auto"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
+
+            <div class="inline-block w-full max-w-2xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">任务执行进度</h3>
+                </div>
+
+                <div class="px-6 py-4 space-y-4">
+                    <!-- 任务信息 -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="currentTask?.name"></span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                  :class="{
+                                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': currentTask?.type === 'script',
+                                      'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200': currentTask?.type === 'http'
+                                  }"
+                                  x-text="currentTask?.type === 'script' ? '脚本' : 'HTTP'">
+                            </span>
+                        </div>
+                        <span class="text-sm text-gray-500 dark:text-gray-400" x-text="'#' + currentTaskLog?.id"></span>
+                    </div>
+
+                    <!-- 执行状态 -->
+                    <div class="flex items-center space-x-2">
+                        <div class="flex-1">
+                            <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full transition-all duration-500 ease-in-out"
+                                     :class="{
+                                         'bg-blue-500 animate-pulse': currentTaskLog?.status === 'running',
+                                         'bg-green-500': currentTaskLog?.status === 'success',
+                                         'bg-red-500': currentTaskLog?.status === 'failed'
+                                     }"
+                                     :style="'width: ' + getProgressWidth()"></div>
+                            </div>
+                        </div>
+                        <span class="text-sm font-medium" x-text="getProgressText()"></span>
+                    </div>
+
+                    <!-- 执行时间 -->
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                        <div>开始时间：<span x-text="formatDate(currentTaskLog?.start_time)"></span></div>
+                        <div>已运行：<span x-text="getRunningTime()"></span></div>
+                    </div>
+
+                    <!-- 实时输出 -->
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">执行输出</h4>
+                        <pre class="mt-1 p-4 bg-gray-100 dark:bg-gray-900 rounded-md overflow-x-auto text-sm font-mono text-gray-800 dark:text-gray-200 h-64"
+                             x-text="currentTaskLog?.output || '等待输出...'"
+                             x-ref="outputLog"></pre>
+                    </div>
+
+                    <!-- 错误信息 -->
+                    <template x-if="currentTaskLog?.error">
+                        <div>
+                            <h4 class="text-sm font-medium text-red-700 dark:text-red-300 mb-2">错误信息</h4>
+                            <pre class="mt-1 p-4 bg-red-50 dark:bg-red-900 rounded-md overflow-x-auto text-sm font-mono text-red-800 dark:text-red-200"
+                                 x-text="currentTaskLog?.error"></pre>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex justify-end space-x-3">
+                    <button type="button" @click="stopTask()" x-show="currentTaskLog?.status === 'running'"
+                            class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        停止
+                    </button>
+                    <button type="button" @click="closeProgress()"
                             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         关闭
                     </button>

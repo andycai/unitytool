@@ -2,13 +2,15 @@ function taskManagement() {
     return {
         tasks: [],
         taskLogs: [],
-        currentLog: null,
+        currentTask: null,
+        currentTaskLog: null,
         showTaskModal: false,
         showLogsModal: false,
         showLogDetailModal: false,
+        showProgressModal: false,
         editMode: false,
+        progressInterval: null,
         form: {
-            id: null,
             name: '',
             description: '',
             type: 'script',
@@ -20,28 +22,21 @@ function taskManagement() {
             timeout: 300,
             status: 'active'
         },
-
         init() {
-            this.loadTasks();
+            this.fetchTasks();
         },
-
-        // 加载任务列表
-        async loadTasks() {
+        async fetchTasks() {
             try {
                 const response = await fetch('/api/citask');
-                if (!response.ok) throw new Error('加载任务列表失败');
+                if (!response.ok) throw new Error('获取任务列表失败');
                 this.tasks = await response.json();
             } catch (error) {
-                console.error('加载任务列表失败:', error);
-                showToast('error', '加载任务列表失败');
+                Alpine.store('notification').show(error.message, 'error');
             }
         },
-
-        // 创建新任务
         createTask() {
             this.editMode = false;
             this.form = {
-                id: null,
                 name: '',
                 description: '',
                 type: 'script',
@@ -55,39 +50,39 @@ function taskManagement() {
             };
             this.showTaskModal = true;
         },
-
-        // 编辑任务
         editTask(task) {
             this.editMode = true;
-            this.form = { ...task };
+            this.form = {
+                ...task
+            };
             this.showTaskModal = true;
         },
-
-        // 提交任务表单
         async submitTask() {
             try {
                 const url = this.editMode ? `/api/citask/${this.form.id}` : '/api/citask';
                 const method = this.editMode ? 'PUT' : 'POST';
+                
                 const response = await fetch(url, {
                     method,
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(this.form),
+                    body: JSON.stringify(this.form)
                 });
 
-                if (!response.ok) throw new Error('保存任务失败');
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '操作失败');
+                }
 
-                await this.loadTasks();
+                await this.fetchTasks();
                 this.showTaskModal = false;
-                showToast('success', this.editMode ? '任务更新成功' : '任务创建成功');
+                Alpine.store('notification').show(this.editMode ? '任务更新成功' : '任务创建成功', 'success');
             } catch (error) {
                 console.error('保存任务失败:', error);
-                showToast('error', '保存任务失败');
+                Alpine.store('notification').show('保存任务失败', 'error');
             }
         },
-
-        // 删除任务
         async deleteTask(id) {
             if (!confirm('确定要删除这个任务吗？')) return;
 
@@ -98,79 +93,139 @@ function taskManagement() {
 
                 if (!response.ok) throw new Error('删除任务失败');
 
-                await this.loadTasks();
-                showToast('success', '任务删除成功');
+                await this.fetchTasks();
+                Alpine.store('notification').show('任务删除成功', 'success');
             } catch (error) {
                 console.error('删除任务失败:', error);
-                showToast('error', '删除任务失败');
+                Alpine.store('notification').show('删除任务失败', 'error');
             }
         },
-
-        // 执行任务
         async runTask(task) {
             try {
-                const response = await fetch(`/api/citask/${task.id}/run`, {
-                    method: 'POST',
+                const response = await fetch(`/api/citask/run/${task.id}`, {
+                    method: 'POST'
+                });
+                if (!response.ok) throw new Error('启动任务失败');
+                const taskLog = await response.json();
+                
+                // 显示进度模态框
+                this.currentTask = task;
+                this.currentTaskLog = taskLog;
+                this.showProgressModal = true;
+                
+                // 开始轮询进度
+                this.startProgressPolling(taskLog.id);
+                
+                // 自动滚动到底部
+                this.$nextTick(() => {
+                    if (this.$refs.outputLog) {
+                        this.$refs.outputLog.scrollTop = this.$refs.outputLog.scrollHeight;
+                    }
                 });
 
-                if (!response.ok) throw new Error('执行任务失败');
-
-                const result = await response.json();
-                showToast('success', '任务已开始执行');
-
-                // 如果需要实时更新任务状态，可以启动轮询
-                this.pollTaskStatus(result.log_id);
+                Alpine.store('notification').show('任务已开始执行', 'success');
             } catch (error) {
-                console.error('执行任务失败:', error);
-                showToast('error', '执行任务失败');
+                Alpine.store('notification').show(error.message, 'error');
             }
         },
-
-        // 轮询任务状态
-        async pollTaskStatus(logId) {
-            const poll = async () => {
-                try {
-                    const response = await fetch(`/api/citask/${logId}/status?log_id=${logId}`);
-                    if (!response.ok) throw new Error('获取任务状态失败');
-
-                    const log = await response.json();
-                    if (log.status !== 'running') {
-                        // 任务完成，更新任务列表
-                        await this.loadTasks();
-                        return;
-                    }
-
-                    // 继续轮询
-                    setTimeout(poll, 2000);
-                } catch (error) {
-                    console.error('获取任务状态失败:', error);
-                }
-            };
-
-            poll();
+        async stopTask() {
+            if (!this.currentTaskLog) return;
+            
+            try {
+                const response = await fetch(`/api/citask/stop/${this.currentTaskLog.id}`, {
+                    method: 'POST'
+                });
+                if (!response.ok) throw new Error('停止任务失败');
+                
+                // 停止进度轮询
+                this.stopProgressPolling();
+                
+                Alpine.store('notification').show('任务已停止', 'success');
+            } catch (error) {
+                Alpine.store('notification').show(error.message, 'error');
+            }
         },
-
-        // 查看任务日志
         async viewLogs(task) {
             try {
-                const response = await fetch(`/api/citask/${task.id}/logs`);
-                if (!response.ok) throw new Error('加载任务日志失败');
-
+                const response = await fetch(`/api/citask/logs/${task.id}`);
+                if (!response.ok) throw new Error('获取任务日志失败');
                 this.taskLogs = await response.json();
                 this.showLogsModal = true;
             } catch (error) {
-                console.error('加载任务日志失败:', error);
-                showToast('error', '加载任务日志失败');
+                Alpine.store('notification').show(error.message, 'error');
             }
         },
-
-        // 查看日志详情
         viewLogDetail(log) {
-            this.currentLog = log;
+            this.currentTaskLog = log;
             this.showLogDetailModal = true;
         },
-
-        // 格式化日期
+        startProgressPolling(logId) {
+            // 清除现有的轮询
+            this.stopProgressPolling();
+            
+            // 开始新的轮询
+            this.progressInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/citask/progress/${logId}`);
+                    if (!response.ok) throw new Error('获取进度失败');
+                    const progress = await response.json();
+                    
+                    // 更新进度信息
+                    this.currentTaskLog = progress;
+                    
+                    // 自动滚动到底部
+                    this.$nextTick(() => {
+                        if (this.$refs.outputLog) {
+                            this.$refs.outputLog.scrollTop = this.$refs.outputLog.scrollHeight;
+                        }
+                    });
+                    
+                    // 如果任务已结束，停止轮询
+                    if (progress.status !== 'running') {
+                        this.stopProgressPolling();
+                    }
+                } catch (error) {
+                    console.error('Progress polling error:', error);
+                    this.stopProgressPolling();
+                }
+            }, 1000); // 每秒轮询一次
+        },
+        stopProgressPolling() {
+            if (this.progressInterval) {
+                clearInterval(this.progressInterval);
+                this.progressInterval = null;
+            }
+        },
+        closeProgress() {
+            this.stopProgressPolling();
+            this.showProgressModal = false;
+            this.currentTask = null;
+            this.currentTaskLog = null;
+            this.fetchTasks(); // 刷新任务列表
+        },
+        getProgressWidth() {
+            if (!this.currentTaskLog) return '0%';
+            if (this.currentTaskLog.status === 'success') return '100%';
+            if (this.currentTaskLog.status === 'failed') return '100%';
+            return this.currentTaskLog.progress + '%';
+        },
+        getProgressText() {
+            if (!this.currentTaskLog) return '准备中...';
+            if (this.currentTaskLog.status === 'success') return '完成';
+            if (this.currentTaskLog.status === 'failed') return '失败';
+            if (this.currentTaskLog.status === 'running') return '执行中...';
+            return '准备中...';
+        },
+        getRunningTime() {
+            if (!this.currentTaskLog?.start_time) return '0秒';
+            const start = new Date(this.currentTaskLog.start_time);
+            const end = this.currentTaskLog.end_time ? new Date(this.currentTaskLog.end_time) : new Date();
+            const seconds = Math.floor((end - start) / 1000);
+            
+            if (seconds < 60) return `${seconds}秒`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}分${seconds % 60}秒`;
+            return `${Math.floor(seconds / 3600)}时${Math.floor((seconds % 3600) / 60)}分${seconds % 60}秒`;
+        },
         formatDate(date) {
             if (!date) return '';
             return new Date(date).toLocaleString('zh-CN', {
@@ -180,7 +235,8 @@ function taskManagement() {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
+                hour12: false
             });
         }
-    };
+    }
 } 

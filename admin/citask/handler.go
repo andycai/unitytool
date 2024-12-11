@@ -1,6 +1,8 @@
 package citask
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,12 +11,31 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/andycai/unitool/admin/adminlog"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
+)
+
+// TaskProgress 任务进度
+type TaskProgress struct {
+	ID        uint      `json:"id"`
+	Status    string    `json:"status"`
+	Output    string    `json:"output"`
+	Error     string    `json:"error"`
+	StartTime time.Time `json:"start_time"`
+	EndTime   time.Time `json:"end_time"`
+	Duration  int       `json:"duration"`
+	Progress  int       `json:"progress"` // 0-100
+}
+
+var (
+	taskProgressMap = make(map[uint]*TaskProgress)
+	progressMutex   sync.RWMutex
 )
 
 // getTasks 获取任务列表
@@ -103,7 +124,7 @@ func updateTask(c *fiber.Ctx) error {
 	return c.JSON(task)
 }
 
-// deleteTask 删除���务
+// deleteTask 删除任务
 func deleteTask(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var task models.Task
@@ -147,6 +168,17 @@ func runTask(c *fiber.Ctx) error {
 		})
 	}
 
+	// 初始化进度信息
+	progress := &TaskProgress{
+		ID:        taskLog.ID,
+		Status:    "running",
+		StartTime: taskLog.StartTime,
+		Progress:  0,
+	}
+	progressMutex.Lock()
+	taskProgressMap[taskLog.ID] = progress
+	progressMutex.Unlock()
+
 	// 记录操作日志
 	adminlog.CreateAdminLog(c, "run", "task", task.ID, fmt.Sprintf("执行任务：%s", task.Name))
 
@@ -180,22 +212,72 @@ func getTaskStatus(c *fiber.Ctx) error {
 	return c.JSON(log)
 }
 
+// getTaskProgress 获取任务进度
+func getTaskProgress(c *fiber.Ctx) error {
+	logId := c.Params("logId")
+	if logId == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "缺少logId参数",
+		})
+	}
+
+	// 将字符串转换为uint
+	id, err := strconv.ParseUint(logId, 10, 32)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "无效的logId参数",
+		})
+	}
+
+	progressMutex.RLock()
+	progress, exists := taskProgressMap[uint(id)]
+	progressMutex.RUnlock()
+
+	if !exists {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "找不到任务进度信息",
+		})
+	}
+
+	return c.JSON(progress)
+}
+
 // executeTask 执行任务
 func executeTask(task *models.Task, log *models.TaskLog) {
+	progress := taskProgressMap[log.ID]
 	defer func() {
 		log.EndTime = time.Now()
 		log.Duration = int(log.EndTime.Sub(log.StartTime).Seconds())
 		db.Save(log)
+
+		// 更新并清理进度信息
+		if progress != nil {
+			progress.Status = log.Status
+			progress.EndTime = log.EndTime
+			progress.Duration = log.Duration
+			progress.Progress = 100
+
+			// 延迟删除进度信息
+			time.AfterFunc(time.Hour, func() {
+				progressMutex.Lock()
+				delete(taskProgressMap, log.ID)
+				progressMutex.Unlock()
+			})
+		}
 	}()
 
 	switch task.Type {
 	case "script":
-		executeScriptTask(task, log)
+		executeScriptTask(task, log, progress)
 	case "http":
-		executeHTTPTask(task, log)
+		executeHTTPTask(task, log, progress)
 	default:
 		log.Status = "failed"
 		log.Error = "未知的任务类型"
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
 	}
 }
 
@@ -265,11 +347,15 @@ func isUnsafeCommand(script string) (bool, string) {
 }
 
 // executeScriptTask 执行脚本任务
-func executeScriptTask(task *models.Task, log *models.TaskLog) {
+func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskProgress) {
 	// 首先检查脚本安全性
 	if unsafe, reason := isUnsafeCommand(task.Script); unsafe {
 		log.Status = "failed"
 		log.Error = fmt.Sprintf("脚本包含不安全的命令: %s", reason)
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
 		return
 	}
 
@@ -283,6 +369,10 @@ func executeScriptTask(task *models.Task, log *models.TaskLog) {
 	if err != nil {
 		log.Status = "failed"
 		log.Error = fmt.Sprintf("创建临时文件失败: %v", err)
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
 		return
 	}
 	defer os.Remove(tmpFile.Name())
@@ -296,6 +386,10 @@ func executeScriptTask(task *models.Task, log *models.TaskLog) {
 	if _, err := tmpFile.WriteString(scriptContent); err != nil {
 		log.Status = "failed"
 		log.Error = fmt.Sprintf("写入脚本失败: %v", err)
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
 		return
 	}
 	tmpFile.Close()
@@ -305,6 +399,10 @@ func executeScriptTask(task *models.Task, log *models.TaskLog) {
 		if err := os.Chmod(tmpFile.Name(), 0755); err != nil {
 			log.Status = "failed"
 			log.Error = fmt.Sprintf("设置脚本权限失败: %v", err)
+			if progress != nil {
+				progress.Status = "failed"
+				progress.Error = log.Error
+			}
 			return
 		}
 	}
@@ -321,6 +419,32 @@ func executeScriptTask(task *models.Task, log *models.TaskLog) {
 	tmpDir := os.TempDir()
 	cmd.Dir = tmpDir
 
+	// 创建输出缓冲区
+	var outputBuffer bytes.Buffer
+	outputWriter := io.MultiWriter(&outputBuffer)
+
+	// 创建管道用于实时读取输出
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		log.Status = "failed"
+		log.Error = fmt.Sprintf("创建输出管道失败: %v", err)
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
+		return
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		log.Status = "failed"
+		log.Error = fmt.Sprintf("创建错误输出管道失败: %v", err)
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
+		return
+	}
+
 	// 设置超时
 	timeout := time.Duration(task.Timeout) * time.Second
 	if timeout == 0 {
@@ -332,38 +456,71 @@ func executeScriptTask(task *models.Task, log *models.TaskLog) {
 	defer cancel()
 	cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
 
-	// 捕获输出
-	output, err := cmd.CombinedOutput()
+	// 启动命令
+	if err := cmd.Start(); err != nil {
+		log.Status = "failed"
+		log.Error = fmt.Sprintf("启动命令失败: %v", err)
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
+		return
+	}
+
+	// 实时读取输出
+	go func() {
+		scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
+		for scanner.Scan() {
+			line := scanner.Text() + "\n"
+			outputWriter.Write([]byte(line))
+			if progress != nil {
+				progress.Output = outputBuffer.String()
+			}
+		}
+	}()
+
+	// 等待命令完成
+	err = cmd.Wait()
+	output := outputBuffer.String()
+
 	if err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
 			log.Status = "failed"
-			log.Error = fmt.Sprintf("执行超时（%d秒）\n%s", task.Timeout, string(output))
+			log.Error = fmt.Sprintf("执行超时（%d秒）\n%s", task.Timeout, output)
 		} else {
 			log.Status = "failed"
-			log.Error = fmt.Sprintf("执行失败: %v\n%s", err, string(output))
+			log.Error = fmt.Sprintf("执行失败: %v\n%s", err, output)
+		}
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
 		}
 		return
 	}
 
 	log.Status = "success"
-	log.Output = string(output)
+	log.Output = output
+	if progress != nil {
+		progress.Status = "success"
+		progress.Output = output
+		progress.Progress = 100
+	}
 }
 
 // executeHTTPTask 执行HTTP任务
-func executeHTTPTask(task *models.Task, log *models.TaskLog) {
+func executeHTTPTask(task *models.Task, log *models.TaskLog, progress *TaskProgress) {
 	// 解析请求头
 	headers := make(map[string]string)
 	if task.Headers != "" {
 		if err := json.Unmarshal([]byte(task.Headers), &headers); err != nil {
 			log.Status = "failed"
 			log.Error = fmt.Sprintf("解析请求头失败: %v", err)
+			if progress != nil {
+				progress.Status = "failed"
+				progress.Error = log.Error
+			}
 			return
 		}
-	}
-
-	// 创建HTTP客户端
-	client := &http.Client{
-		Timeout: time.Duration(task.Timeout) * time.Second,
 	}
 
 	// 创建请求
@@ -371,12 +528,25 @@ func executeHTTPTask(task *models.Task, log *models.TaskLog) {
 	if err != nil {
 		log.Status = "failed"
 		log.Error = fmt.Sprintf("创建请求失败: %v", err)
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
 		return
 	}
 
-	// 添加请求头
+	// 设置请求头
 	for k, v := range headers {
 		req.Header.Set(k, v)
+	}
+
+	// 设置超时
+	timeout := time.Duration(task.Timeout) * time.Second
+	if timeout == 0 {
+		timeout = 300 * time.Second // 默认5分钟超时
+	}
+	client := &http.Client{
+		Timeout: timeout,
 	}
 
 	// 发送请求
@@ -384,6 +554,10 @@ func executeHTTPTask(task *models.Task, log *models.TaskLog) {
 	if err != nil {
 		log.Status = "failed"
 		log.Error = fmt.Sprintf("发送请求失败: %v", err)
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
 		return
 	}
 	defer resp.Body.Close()
@@ -392,15 +566,70 @@ func executeHTTPTask(task *models.Task, log *models.TaskLog) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Status = "failed"
-		log.Error = fmt.Sprintf("读取响应失败: %v", err)
+		log.Error = fmt.Sprintf("���取响应失败: %v", err)
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
 		return
 	}
 
-	log.Output = string(body)
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		log.Status = "success"
-	} else {
+	// 检查响应状态码
+	if resp.StatusCode >= 400 {
 		log.Status = "failed"
-		log.Error = fmt.Sprintf("请求返回错误状态码: %d", resp.StatusCode)
+		log.Error = fmt.Sprintf("请求失败: HTTP %d\n%s", resp.StatusCode, string(body))
+		if progress != nil {
+			progress.Status = "failed"
+			progress.Error = log.Error
+		}
+		return
 	}
+
+	log.Status = "success"
+	log.Output = string(body)
+	if progress != nil {
+		progress.Status = "success"
+		progress.Output = log.Output
+		progress.Progress = 100
+	}
+}
+
+// stopTask 停止任务
+func stopTask(c *fiber.Ctx) error {
+	logId := c.Params("logId")
+	if logId == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "缺少logId参数",
+		})
+	}
+
+	// 将字符串转换为uint
+	id, err := strconv.ParseUint(logId, 10, 32)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "无效的logId参数",
+		})
+	}
+
+	progressMutex.RLock()
+	progress, exists := taskProgressMap[uint(id)]
+	progressMutex.RUnlock()
+
+	if !exists {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "找不到任务进度信息",
+		})
+	}
+
+	if progress.Status != "running" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "任务已经结束",
+		})
+	}
+
+	// TODO: 实现任务停止逻辑
+
+	return c.JSON(fiber.Map{
+		"message": "任务已停止",
+	})
 }
