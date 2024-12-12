@@ -30,6 +30,11 @@ func initPublicRouter(publicGroup fiber.Router) {
 	publicGroup.Get("/api/game/serverinfo", getServerInfo)
 	publicGroup.Get("/api/game/noticelist", getNoticeList)
 	publicGroup.Get("/api/game/noticenum", getNoticeNum)
+	publicGroup.Get("/api/serverlist", getServerList)
+	publicGroup.Get("/api/lastserver", getLastServer)
+	publicGroup.Get("/api/serverinfo", getServerInfo)
+	publicGroup.Get("/api/noticelist", getNoticeList)
+	publicGroup.Get("/api/noticenum", getNoticeNum)
 }
 
 func initAdminCheckRouter(adminGroup fiber.Router) {

@@ -14,14 +14,14 @@ static_paths = [
 
 [database]
 driver = "sqlite"
-dsn = "db/logs.db"
+dsn = "data/unitool.db"
 
 [json_paths]
-server_list = "db/serverlist.json"
-last_server = "db/lastserver.json"
-server_info = "db/serverinfo.json"
-notice_list = "db/noticelist.json"
-notice_num = "db/noticenum.json"
+server_list = "data/serverlist.json"
+last_server = "data/lastserver.json"
+server_info = "data/serverinfo.json"
+notice_list = "data/noticelist.json"
+notice_num = "data/noticenum.json"
 
 [ftp]
 host = "192.168.200.20"

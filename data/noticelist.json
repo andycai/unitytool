@@ -1,6 +1,6 @@
 [
     {
-        "title": "How to create a new branch1",
+        "title": "How to create a new branch2",
         "content": "git checkout -b \u003cbranch_name\u003e"
     },
     {

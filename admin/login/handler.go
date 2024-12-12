@@ -1,7 +1,6 @@
 package login
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/andycai/unitool/models"
@@ -44,7 +43,7 @@ func login(c *fiber.Ctx) error {
 	}
 
 	// 打印用户信息用于调试
-	fmt.Printf("User info: %+v\n", user)
+	// fmt.Printf("User info: %+v\n", user)
 
 	// 生成 JWT token
 	claims := jwt.MapClaims{
@@ -100,7 +99,7 @@ func login(c *fiber.Ctx) error {
 	}
 
 	// 打印响应数据用于调试
-	fmt.Printf("Response data: %+v\n", responseData)
+	// fmt.Printf("Response data: %+v\n", responseData)
 
 	// 返回响应
 	return c.JSON(responseData)

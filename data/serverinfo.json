@@ -1,0 +1,20 @@
+{
+    "adKey": "1001",
+    "cdnURL": "http://192.168.1.100/",
+    "cdnVersion": "101",
+    "child": 10002,
+    "doPatcher": 2,
+    "entryURL": "http://191.168.1.100/100.json",
+    "lastServerListURL": "http://192.168.1.122/serverlist",
+    "loginAPI": "http://192.168.1.122",
+    "loginURL": "http://192.168.1.122/login",
+    "noticeNumURL": "http://192.168.1.122/serverlist",
+    "noticeURL": "http://192.168.1.122/serverlist",
+    "pfid": 1002,
+    "pfname": "PF001001",
+    "pkgVersion": "123",
+    "serverListURL": "http://192.168.1.122/serverlist",
+    "serverZoneURL": "http://192.168.1.122/serverlist",
+    "time": "1",
+    "version": "123"
+}

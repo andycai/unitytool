@@ -36,6 +36,8 @@ func createTables(db *gorm.DB) error {
 		&models.StatsRecord{},
 		&models.StatsInfo{},
 		&models.Menu{},
+		&models.Task{},
+		&models.TaskLog{},
 	)
 }
 
