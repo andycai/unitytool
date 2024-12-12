@@ -33,6 +33,7 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 func initAPICheckRouter(apiGroup fiber.Router) {
 	apiGroup.Get("/citask", middleware.HasPermission("citask:list"), getTasks)                        // 获取任务列表
 	apiGroup.Post("/citask", middleware.HasPermission("citask:create"), createTask)                   // 创建任务
+	apiGroup.Get("/citask/running", middleware.HasPermission("citask:list"), GetRunningTasks)         // 获取正在执行的任务
 	apiGroup.Get("/citask/:id", middleware.HasPermission("citask:list"), getTask)                     // 获取任务详情
 	apiGroup.Put("/citask/:id", middleware.HasPermission("citask:update"), updateTask)                // 更新任务
 	apiGroup.Delete("/citask/:id", middleware.HasPermission("citask:delete"), deleteTask)             // 删除任务

@@ -8,8 +8,11 @@ function taskManagement() {
         showLogsModal: false,
         showLogDetailModal: false,
         showProgressModal: false,
+        showRunningTasksModal: false,
         editMode: false,
         progressInterval: null,
+        runningTasks: [],
+        runningTasksInterval: null,
         currentPage: 1,
         pageSize: 10,
         totalPages: 1,
@@ -27,6 +30,7 @@ function taskManagement() {
         },
         init() {
             this.fetchTasks();
+            this.startRunningTasksPolling();
         },
         async fetchTasks() {
             try {
@@ -220,7 +224,7 @@ function taskManagement() {
         getRunningTime() {
             if (!this.currentTaskLog?.start_time) return '0秒';
             const start = new Date(this.currentTaskLog.start_time);
-            const end = this.currentTaskLog.end_time ? new Date(this.currentTaskLog.end_time) : new Date();
+            const end = this.currentTaskLog.end_time > this.currentTaskLog.start_time ? new Date(this.currentTaskLog.end_time) : new Date();
             const seconds = Math.floor((end - start) / 1000);
             
             if (seconds < 60) return `${seconds}秒`;
@@ -244,6 +248,17 @@ function taskManagement() {
                 second: '2-digit',
                 hour12: false
             });
+        },
+        formatDateTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
         },
         firstPage() {
             if (this.currentPage !== 1) {
@@ -270,6 +285,49 @@ function taskManagement() {
             const startIndex = (this.currentPage - 1) * this.pageSize;
             const endIndex = startIndex + this.pageSize;
             return this.taskLogs.slice(startIndex, endIndex);
-        }
+        },
+        // 开始轮询正在执行的任务
+        startRunningTasksPolling() {
+            this.fetchRunningTasks();
+            this.runningTasksInterval = setInterval(() => {
+                this.fetchRunningTasks();
+            }, 5000); // 每5秒更新一次
+        },
+        // 停止轮询
+        stopRunningTasksPolling() {
+            if (this.runningTasksInterval) {
+                clearInterval(this.runningTasksInterval);
+                this.runningTasksInterval = null;
+            }
+        },
+        // 获取正在执行的任务
+        async fetchRunningTasks() {
+            try {
+                const response = await fetch('/api/citask/running');
+                if (!response.ok) throw new Error('获取正在执行的任务失败');
+                const tasks = await response.json();
+                const data = tasks.data == null ? [] : tasks.data;
+                this.runningTasks = data;
+            } catch (error) {
+                console.error('获取正在执行的任务失败:', error);
+            }
+        },
+        // 显示正在执行的任务列表
+        showRunningTasks() {
+            this.showRunningTasksModal = true;
+            this.fetchRunningTasks();
+        },
+        // 查看任务进度
+        viewTaskProgress(task) {
+            this.currentTask = task;
+            this.showRunningTasksModal = false;
+            this.showProgressModal = true;
+            this.startProgressPolling(task.id);
+        },
+        // 在组件销毁时清理
+        destroy() {
+            this.stopRunningTasksPolling();
+            this.stopProgressPolling();
+        },
     }
 } 

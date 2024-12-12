@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -23,6 +24,8 @@ import (
 // TaskProgress 任务进度
 type TaskProgress struct {
 	ID        uint      `json:"id"`
+	TaskID    uint      `json:"task_id"`
+	TaskName  string    `json:"task_name"`
 	Status    string    `json:"status"`
 	Output    string    `json:"output"`
 	Error     string    `json:"error"`
@@ -170,6 +173,8 @@ func runTask(c *fiber.Ctx) error {
 	// 初始化进度信息
 	progress := &TaskProgress{
 		ID:        taskLog.ID,
+		TaskID:    task.ID,
+		TaskName:  task.Name,
 		Status:    "running",
 		StartTime: taskLog.StartTime,
 		Progress:  0,
@@ -643,5 +648,45 @@ func stopTask(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"message": "任务已停止",
+	})
+}
+
+// GetRunningTasks 获取正在执行的任务列表
+func GetRunningTasks(c *fiber.Ctx) error {
+	progressMutex.Lock()
+	defer progressMutex.Unlock()
+
+	// 从内存中获取所有正在执行的任务
+	var runningTasks []fiber.Map
+	for id, progress := range taskProgressMap {
+		if progress.Status == "running" {
+			// 查询任务信息
+			var taskLog models.TaskLog
+			if err := db.First(&taskLog, id).Error; err != nil {
+				continue
+			}
+
+			// 构建返回数据
+			runningTasks = append(runningTasks, fiber.Map{
+				"id":         id,
+				"name":       progress.TaskName,
+				"status":     progress.Status,
+				"progress":   progress.Progress,
+				"output":     progress.Output,
+				"error":      progress.Error,
+				"start_time": progress.StartTime.Unix(),
+			})
+		}
+	}
+
+	// 按开始时间倒序排序
+	sort.Slice(runningTasks, func(i, j int) bool {
+		return runningTasks[i]["start_time"].(int64) > runningTasks[j]["start_time"].(int64)
+	})
+
+	return c.JSON(fiber.Map{
+		"code": 0,
+		"msg":  "success",
+		"data": runningTasks,
 	})
 }
