@@ -18,6 +18,7 @@ function taskManagement() {
         totalPages: 1,
         showCronHelper: false,
         form: {
+            id: '',
             name: '',
             description: '',
             type: 'script',
@@ -28,7 +29,7 @@ function taskManagement() {
             body: '',
             timeout: 300,
             status: 'active',
-            enable_cron: false,
+            enable_cron: 0,
             cron_expr: ''
         },
         init() {
@@ -47,6 +48,7 @@ function taskManagement() {
         createTask() {
             this.editMode = false;
             this.form = {
+                id: '',
                 name: '',
                 description: '',
                 type: 'script',
@@ -57,7 +59,7 @@ function taskManagement() {
                 body: '',
                 timeout: 300,
                 status: 'active',
-                enable_cron: false,
+                enable_cron: 0,
                 cron_expr: ''
             };
             this.showTaskModal = true;
@@ -66,8 +68,7 @@ function taskManagement() {
             this.editMode = true;
             this.form = {
                 ...task,
-                enable_cron: task.enable_cron || false,
-                cron_expr: task.cron_expr || ''
+                enable_cron: parseInt(task.enable_cron) || 0
             };
             this.showTaskModal = true;
         },
@@ -337,23 +338,24 @@ function taskManagement() {
             this.stopProgressPolling();
         },
         // 查看日志详情
-        async viewLog(logId) {
+        async viewLog(log) {
             try {
+                const logId = log.id;
                 const response = await fetch(`/api/citask/progress/${logId}`);
-                if (!response.ok) throw new Error('获取任务进度失败');
-                const progress = await response.json();
-                
-                // 如果任务正在执行中，显示进度界面
-                if (progress.status === 'running') {
-                    this.currentTask = { id: logId };
-                    this.currentTaskLog = progress;
-                    this.showProgressModal = true;
-                    this.startProgressPolling(logId);
-                } else {
-                    // 否则显示结果界面
-                    this.currentTaskLog = progress;
-                    this.showLogDetailModal = true;
+                if (response.ok) {
+                    const progress = await response.json();
+
+                    // 如果任务正在执行中，显示进度界面
+                    if (progress.status === 'running') {
+                        this.currentTask = { id: logId };
+                        this.currentTaskLog = progress;
+                        this.showProgressModal = true;
+                        this.startProgressPolling(logId);
+                        return;
+                    }
                 }
+                // 否则显示结果界面
+                this.viewLogDetail(log);
             } catch (error) {
                 Alpine.store('notification').show(error.message, 'error');
             }

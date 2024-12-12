@@ -1,5 +1,5 @@
 -- +migrate Up
-ALTER TABLE tasks ADD COLUMN enable_cron BOOLEAN DEFAULT FALSE;
+ALTER TABLE tasks ADD COLUMN enable_cron TINYINT DEFAULT 0;
 ALTER TABLE tasks ADD COLUMN cron_expr VARCHAR(100);
 
 -- +migrate Down

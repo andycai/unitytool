@@ -17,7 +17,7 @@ type Task struct {
 	Body        string    `json:"body" gorm:"type:text"`                         // HTTP 请求体
 	Timeout     int       `json:"timeout" gorm:"default:300"`                    // 超时时间(秒)
 	Status      string    `json:"status" gorm:"size:20;default:'active'"`        // 状态：active, inactive
-	EnableCron  bool      `json:"enable_cron" gorm:"default:false"`
+	EnableCron  uint8     `json:"enable_cron" gorm:"type:tinyint;default:0"`     // 是否启用定时执行：0-否，1-是
 	CronExpr    string    `json:"cron_expr"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`

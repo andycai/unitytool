@@ -86,7 +86,7 @@
     </div>
 
     <!-- 任务表单模态框 -->
-    <div x-show="showTaskModal" 
+    <div x-cloak x-show="showTaskModal" 
          class="fixed inset-0 z-40 overflow-y-auto"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -181,8 +181,9 @@
                             <div class="flex items-center">
                                 <label class="inline-flex items-center mt-6">
                                     <input type="checkbox" x-model="form.status" value="active"
-                                           class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">启用任务</span>
+                                    
                                 </label>
                             </div>
                         </div>
@@ -191,10 +192,11 @@
                         <div class="space-y-2">
                             <div class="flex items-center">
                                 <input type="checkbox" id="enableCron" x-model="form.enable_cron"
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600">
-                                <label for="enableCron" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                    @change="form.enable_cron = $event.target.checked ? 1 : 0" :checked="form.enable_cron == 1"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
                                     启用定时执行
-                                </label>
+                                </span>
                             </div>
                             
                             <div x-show="form.enable_cron" class="space-y-2">
@@ -247,7 +249,7 @@
     </div>
 
     <!-- 日志模态框 -->
-    <div x-show="showLogsModal" class="fixed inset-0 z-40 overflow-y-auto">
+    <div x-cloak x-show="showLogsModal" class="fixed inset-0 z-40 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity" aria-hidden="true">
                 <div class="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
@@ -286,7 +288,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400" x-text="log.duration + '秒'"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button @click="viewLog(log.id)" 
+                                            <button @click="viewLog(log)" 
                                                     class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">查看
                                             </button>
                                         </td>
@@ -301,7 +303,7 @@
     </div>
 
     <!-- 日志详情模态框 -->
-    <div x-show="showLogDetailModal" 
+    <div x-cloak x-show="showLogDetailModal" 
          class="fixed inset-0 z-40 overflow-y-auto"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -373,7 +375,7 @@
     </div>
 
     <!-- 任务进度模态框 -->
-    <div x-show="showProgressModal" 
+    <div x-cloak x-show="showProgressModal" 
          class="fixed inset-0 z-40 overflow-y-auto"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -466,7 +468,7 @@
     </div>
 
     <!-- 浮动分页控件 -->
-    <div x-show="showLogsModal" class="fixed right-[calc(50%-32rem)] top-24 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 space-y-2 z-50">
+    <div x-cloak x-show="showLogsModal" class="fixed right-[calc(50%-32rem)] top-24 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 space-y-2 z-50">
         <button @click="firstPage" 
                 :disabled="currentPage === 1" 
                 class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300" 
@@ -494,7 +496,7 @@
     </div>
 
     <!-- 正在执行的任务列表模态框 -->
-    <div x-show="showRunningTasksModal" class="fixed inset-0 z-30 overflow-y-auto">
+    <div x-cloak x-show="showRunningTasksModal" class="fixed inset-0 z-30 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity" aria-hidden="true">
                 <div class="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
@@ -545,7 +547,7 @@
     </div>
 
     <!-- Cron 表达式帮助对话框 -->
-    <div x-show="showCronHelper" 
+    <div x-cloak x-show="showCronHelper" 
          class="fixed inset-0 z-50 overflow-y-auto"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"

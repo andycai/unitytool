@@ -40,24 +40,36 @@ type TaskProgress struct {
 var (
 	taskProgressMap = make(map[uint]*TaskProgress)
 	taskCmdMap      = make(map[uint]*exec.Cmd)
+	cronEntries     = make(map[uint]cron.EntryID)
 	progressMutex   sync.RWMutex
 	cronScheduler   *cron.Cron
 )
 
 func initCron() {
 	// 初始化定时任务调度器
-	// cronScheduler = cron.New(cron.WithSeconds())
 	cronScheduler = cron.New()
 	cronScheduler.Start()
 
 	// 从数据库加载定时任务
-	go loadCronTasks()
+	var tasks []models.Task
+	if err := db.Where("enable_cron = ? AND status = ?", true, "active").Find(&tasks).Error; err != nil {
+		fmt.Printf("加载定时任务失败: %v\n", err)
+		return
+	}
+
+	for _, task := range tasks {
+		if err := scheduleCronTask(&task); err != nil {
+			fmt.Printf("调度任务失败 [%d]: %v\n", task.ID, err)
+		} else {
+			fmt.Printf("成功加载定时任务 [%d]: %s\n", task.ID, task.Name)
+		}
+	}
 }
 
 // 加载定时任务
 func loadCronTasks() {
 	var tasks []models.Task
-	if err := db.Where("enable_cron = ? AND status = ?", true, "active").Find(&tasks).Error; err != nil {
+	if err := db.Where("enable_cron = ? AND status = ?", 1, "active").Find(&tasks).Error; err != nil {
 		fmt.Printf("加载定时任务失败: %v\n", err)
 		return
 	}
@@ -71,11 +83,11 @@ func loadCronTasks() {
 
 // 调度定时任务
 func scheduleCronTask(task *models.Task) error {
-	if !task.EnableCron || task.CronExpr == "" {
+	if task.EnableCron == 0 || task.CronExpr == "" {
 		return nil
 	}
 
-	_, err := cronScheduler.AddFunc(task.CronExpr, func() {
+	entryID, err := cronScheduler.AddFunc(task.CronExpr, func() {
 		// 创建任务日志
 		taskLog := &models.TaskLog{
 			TaskID:    task.ID,
@@ -117,7 +129,16 @@ func scheduleCronTask(task *models.Task) error {
 		}()
 	})
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	// 保存定时任务ID
+	progressMutex.Lock()
+	cronEntries[task.ID] = entryID
+	progressMutex.Unlock()
+
+	return nil
 }
 
 // getTasks 获取任务列表
@@ -141,7 +162,7 @@ func createTask(c *fiber.Ctx) error {
 	}
 
 	// 如果启用了定时执行，验证cron表达式
-	if task.EnableCron {
+	if task.EnableCron == 1 {
 		if task.CronExpr == "" {
 			return c.Status(400).JSON(fiber.Map{
 				"error": "启用定时执行时必须提供Cron表达式",
@@ -161,7 +182,7 @@ func createTask(c *fiber.Ctx) error {
 	}
 
 	// 如果启用了定时执行，添加到调度器
-	if task.EnableCron {
+	if task.EnableCron == 1 {
 		if err := scheduleCronTask(&task); err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": fmt.Sprintf("设置定时任务失败: %v", err),
@@ -200,8 +221,20 @@ func updateTask(c *fiber.Ctx) error {
 		})
 	}
 
+	// 获取原有任务信息
+	var task models.Task
+	if err := db.First(&task, id).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": fmt.Sprintf("任务不存在: %v", err),
+		})
+	}
+
+	// 检查定时任务状态变化
+	cronChanged := task.EnableCron != updates.EnableCron ||
+		(updates.EnableCron == 1 && task.CronExpr != updates.CronExpr)
+
 	// 如果启用了定时执行，验证cron表达式
-	if updates.EnableCron {
+	if updates.EnableCron == 1 {
 		if updates.CronExpr == "" {
 			return c.Status(400).JSON(fiber.Map{
 				"error": "启用定时执行时必须提供Cron表达式",
@@ -214,27 +247,40 @@ func updateTask(c *fiber.Ctx) error {
 		}
 	}
 
-	var task models.Task
-	if err := db.First(&task, id).Error; err != nil {
-		return c.Status(404).JSON(fiber.Map{
-			"error": fmt.Sprintf("任务不存在: %v", err),
-		})
-	}
-
-	if err := db.Model(&task).Updates(updates).Error; err != nil {
+	// 更新任务信息
+	if err := db.Model(&task).Updates(updates).Update("enable_cron", updates.EnableCron).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": fmt.Sprintf("更新任务失败: %v", err),
 		})
 	}
 
-	// 更新定时任务调度
-	if err := scheduleCronTask(&task); err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": fmt.Sprintf("更新定时任务失败: %v", err),
-		})
+	// 如果定时配置发生变化，处理定时任务
+	if cronChanged {
+		progressMutex.Lock()
+		// 如果存在旧的定时任务，先移除
+		if entryID, ok := cronEntries[task.ID]; ok {
+			cronScheduler.Remove(entryID)
+			delete(cronEntries, task.ID)
+			fmt.Printf("已移除任务 [%d] 的定时配置\n", task.ID)
+		}
+		progressMutex.Unlock()
+
+		// 如果启用了定时执行，添加新的定时任务
+		if updates.EnableCron == 1 {
+			if err := scheduleCronTask(&task); err != nil {
+				return c.Status(500).JSON(fiber.Map{
+					"error": fmt.Sprintf("更新定时任务失败: %v", err),
+				})
+			}
+			fmt.Printf("已为任务 [%d] 添加新的定时配置: %s\n", task.ID, updates.CronExpr)
+		}
 	}
 
-	return c.JSON(task)
+	return c.JSON(fiber.Map{
+		"code": 0,
+		"msg":  "success",
+		"data": task,
+	})
 }
 
 // deleteTask 删除任务
@@ -668,22 +714,19 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 
 // executeHTTPTask 执行HTTP任务
 func executeHTTPTask(task *models.Task, log *models.TaskLog, progress *TaskProgress) {
-	// 解析请求头
-	headers := make(map[string]string)
-	if task.Headers != "" {
-		if err := json.Unmarshal([]byte(task.Headers), &headers); err != nil {
-			log.Status = "failed"
-			log.Error = fmt.Sprintf("解析请求头失败: %v", err)
-			if progress != nil {
-				progress.Status = "failed"
-				progress.Error = log.Error
-			}
-			return
-		}
+	fmt.Printf("开始执行HTTP任务: %s (ID: %d)\n", task.Name, task.ID)
+
+	// 创建HTTP客户端
+	client := &http.Client{
+		Timeout: time.Duration(task.Timeout) * time.Second,
 	}
 
 	// 创建请求
-	req, err := http.NewRequest(task.Method, task.URL, strings.NewReader(task.Body))
+	var body io.Reader
+	if task.Body != "" {
+		body = strings.NewReader(task.Body)
+	}
+	req, err := http.NewRequest(task.Method, task.URL, body)
 	if err != nil {
 		log.Status = "failed"
 		log.Error = fmt.Sprintf("创建请求失败: %v", err)
@@ -691,21 +734,26 @@ func executeHTTPTask(task *models.Task, log *models.TaskLog, progress *TaskProgr
 			progress.Status = "failed"
 			progress.Error = log.Error
 		}
+		fmt.Printf("创建HTTP请求失败: %v\n", err)
 		return
 	}
 
-	// 设置请求头
-	for k, v := range headers {
-		req.Header.Set(k, v)
-	}
-
-	// 设置超时
-	timeout := time.Duration(task.Timeout) * time.Second
-	if timeout == 0 {
-		timeout = 300 * time.Second // 默认5分钟超时
-	}
-	client := &http.Client{
-		Timeout: timeout,
+	// 添加请求头
+	if task.Headers != "" {
+		var headers map[string]string
+		if err := json.Unmarshal([]byte(task.Headers), &headers); err != nil {
+			log.Status = "failed"
+			log.Error = fmt.Sprintf("解析请求头失败: %v", err)
+			if progress != nil {
+				progress.Status = "failed"
+				progress.Error = log.Error
+			}
+			fmt.Printf("解析请求头失败: %v\n", err)
+			return
+		}
+		for key, value := range headers {
+			req.Header.Set(key, value)
+		}
 	}
 
 	// 发送请求
@@ -717,40 +765,45 @@ func executeHTTPTask(task *models.Task, log *models.TaskLog, progress *TaskProgr
 			progress.Status = "failed"
 			progress.Error = log.Error
 		}
+		fmt.Printf("发送HTTP请求失败: %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	// 读取响应
-	body, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Status = "failed"
-		log.Error = fmt.Sprintf("取响应失败: %v", err)
+		log.Error = fmt.Sprintf("读取响应失败: %v", err)
 		if progress != nil {
 			progress.Status = "failed"
 			progress.Error = log.Error
 		}
+		fmt.Printf("读取HTTP响应失败: %v\n", err)
 		return
 	}
 
 	// 检查响应状态码
 	if resp.StatusCode >= 400 {
 		log.Status = "failed"
-		log.Error = fmt.Sprintf("请求失败: HTTP %d\n%s", resp.StatusCode, string(body))
+		log.Error = fmt.Sprintf("HTTP请求失败: %s\n响应内容: %s", resp.Status, string(respBody))
 		if progress != nil {
 			progress.Status = "failed"
 			progress.Error = log.Error
 		}
+		fmt.Printf("HTTP请求返回错误状态码: %d\n", resp.StatusCode)
 		return
 	}
 
+	// 更新任务状态
 	log.Status = "success"
-	log.Output = string(body)
+	log.Output = string(respBody)
 	if progress != nil {
 		progress.Status = "success"
 		progress.Output = log.Output
 		progress.Progress = 100
 	}
+	fmt.Printf("HTTP任务执行成功完成: %s (ID: %d)\n", task.Name, task.ID)
 }
 
 // stopTask 停止正在执行的任务
