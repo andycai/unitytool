@@ -20,6 +20,7 @@ import (
 	"github.com/andycai/unitool/admin/adminlog"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/robfig/cron/v3"
 )
 
 // TaskProgress 任务进度
@@ -40,7 +41,84 @@ var (
 	taskProgressMap = make(map[uint]*TaskProgress)
 	taskCmdMap      = make(map[uint]*exec.Cmd)
 	progressMutex   sync.RWMutex
+	cronScheduler   *cron.Cron
 )
+
+func initCron() {
+	// 初始化定时任务调度器
+	// cronScheduler = cron.New(cron.WithSeconds())
+	cronScheduler = cron.New()
+	cronScheduler.Start()
+
+	// 从数据库加载定时任务
+	go loadCronTasks()
+}
+
+// 加载定时任务
+func loadCronTasks() {
+	var tasks []models.Task
+	if err := db.Where("enable_cron = ? AND status = ?", true, "active").Find(&tasks).Error; err != nil {
+		fmt.Printf("加载定时任务失败: %v\n", err)
+		return
+	}
+
+	for _, task := range tasks {
+		if err := scheduleCronTask(&task); err != nil {
+			fmt.Printf("调度任务失败 [%d]: %v\n", task.ID, err)
+		}
+	}
+}
+
+// 调度定时任务
+func scheduleCronTask(task *models.Task) error {
+	if !task.EnableCron || task.CronExpr == "" {
+		return nil
+	}
+
+	_, err := cronScheduler.AddFunc(task.CronExpr, func() {
+		// 创建任务日志
+		taskLog := &models.TaskLog{
+			TaskID:    task.ID,
+			StartTime: time.Now(),
+			Status:    "running",
+		}
+
+		if err := db.Create(taskLog).Error; err != nil {
+			fmt.Printf("创建任务日志失败: %v\n", err)
+			return
+		}
+
+		// 创建进度信息
+		progress := &TaskProgress{
+			Status:    "running",
+			StartTime: time.Now(),
+		}
+
+		progressMutex.Lock()
+		taskProgressMap[taskLog.ID] = progress
+		progressMutex.Unlock()
+
+		// 执行任务
+		go func() {
+			if task.Type == "script" {
+				executeScriptTask(task, taskLog, progress)
+			} else {
+				executeHTTPTask(task, taskLog, progress)
+			}
+
+			// 更新任务日志
+			taskLog.EndTime = time.Now()
+			taskLog.Status = progress.Status
+			taskLog.Output = progress.Output
+			taskLog.Error = progress.Error
+			if err := db.Save(taskLog).Error; err != nil {
+				fmt.Printf("更新任务日志失败: %v\n", err)
+			}
+		}()
+	})
+
+	return err
+}
 
 // getTasks 获取任务列表
 func getTasks(c *fiber.Ctx) error {
@@ -55,11 +133,25 @@ func getTasks(c *fiber.Ctx) error {
 
 // createTask 创建任务
 func createTask(c *fiber.Ctx) error {
-	task := new(models.Task)
-	if err := c.BodyParser(task); err != nil {
+	var task models.Task
+	if err := c.BodyParser(&task); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"error": fmt.Sprintf("无效的请求数据: %v", err),
 		})
+	}
+
+	// 如果启用了定时执行，验证cron表达式
+	if task.EnableCron {
+		if task.CronExpr == "" {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "启用定时执行时必须提供Cron表达式",
+			})
+		}
+		if _, err := cron.ParseStandard(task.CronExpr); err != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"error": fmt.Sprintf("无效的Cron表达式: %v", err),
+			})
+		}
 	}
 
 	if err := db.Create(&task).Error; err != nil {
@@ -68,8 +160,14 @@ func createTask(c *fiber.Ctx) error {
 		})
 	}
 
-	// 记录操作日志
-	adminlog.CreateAdminLog(c, "create", "task", task.ID, fmt.Sprintf("创建任务：%s", task.Name))
+	// 如果启用了定时执行，添加到调度器
+	if task.EnableCron {
+		if err := scheduleCronTask(&task); err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": fmt.Sprintf("设置定时任务失败: %v", err),
+			})
+		}
+	}
 
 	return c.JSON(task)
 }
@@ -89,6 +187,33 @@ func getTask(c *fiber.Ctx) error {
 // updateTask 更新任务
 func updateTask(c *fiber.Ctx) error {
 	id := c.Params("id")
+	if id == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "缺少任务ID",
+		})
+	}
+
+	var updates models.Task
+	if err := c.BodyParser(&updates); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": fmt.Sprintf("无效的请求数据: %v", err),
+		})
+	}
+
+	// 如果启用了定时执行，验证cron表达式
+	if updates.EnableCron {
+		if updates.CronExpr == "" {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "启用定时执行时必须提供Cron表达式",
+			})
+		}
+		if _, err := cron.ParseStandard(updates.CronExpr); err != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"error": fmt.Sprintf("无效的Cron表达式: %v", err),
+			})
+		}
+	}
+
 	var task models.Task
 	if err := db.First(&task, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{
@@ -96,34 +221,18 @@ func updateTask(c *fiber.Ctx) error {
 		})
 	}
 
-	// 解析请求体
-	updates := new(models.Task)
-	if err := c.BodyParser(updates); err != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"error": fmt.Sprintf("无效的请求数据: %v", err),
-		})
-	}
-
-	// 更新字段
-	task.Name = updates.Name
-	task.Description = updates.Description
-	task.Type = updates.Type
-	task.Script = updates.Script
-	task.URL = updates.URL
-	task.Method = updates.Method
-	task.Headers = updates.Headers
-	task.Body = updates.Body
-	task.Timeout = updates.Timeout
-	task.Status = updates.Status
-
-	if err := db.Save(&task).Error; err != nil {
+	if err := db.Model(&task).Updates(updates).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": fmt.Sprintf("更新任务失败: %v", err),
 		})
 	}
 
-	// 记录操作日志
-	adminlog.CreateAdminLog(c, "update", "task", task.ID, fmt.Sprintf("更新任务：%s", task.Name))
+	// 更新定时任务调度
+	if err := scheduleCronTask(&task); err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": fmt.Sprintf("更新定时任务失败: %v", err),
+		})
+	}
 
 	return c.JSON(task)
 }
@@ -765,5 +874,35 @@ func GetRunningTasks(c *fiber.Ctx) error {
 		"code": 0,
 		"msg":  "success",
 		"data": runningTasks,
+	})
+}
+
+// getNextRunTime 计算下次执行时间
+func getNextRunTime(c *fiber.Ctx) error {
+	expr := c.Query("expr")
+	if expr == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "缺少cron表达式",
+		})
+	}
+
+	// 解析cron表达式
+	schedule, err := cron.ParseStandard(expr)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": fmt.Sprintf("无效的cron表达式: %v", err),
+		})
+	}
+
+	// 计算下次执行时间
+	nextTime := schedule.Next(time.Now())
+
+	return c.JSON(fiber.Map{
+		"code": 0,
+		"msg":  "success",
+		"data": fiber.Map{
+			"next_run":      nextTime.Unix(),
+			"next_run_text": nextTime.Format("2006-01-02 15:04:05"),
+		},
 	})
 }

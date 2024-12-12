@@ -17,6 +17,8 @@ var db *gorm.DB
 
 func initDB(dbs []*gorm.DB) {
 	db = dbs[0]
+
+	initCron()
 }
 
 func initAdminCheckRouter(adminGroup fiber.Router) {
@@ -34,6 +36,7 @@ func initAPICheckRouter(apiGroup fiber.Router) {
 	apiGroup.Get("/citask", middleware.HasPermission("citask:list"), getTasks)                        // 获取任务列表
 	apiGroup.Post("/citask", middleware.HasPermission("citask:create"), createTask)                   // 创建任务
 	apiGroup.Get("/citask/running", middleware.HasPermission("citask:list"), GetRunningTasks)         // 获取正在执行的任务
+	apiGroup.Get("/citask/next-run", middleware.HasPermission("citask:list"), getNextRunTime)         // 计算下次执行时间
 	apiGroup.Get("/citask/:id", middleware.HasPermission("citask:list"), getTask)                     // 获取任务详情
 	apiGroup.Put("/citask/:id", middleware.HasPermission("citask:update"), updateTask)                // 更新任务
 	apiGroup.Delete("/citask/:id", middleware.HasPermission("citask:delete"), deleteTask)             // 删除任务

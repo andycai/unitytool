@@ -16,6 +16,7 @@ function taskManagement() {
         currentPage: 1,
         pageSize: 10,
         totalPages: 1,
+        showCronHelper: false,
         form: {
             name: '',
             description: '',
@@ -26,7 +27,9 @@ function taskManagement() {
             headers: '',
             body: '',
             timeout: 300,
-            status: 'active'
+            status: 'active',
+            enable_cron: false,
+            cron_expr: ''
         },
         init() {
             this.fetchTasks();
@@ -53,14 +56,18 @@ function taskManagement() {
                 headers: '',
                 body: '',
                 timeout: 300,
-                status: 'active'
+                status: 'active',
+                enable_cron: false,
+                cron_expr: ''
             };
             this.showTaskModal = true;
         },
         editTask(task) {
             this.editMode = true;
             this.form = {
-                ...task
+                ...task,
+                enable_cron: task.enable_cron || false,
+                cron_expr: task.cron_expr || ''
             };
             this.showTaskModal = true;
         },
@@ -371,6 +378,21 @@ function taskManagement() {
             const text = statusText[status] || status;
 
             return `<span class="px-2 py-1 text-xs font-medium rounded-full ${classes}">${text}</span>`;
+        },
+        // 获取下次执行时间
+        async getNextRunTime(cronExpr) {
+            if (!cronExpr) return null;
+            try {
+                const response = await fetch('/api/citask/next-run?expr=' + encodeURIComponent(cronExpr));
+                const data = await response.json();
+                if (data.code === 0 && data.data) {
+                    return data.data.next_run_text;
+                }
+                return '无效的表达式';
+            } catch (error) {
+                console.error('获取下次执行时间失败:', error);
+                return '计算失败';
+            }
         },
     }
 } 
