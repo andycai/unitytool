@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/andycai/unitool/admin/adminlog"
@@ -37,6 +38,7 @@ type TaskProgress struct {
 
 var (
 	taskProgressMap = make(map[uint]*TaskProgress)
+	taskCmdMap      = make(map[uint]*exec.Cmd)
 	progressMutex   sync.RWMutex
 )
 
@@ -382,9 +384,11 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 			progress.Status = "failed"
 			progress.Error = log.Error
 		}
+		fmt.Printf("创建临时文件失败: %v\n", err)
 		return
 	}
 	defer os.Remove(tmpFile.Name())
+	fmt.Printf("创建临时脚本文件: %s\n", tmpFile.Name())
 
 	// 添加安全限制的shell选项（仅用于Unix系统）
 	scriptContent := task.Script
@@ -399,9 +403,11 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 			progress.Status = "failed"
 			progress.Error = log.Error
 		}
+		fmt.Printf("写入脚本内容失败: %v\n", err)
 		return
 	}
 	tmpFile.Close()
+	fmt.Printf("写入脚本内容:\n%s\n", scriptContent)
 
 	// 设置脚本可执行权限
 	if runtime.GOOS != "windows" {
@@ -412,8 +418,10 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 				progress.Status = "failed"
 				progress.Error = log.Error
 			}
+			fmt.Printf("设置脚本权限失败: %v\n", err)
 			return
 		}
+		fmt.Println("设置脚本可执行权限成功")
 	}
 
 	// 执行脚本
@@ -429,6 +437,7 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 	// 设置工作目录为临时目录
 	tmpDir := os.TempDir()
 	cmd.Dir = tmpDir
+	fmt.Printf("工作目录: %s\n", tmpDir)
 
 	// 创建输出缓冲区
 	var outputBuffer, errorBuffer bytes.Buffer
@@ -442,6 +451,7 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 	if timeout == 0 {
 		timeout = 300 * time.Second // 默认5分钟超时
 	}
+	fmt.Printf("设置超时时间: %v\n", timeout)
 
 	// 创建一个带有超时的context
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -453,6 +463,11 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 	cmd.Stdout = io.MultiWriter(&outputBuffer, os.Stdout)
 	cmd.Stderr = io.MultiWriter(&errorBuffer, os.Stderr)
 
+	// 保存命令到映射中
+	progressMutex.Lock()
+	taskCmdMap[log.ID] = cmd
+	progressMutex.Unlock()
+
 	// 启动命令
 	if err := cmd.Start(); err != nil {
 		log.Status = "failed"
@@ -461,14 +476,24 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 			progress.Status = "failed"
 			progress.Error = log.Error
 		}
+		fmt.Printf("启动命令失败: %v\n", err)
 		return
 	}
+	fmt.Println("命令启动成功")
 
-	// 定期更新进度
+	// 等待命令完成
 	done := make(chan error)
 	go func() {
 		done <- cmd.Wait()
 	}()
+
+	// 清理函数
+	cleanup := func() {
+		progressMutex.Lock()
+		delete(taskCmdMap, task.ID)
+		progressMutex.Unlock()
+	}
+	defer cleanup()
 
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
@@ -484,11 +509,17 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 					progress.Error = log.Error
 					progress.Output = outputBuffer.String() + "\nError: " + errorBuffer.String()
 				}
+				fmt.Printf("命令执行超时: %v\n", ctx.Err())
 				return
 			}
 		case err := <-done:
 			output := outputBuffer.String()
 			errorOutput := errorBuffer.String()
+
+			fmt.Printf("命令执行完成，输出:\n%s\n", output)
+			if errorOutput != "" {
+				fmt.Printf("错误输出:\n%s\n", errorOutput)
+			}
 
 			if err != nil {
 				log.Status = "failed"
@@ -498,6 +529,7 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 					progress.Error = log.Error
 					progress.Output = output + "\nError: " + errorOutput
 				}
+				fmt.Printf("命令执行失败: %v\n", err)
 				return
 			}
 
@@ -512,6 +544,7 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 				progress.Output = log.Output
 				progress.Progress = 100
 			}
+			fmt.Printf("任务执行成功完成: %s (ID: %d)\n", task.Name, task.ID)
 			return
 		case <-ticker.C:
 			if progress != nil {
@@ -611,43 +644,87 @@ func executeHTTPTask(task *models.Task, log *models.TaskLog, progress *TaskProgr
 	}
 }
 
-// stopTask 停止任务
+// stopTask 停止正在执行的任务
 func stopTask(c *fiber.Ctx) error {
 	logId := c.Params("logId")
 	if logId == "" {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "缺少logId参数",
+			"error": "缺少日志ID",
 		})
 	}
 
-	// 将字符串转换为uint
+	// 将字符串ID转换为uint
 	id, err := strconv.ParseUint(logId, 10, 32)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "无效的logId参数",
+			"error": "无效的日志ID",
 		})
 	}
+	taskId := uint(id)
 
-	progressMutex.RLock()
-	progress, exists := taskProgressMap[uint(id)]
-	progressMutex.RUnlock()
+	// 获取进度信息
+	progressMutex.Lock()
+	progress, exists := taskProgressMap[taskId]
+	progressMutex.Unlock()
 
 	if !exists {
 		return c.Status(404).JSON(fiber.Map{
-			"error": "找不到任务进度信息",
+			"error": "任务不存在或已结束",
 		})
 	}
 
+	// 如果任务不是运行状态，返回错误
 	if progress.Status != "running" {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "任务已经结束",
+			"error": "任务不在运行状态",
 		})
 	}
 
-	// TODO: 实现任务停止逻辑
+	// 获取命令进程
+	progressMutex.Lock()
+	cmd := taskCmdMap[taskId]
+	progressMutex.Unlock()
+
+	if cmd == nil || cmd.Process == nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "无法获取任务进程",
+		})
+	}
+
+	// 停止进程
+	if runtime.GOOS == "windows" {
+		// Windows 下使用 taskkill 强制结束进程树
+		exec.Command("taskkill", "/F", "/T", "/PID", strconv.Itoa(cmd.Process.Pid)).Run()
+	} else {
+		// Unix 系统下发送 SIGTERM 信号
+		err = cmd.Process.Signal(syscall.SIGTERM)
+		if err != nil {
+			// 如果 SIGTERM 失败，尝试 SIGKILL
+			err = cmd.Process.Kill()
+		}
+	}
+
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": fmt.Sprintf("停止任务失败: %v", err),
+		})
+	}
+
+	// 更新任务状态
+	progressMutex.Lock()
+	progress.Status = "failed"
+	progress.Error = "任务被手动停止"
+	progress.EndTime = time.Now()
+	progressMutex.Unlock()
+
+	// 清理命令映射
+	progressMutex.Lock()
+	delete(taskCmdMap, taskId)
+	progressMutex.Unlock()
 
 	return c.JSON(fiber.Map{
-		"message": "任务已停止",
+		"code": 0,
+		"msg":  "任务已停止",
 	})
 }
 
