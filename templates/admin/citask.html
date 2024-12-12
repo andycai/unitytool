@@ -104,6 +104,41 @@
 
                 <form @submit.prevent="submitTask">
                     <div class="px-6 py-4 space-y-4">
+                        <!-- 复制任务搜索框 -->
+                        <div x-show="!editMode" class="relative">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">复制现有任务</label>
+                            <div class="mt-1 relative">
+                                <input type="text" 
+                                       x-model="searchKeyword" 
+                                       @input="searchTasks"
+                                       @focus="showSearchDropdown = true"
+                                       @click.away="showSearchDropdown = false"
+                                       @keydown.down.prevent="selectNextResult"
+                                       @keydown.up.prevent="selectPreviousResult"
+                                       @keydown.enter.prevent="selectTask"
+                                       @keydown.esc="showSearchDropdown = false"
+                                       placeholder="输入任务名称搜索..."
+                                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm">
+                                
+                                <!-- 搜索结果下拉框 -->
+                                <div x-show="showSearchDropdown && searchResults.length > 0" 
+                                     class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                                    <template x-for="(task, index) in searchResults" :key="task.id">
+                                        <div @click="copyTask(task)" 
+                                             @mouseover="selectedIndex = index"
+                                             class="cursor-pointer select-none relative py-2 pl-3 pr-9"
+                                             :class="{ 
+                                                 'text-gray-900 dark:text-white': selectedIndex !== index,
+                                                 'text-white bg-blue-600 dark:bg-blue-700': selectedIndex === index 
+                                             }">
+                                            <span x-text="task.name" class="block truncate"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">搜索并选择要复制的任务，选择后可以修改任务名称创建新任务</p>
+                        </div>
+
                         <!-- 基本信息 -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">任务名称</label>

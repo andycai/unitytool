@@ -959,3 +959,22 @@ func getNextRunTime(c *fiber.Ctx) error {
 		},
 	})
 }
+
+// searchTasks 搜索任务列表
+func searchTasks(c *fiber.Ctx) error {
+	keyword := c.Query("keyword")
+	if keyword == "" {
+		return c.JSON([]models.Task{})
+	}
+
+	var tasks []models.Task
+	if err := db.Where("name LIKE ?", "%"+keyword+"%").
+		Order("created_at desc").
+		Limit(10).
+		Find(&tasks).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": fmt.Sprintf("搜索任务失败: %v", err),
+		})
+	}
+	return c.JSON(tasks)
+}

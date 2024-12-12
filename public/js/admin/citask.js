@@ -17,6 +17,10 @@ function taskManagement() {
         pageSize: 10,
         totalPages: 1,
         showCronHelper: false,
+        searchKeyword: '',
+        searchResults: [],
+        showSearchDropdown: false,
+        selectedIndex: -1,
         form: {
             id: '',
             name: '',
@@ -394,6 +398,63 @@ function taskManagement() {
             } catch (error) {
                 console.error('获取下次执行时间失败:', error);
                 return '计算失败';
+            }
+        },
+        // 搜索任务
+        async searchTasks() {
+            if (!this.searchKeyword) {
+                this.searchResults = [];
+                this.selectedIndex = -1;
+                return;
+            }
+            try {
+                const response = await fetch(`/api/citask/search?keyword=${encodeURIComponent(this.searchKeyword)}`);
+                if (response.ok) {
+                    this.searchResults = await response.json();
+                    this.selectedIndex = -1;
+                }
+            } catch (error) {
+                console.error('搜索任务失败:', error);
+            }
+        },
+        // 复制任务
+        copyTask(task) {
+            // 复制任务信息，但清除ID和修改名称
+            this.form = {
+                ...task,
+                id: '',
+                name: task.name + ' - copy',
+                enable_cron: parseInt(task.enable_cron) || 0
+            };
+            this.showSearchDropdown = false;
+            this.searchKeyword = '';
+            this.searchResults = [];
+            this.selectedIndex = -1;
+        },
+        async loadTasks() {
+            try {
+                const response = await fetch('/api/citask/tasks');
+                if (response.ok) {
+                    this.tasks = await response.json();
+                }
+            } catch (error) {
+                console.error('加载任务失败:', error);
+            }
+        },
+        // 选择下一个搜索结果
+        selectNextResult() {
+            if (this.searchResults.length === 0) return;
+            this.selectedIndex = (this.selectedIndex + 1) % this.searchResults.length;
+        },
+        // 选择上一个搜索结果
+        selectPreviousResult() {
+            if (this.searchResults.length === 0) return;
+            this.selectedIndex = this.selectedIndex <= 0 ? this.searchResults.length - 1 : this.selectedIndex - 1;
+        },
+        // 选择当前高亮的任务
+        selectTask() {
+            if (this.selectedIndex >= 0 && this.selectedIndex < this.searchResults.length) {
+                this.copyTask(this.searchResults[this.selectedIndex]);
             }
         },
     }
