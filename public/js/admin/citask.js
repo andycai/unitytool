@@ -118,9 +118,7 @@ function taskManagement() {
                 
                 // 自动滚动到底部
                 this.$nextTick(() => {
-                    if (this.$refs.outputLog) {
-                        this.$refs.outputLog.scrollTop = this.$refs.outputLog.scrollHeight;
-                    }
+                    this.scrollOutputToBottom();
                 });
 
                 Alpine.store('notification').show('任务已开始执行', 'success');
@@ -175,9 +173,7 @@ function taskManagement() {
                     
                     // 自动滚动到底部
                     this.$nextTick(() => {
-                        if (this.$refs.outputLog) {
-                            this.$refs.outputLog.scrollTop = this.$refs.outputLog.scrollHeight;
-                        }
+                        this.scrollOutputToBottom();
                     });
                     
                     // 如果任务已结束，停止轮询
@@ -225,6 +221,12 @@ function taskManagement() {
             if (seconds < 60) return `${seconds}秒`;
             if (seconds < 3600) return `${Math.floor(seconds / 60)}分${seconds % 60}秒`;
             return `${Math.floor(seconds / 3600)}时${Math.floor((seconds % 3600) / 60)}分${seconds % 60}秒`;
+        },
+        scrollOutputToBottom() {
+            const outputLog = this.$refs.outputLog;
+            if (outputLog) {
+                outputLog.scrollTop = outputLog.scrollHeight;
+            }
         },
         formatDate(date) {
             if (!date) return '';

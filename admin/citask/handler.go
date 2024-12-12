@@ -1,7 +1,6 @@
 package citask
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -248,6 +247,8 @@ func executeTask(task *models.Task, log *models.TaskLog) {
 	defer func() {
 		log.EndTime = time.Now()
 		log.Duration = int(log.EndTime.Sub(log.StartTime).Seconds())
+
+		// 执行完成任务，保存任务日志到数据库
 		db.Save(log)
 
 		// 更新并清理进度信息
@@ -258,7 +259,7 @@ func executeTask(task *models.Task, log *models.TaskLog) {
 			progress.Progress = 100
 
 			// 延迟删除进度信息
-			time.AfterFunc(time.Hour, func() {
+			time.AfterFunc(time.Hour*2, func() {
 				progressMutex.Lock()
 				delete(taskProgressMap, log.ID)
 				progressMutex.Unlock()
@@ -348,6 +349,8 @@ func isUnsafeCommand(script string) (bool, string) {
 
 // executeScriptTask 执行脚本任务
 func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskProgress) {
+	fmt.Printf("开始执行脚本任务: %s (ID: %d)\n", task.Name, task.ID)
+
 	// 首先检查脚本安全性
 	if unsafe, reason := isUnsafeCommand(task.Script); unsafe {
 		log.Status = "failed"
@@ -356,6 +359,7 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 			progress.Status = "failed"
 			progress.Error = log.Error
 		}
+		fmt.Printf("脚本安全检查失败: %s\n", reason)
 		return
 	}
 
@@ -411,8 +415,10 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", tmpFile.Name())
+		fmt.Printf("Windows 命令: cmd /c %s\n", tmpFile.Name())
 	} else {
 		cmd = exec.Command("/bin/bash", tmpFile.Name())
+		fmt.Printf("Unix 命令: /bin/bash %s\n", tmpFile.Name())
 	}
 
 	// 设置工作目录为临时目录
@@ -420,30 +426,11 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 	cmd.Dir = tmpDir
 
 	// 创建输出缓冲区
-	var outputBuffer bytes.Buffer
-	outputWriter := io.MultiWriter(&outputBuffer)
+	var outputBuffer, errorBuffer bytes.Buffer
 
-	// 创建管道用于实时读取输出
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Status = "failed"
-		log.Error = fmt.Sprintf("创建输出管道失败: %v", err)
-		if progress != nil {
-			progress.Status = "failed"
-			progress.Error = log.Error
-		}
-		return
-	}
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		log.Status = "failed"
-		log.Error = fmt.Sprintf("创建错误输出管道失败: %v", err)
-		if progress != nil {
-			progress.Status = "failed"
-			progress.Error = log.Error
-		}
-		return
-	}
+	// 设置命令的标准输出和错误输出
+	cmd.Stdout = io.MultiWriter(&outputBuffer, os.Stdout)
+	cmd.Stderr = io.MultiWriter(&errorBuffer, os.Stderr)
 
 	// 设置超时
 	timeout := time.Duration(task.Timeout) * time.Second
@@ -454,7 +441,12 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 	// 创建一个带有超时的context
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
+
+	// 使用context创建新的命令
 	cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
+	cmd.Dir = tmpDir
+	cmd.Stdout = io.MultiWriter(&outputBuffer, os.Stdout)
+	cmd.Stderr = io.MultiWriter(&errorBuffer, os.Stderr)
 
 	// 启动命令
 	if err := cmd.Start(); err != nil {
@@ -467,43 +459,63 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 		return
 	}
 
-	// 实时读取输出
+	// 定期更新进度
+	done := make(chan error)
 	go func() {
-		scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
-		for scanner.Scan() {
-			line := scanner.Text() + "\n"
-			outputWriter.Write([]byte(line))
-			if progress != nil {
-				progress.Output = outputBuffer.String()
-			}
-		}
+		done <- cmd.Wait()
 	}()
 
-	// 等待命令完成
-	err = cmd.Wait()
-	output := outputBuffer.String()
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
 
-	if err != nil {
-		if ctx.Err() == context.DeadlineExceeded {
-			log.Status = "failed"
-			log.Error = fmt.Sprintf("执行超时（%d秒）\n%s", task.Timeout, output)
-		} else {
-			log.Status = "failed"
-			log.Error = fmt.Sprintf("执行失败: %v\n%s", err, output)
-		}
-		if progress != nil {
-			progress.Status = "failed"
-			progress.Error = log.Error
-		}
-		return
-	}
+	for {
+		select {
+		case <-ctx.Done():
+			if ctx.Err() == context.DeadlineExceeded {
+				log.Status = "failed"
+				log.Error = fmt.Sprintf("执行超时（%d秒）\n%s\n%s", task.Timeout, outputBuffer.String(), errorBuffer.String())
+				if progress != nil {
+					progress.Status = "failed"
+					progress.Error = log.Error
+					progress.Output = outputBuffer.String() + "\nError: " + errorBuffer.String()
+				}
+				return
+			}
+		case err := <-done:
+			output := outputBuffer.String()
+			errorOutput := errorBuffer.String()
 
-	log.Status = "success"
-	log.Output = output
-	if progress != nil {
-		progress.Status = "success"
-		progress.Output = output
-		progress.Progress = 100
+			if err != nil {
+				log.Status = "failed"
+				log.Error = fmt.Sprintf("执行失败: %v\n%s\n%s", err, output, errorOutput)
+				if progress != nil {
+					progress.Status = "failed"
+					progress.Error = log.Error
+					progress.Output = output + "\nError: " + errorOutput
+				}
+				return
+			}
+
+			log.Status = "success"
+			log.Output = output
+			if errorOutput != "" {
+				log.Output += "\nError: " + errorOutput
+			}
+
+			if progress != nil {
+				progress.Status = "success"
+				progress.Output = log.Output
+				progress.Progress = 100
+			}
+			return
+		case <-ticker.C:
+			if progress != nil {
+				progress.Output = outputBuffer.String()
+				if errorBuffer.Len() > 0 {
+					progress.Output += "\nError: " + errorBuffer.String()
+				}
+			}
+		}
 	}
 }
 
@@ -566,7 +578,7 @@ func executeHTTPTask(task *models.Task, log *models.TaskLog, progress *TaskProgr
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Status = "failed"
-		log.Error = fmt.Sprintf("���取响应失败: %v", err)
+		log.Error = fmt.Sprintf("取响应失败: %v", err)
 		if progress != nil {
 			progress.Status = "failed"
 			progress.Error = log.Error
