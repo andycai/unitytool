@@ -28,6 +28,11 @@ func initPublicRouter(publicGroup fiber.Router) {
 	publicGroup.Post("/api/login", func(c *fiber.Ctx) error {
 		return login(c)
 	})
+
+	// 修改密码路由（不需要认证）
+	publicGroup.Post("/api/change-password", func(c *fiber.Ctx) error {
+		return changePassword(c)
+	})
 }
 
 func initAdminCheckRouter(adminGroup fiber.Router) {

@@ -1,6 +1,7 @@
 package login
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/andycai/unitool/models"
@@ -20,6 +21,12 @@ type LoginResponse struct {
 	User  models.User `json:"user"`
 }
 
+type ChangePasswordRequest struct {
+	Username    string `json:"username"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
+
 // login 处理登录请求
 func login(c *fiber.Ctx) error {
 	var req LoginRequest
@@ -35,6 +42,9 @@ func login(c *fiber.Ctx) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		return c.Status(401).JSON(fiber.Map{"error": "用户名或密码错误"})
 	}
+
+	// 打印用户信息用于调试
+	fmt.Printf("User info: %+v\n", user)
 
 	// 生成 JWT token
 	claims := jwt.MapClaims{
@@ -68,13 +78,72 @@ func login(c *fiber.Ctx) error {
 	cookie.Path = "/"
 	c.Cookie(cookie)
 
-	return c.JSON(fiber.Map{
+	// 构建响应数据
+	responseData := fiber.Map{
 		"code":    0,
 		"message": "登录成功",
 		"data": fiber.Map{
 			"token": tokenString,
-			"user":  user,
+			"user": fiber.Map{
+				"id":              user.ID,
+				"username":        user.Username,
+				"nickname":        user.Nickname,
+				"role_id":         user.RoleID,
+				"role":            user.Role,
+				"status":          user.Status,
+				"last_login":      user.LastLogin,
+				"has_changed_pwd": user.HasChangedPwd,
+				"created_at":      user.CreatedAt,
+				"updated_at":      user.UpdatedAt,
+			},
 		},
+	}
+
+	// 打印响应数据用于调试
+	fmt.Printf("Response data: %+v\n", responseData)
+
+	// 返回响应
+	return c.JSON(responseData)
+}
+
+// changePassword 修改密码
+func changePassword(c *fiber.Ctx) error {
+	var req ChangePasswordRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
+	}
+
+	// 获取用户信息
+	var user models.User
+	if err := db.Where("username = ?", req.Username).First(&user).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "用户不存在"})
+	}
+
+	// 验证旧密码
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.OldPassword)); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "当前密码错误"})
+	}
+
+	// 生成新密码的哈希值
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "密码加密失败"})
+	}
+
+	// 更新密码和密码修改状态
+	updates := map[string]interface{}{
+		"password":        string(hashedPassword),
+		"has_changed_pwd": true,
+		"updated_at":      time.Now(),
+	}
+
+	if err := db.Model(&user).Updates(updates).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "更新密码失败"})
+	}
+
+	return c.JSON(fiber.Map{
+		"code":    0,
+		"message": "密码修改成功",
 	})
 }
 

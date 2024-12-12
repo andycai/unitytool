@@ -6,16 +6,17 @@ import (
 
 // User 用户表
 type User struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	Username  string    `json:"username" gorm:"uniqueIndex;size:50"`
-	Password  string    `json:"-" gorm:"size:100"` // 密码不返回给前端
-	Nickname  string    `json:"nickname" gorm:"size:50"`
-	RoleID    uint      `json:"role_id"`
-	Role      Role      `json:"role" gorm:"foreignKey:RoleID"`
-	Status    int       `json:"status" gorm:"default:1"` // 1:启用 0:禁用
-	LastLogin time.Time `json:"last_login"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID            uint      `json:"id" gorm:"primaryKey"`
+	Username      string    `json:"username" gorm:"uniqueIndex;size:50"`
+	Password      string    `json:"-" gorm:"size:100"` // 密码不返回给前端
+	Nickname      string    `json:"nickname" gorm:"size:50"`
+	RoleID        uint      `json:"role_id"`
+	Role          Role      `json:"role" gorm:"foreignKey:RoleID"`
+	Status        int       `json:"status" gorm:"default:1"` // 1:启用 0:禁用
+	LastLogin     time.Time `json:"last_login"`
+	HasChangedPwd bool      `json:"has_changed_pwd" gorm:"default:false"` // 是否已修改初始密码
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 // Role 角色表

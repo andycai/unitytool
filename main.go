@@ -54,7 +54,6 @@ func main() {
 	// 创建 Fiber 应用，并配置模板引擎
 	app := fiber.New(fiber.Config{
 		Views: engine,
-		// ViewsLayout: "admin/layout", // 设置默认布局
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			code := fiber.StatusInternalServerError
 			if e, ok := err.(*fiber.Error); ok {
@@ -79,16 +78,13 @@ func main() {
 		app.Static(staticPath.Route, staticPath.Path)
 	}
 
+	// 初始化数据库和模块
 	dbs := []*gorm.DB{db}
 	core.SetupDatabase(dbs)
 	core.InitModules()
+
+	// 设置路由
 	core.SetupRouter(app, db)
-
-	// 初始化全局路由
-	// modules.InitRoutes(app, db)
-
-	// 初始化模块
-	// modules.InitModules(app, db)
 
 	// 启动服务器
 	app.Listen(fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port))
