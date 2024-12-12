@@ -289,9 +289,9 @@ function taskManagement() {
         // 开始轮询正在执行的任务
         startRunningTasksPolling() {
             this.fetchRunningTasks();
-            this.runningTasksInterval = setInterval(() => {
-                this.fetchRunningTasks();
-            }, 5000); // 每5秒更新一次
+            // this.runningTasksInterval = setInterval(() => {
+            //     this.fetchRunningTasks();
+            // }, 5000); // 每5秒更新一次
         },
         // 停止轮询
         stopRunningTasksPolling() {
@@ -328,6 +328,49 @@ function taskManagement() {
         destroy() {
             this.stopRunningTasksPolling();
             this.stopProgressPolling();
+        },
+        // 查看日志详情
+        async viewLog(logId) {
+            try {
+                const response = await fetch(`/api/citask/progress/${logId}`);
+                if (!response.ok) throw new Error('获取任务进度失败');
+                const progress = await response.json();
+                
+                // 如果任务正在执行中，显示进度界面
+                if (progress.status === 'running') {
+                    this.currentTask = { id: logId };
+                    this.currentTaskLog = progress;
+                    this.showProgressModal = true;
+                    this.startProgressPolling(logId);
+                } else {
+                    // 否则显示结果界面
+                    this.currentTaskLog = progress;
+                    this.showLogDetailModal = true;
+                }
+            } catch (error) {
+                Alpine.store('notification').show(error.message, 'error');
+            }
+        },
+        // 获取状态显示样式
+        getStatusBadge(status) {
+            const statusClasses = {
+                'success': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                'failed': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                'running': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                'pending': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+            };
+            
+            const statusText = {
+                'success': '成功',
+                'failed': '失败',
+                'running': '执行中',
+                'pending': '等待中'
+            };
+
+            const classes = statusClasses[status] || statusClasses['pending'];
+            const text = statusText[status] || status;
+
+            return `<span class="px-2 py-1 text-xs font-medium rounded-full ${classes}">${text}</span>`;
         },
     }
 } 
