@@ -10,6 +10,9 @@ function taskManagement() {
         showProgressModal: false,
         editMode: false,
         progressInterval: null,
+        currentPage: 1,
+        pageSize: 10,
+        totalPages: 1,
         form: {
             name: '',
             description: '',
@@ -148,6 +151,8 @@ function taskManagement() {
                 const response = await fetch(`/api/citask/logs/${task.id}`);
                 if (!response.ok) throw new Error('获取任务日志失败');
                 this.taskLogs = await response.json();
+                this.currentPage = 1;
+                this.updatePaginatedLogs();
                 this.showLogsModal = true;
             } catch (error) {
                 Alpine.store('notification').show(error.message, 'error');
@@ -239,6 +244,32 @@ function taskManagement() {
                 second: '2-digit',
                 hour12: false
             });
+        },
+        firstPage() {
+            if (this.currentPage !== 1) {
+                this.currentPage = 1;
+                this.updatePaginatedLogs();
+            }
+        },
+        prevPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.updatePaginatedLogs();
+            }
+        },
+        nextPage() {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++;
+                this.updatePaginatedLogs();
+            }
+        },
+        updatePaginatedLogs() {
+            this.totalPages = Math.ceil(this.taskLogs.length / this.pageSize);
+        },
+        get paginatedLogs() {
+            const startIndex = (this.currentPage - 1) * this.pageSize;
+            const endIndex = startIndex + this.pageSize;
+            return this.taskLogs.slice(startIndex, endIndex);
         }
     }
 } 
