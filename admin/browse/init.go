@@ -17,27 +17,22 @@ var app *core.App
 type browseModule struct {
 }
 
-func (u *browseModule) Init(a *core.App) error {
+func (m *browseModule) Init(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (u *browseModule) InitDB() error {
+func (m *browseModule) InitDB() error {
 	// 数据迁移
 	return nil
 }
 
-func (u *browseModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *browseModule) InitRouter() error {
+func (m *browseModule) InitModule() error {
 	// public
 
 	// admin
 	// 浏览目录和文件的路由
-	app.RouterAdmin.Get("/browse/*", middleware.HasPermission("file:list"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Get("/browse/*", middleware.HasPermission("browse:list"), func(c *fiber.Ctx) error {
 		path := c.Params("*")
 		if path == "" {
 			path = "."
@@ -85,7 +80,7 @@ func (u *browseModule) InitRouter() error {
 	})
 
 	// 文件删除路由
-	app.RouterAdmin.Delete("/browse/*", middleware.HasPermission("file:delete"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Delete("/browse/*", middleware.HasPermission("browse:delete"), func(c *fiber.Ctx) error {
 		path := c.Params("*")
 		if path == "" {
 			return c.Status(400).SendString("Path is required")
@@ -131,7 +126,7 @@ func (u *browseModule) InitRouter() error {
 	})
 
 	// FTP 上传路由
-	app.RouterAdmin.Post("/ftp/upload", middleware.HasPermission("file:ftp"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Post("/ftp/upload", middleware.HasPermission("browse:ftp"), func(c *fiber.Ctx) error {
 		return uploadByFTP(c, app.Config.Server.Output)
 	})
 
@@ -141,5 +136,5 @@ func (u *browseModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&browseModule{})
+	core.RegisterModule(&browseModule{})
 }

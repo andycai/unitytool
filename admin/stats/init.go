@@ -3,6 +3,7 @@ package stats
 import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
+	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -11,22 +12,17 @@ var app *core.App
 type statsModule struct {
 }
 
-func (u *statsModule) Init(a *core.App) error {
+func (m *statsModule) Init(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (u *statsModule) InitDB() error {
+func (m *statsModule) InitDB() error {
 	// 数据迁移
-	return nil
+	return app.DB.AutoMigrate(&models.StatsRecord{}, &models.StatsInfo{})
 }
 
-func (u *statsModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *statsModule) InitRouter() error {
+func (m *statsModule) InitModule() error {
 	// public
 	app.RouterPublic.Post("/api/stats", CreateStats)
 
@@ -54,5 +50,5 @@ func (u *statsModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&statsModule{})
+	core.RegisterModule(&statsModule{})
 }

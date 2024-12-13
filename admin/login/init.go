@@ -10,22 +10,17 @@ var app *core.App
 type loginModule struct {
 }
 
-func (u *loginModule) Init(a *core.App) error {
+func (m *loginModule) Init(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (u *loginModule) InitDB() error {
+func (m *loginModule) InitDB() error {
 	// 数据迁移
 	return nil
 }
 
-func (u *loginModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *loginModule) InitRouter() error {
+func (m *loginModule) InitModule() error {
 	// public
 	// 登录页面路由（不需要认证）
 	app.RouterPublic.Get("/login", func(c *fiber.Ctx) error {
@@ -55,5 +50,5 @@ func (u *loginModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&loginModule{})
+	core.RegisterModule(&loginModule{})
 }

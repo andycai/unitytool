@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/andycai/unitool/utils"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
@@ -30,11 +29,6 @@ func InitDatabase(dsn string, driver string) (*gorm.DB, error) {
 
 	default:
 		return nil, fmt.Errorf("不支持的数据库驱动: %s", driver)
-	}
-
-	// 初始化数据库表和基础数据
-	if err := utils.InitDatabase(db); err != nil {
-		return nil, fmt.Errorf("数据库初始化失败: %v", err)
 	}
 
 	return db, nil

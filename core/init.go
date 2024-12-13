@@ -3,21 +3,27 @@ package core
 type Module interface {
 	Init(*App) error
 	InitDB() error
-	InitData() error
-	InitRouter() error
+	InitModule() error
 }
 
 var modules []Module
 
-func RegisterModules(module Module) {
+func RegisterModule(module Module) {
 	modules = append(modules, module)
 }
 
-func InitModule(app *App) {
+func InitModules(app *App) {
 	for _, module := range modules {
 		module.Init(app)
+	}
+
+	// 初始化数据库和数据
+	for _, module := range modules {
 		module.InitDB()
-		module.InitData()
-		module.InitRouter()
+	}
+
+	// 初始化模块
+	for _, module := range modules {
+		module.InitModule()
 	}
 }

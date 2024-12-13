@@ -11,22 +11,17 @@ var app *core.App
 type permissionModule struct {
 }
 
-func (u *permissionModule) Init(a *core.App) error {
+func (m *permissionModule) Init(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (u *permissionModule) InitDB() error {
+func (m *permissionModule) InitDB() error {
 	// 数据迁移
 	return nil
 }
 
-func (u *permissionModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *permissionModule) InitRouter() error {
+func (m *permissionModule) InitModule() error {
 	// public
 
 	// admin
@@ -49,5 +44,5 @@ func (u *permissionModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&permissionModule{})
+	core.RegisterModule(&permissionModule{})
 }

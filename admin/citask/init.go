@@ -3,6 +3,7 @@ package citask
 import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
+	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -11,26 +12,20 @@ var app *core.App
 type taskModule struct {
 }
 
-func (u *taskModule) Init(a *core.App) error {
+func (m *taskModule) Init(a *core.App) error {
 	app = a
+	return nil
+}
 
-	// 初始化定时任务
+func (m *taskModule) InitDB() error {
+	// 数据迁移
+	return app.DB.AutoMigrate(&models.Task{}, &models.TaskLog{})
+}
+
+func (m *taskModule) InitModule() error {
+	// logic
 	initCron()
 
-	return nil
-}
-
-func (u *taskModule) InitDB() error {
-	// 数据迁移
-	return nil
-}
-
-func (u *taskModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *taskModule) InitRouter() error {
 	// public
 
 	// admin
@@ -61,5 +56,5 @@ func (u *taskModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&taskModule{})
+	core.RegisterModule(&taskModule{})
 }

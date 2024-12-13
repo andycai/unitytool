@@ -80,7 +80,7 @@ func main() {
 		fiberApp.Static(staticPath.Route, staticPath.Path)
 	}
 
-	core.InitModule(app)
+	core.InitModules(app)
 
 	// 启动服务器
 	fiberApp.Listen(fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port))

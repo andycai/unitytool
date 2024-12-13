@@ -10,22 +10,17 @@ var app *core.App
 type shellModule struct {
 }
 
-func (u *shellModule) Init(a *core.App) error {
+func (m *shellModule) Init(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (u *shellModule) InitDB() error {
+func (m *shellModule) InitDB() error {
 	// 数据迁移
 	return nil
 }
 
-func (u *shellModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *shellModule) InitRouter() error {
+func (m *shellModule) InitModule() error {
 	// public
 	app.RouterPublic.Post("/api/shell", func(c *fiber.Ctx) error {
 		return execShell(c, app.Config.Server.ScriptPath)
@@ -39,5 +34,5 @@ func (u *shellModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&shellModule{})
+	core.RegisterModule(&shellModule{})
 }

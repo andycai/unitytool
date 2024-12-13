@@ -9,22 +9,17 @@ var app *core.App
 type uniBuildModule struct {
 }
 
-func (u *uniBuildModule) Init(a *core.App) error {
+func (m *uniBuildModule) Init(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (u *uniBuildModule) InitDB() error {
+func (m *uniBuildModule) InitDB() error {
 	// 数据迁移
 	return nil
 }
 
-func (u *uniBuildModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *uniBuildModule) InitRouter() error {
+func (m *uniBuildModule) InitModule() error {
 	// public
 	app.RouterPublic.Post("/api/unibuild/res", buildResources)
 	app.RouterPublic.Post("/api/unibuild/app", buildApp)
@@ -37,5 +32,5 @@ func (u *uniBuildModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&uniBuildModule{})
+	core.RegisterModule(&uniBuildModule{})
 }

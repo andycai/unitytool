@@ -11,22 +11,17 @@ var app *core.App
 type serverconfModule struct {
 }
 
-func (u *serverconfModule) Init(a *core.App) error {
+func (m *serverconfModule) Init(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (u *serverconfModule) InitDB() error {
+func (m *serverconfModule) InitDB() error {
 	// 数据迁移
 	return nil
 }
 
-func (u *serverconfModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *serverconfModule) InitRouter() error {
+func (m *serverconfModule) InitModule() error {
 	// public
 	app.RouterPublic.Get("/api/game/serverlist", getServerList)
 	app.RouterPublic.Get("/api/game/lastserver", getLastServer)
@@ -60,5 +55,5 @@ func (u *serverconfModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&serverconfModule{})
+	core.RegisterModule(&serverconfModule{})
 }

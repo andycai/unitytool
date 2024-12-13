@@ -3,6 +3,7 @@ package role
 import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
+	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -11,22 +12,17 @@ var app *core.App
 type roleModule struct {
 }
 
-func (u *roleModule) Init(a *core.App) error {
+func (m *roleModule) Init(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (u *roleModule) InitDB() error {
+func (m *roleModule) InitDB() error {
 	// 数据迁移
-	return nil
+	return app.DB.AutoMigrate(&models.Role{}, &models.Permission{}, &models.RolePermission{})
 }
 
-func (u *roleModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *roleModule) InitRouter() error {
+func (m *roleModule) InitModule() error {
 	// public
 
 	// admin
@@ -49,5 +45,5 @@ func (u *roleModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&roleModule{})
+	core.RegisterModule(&roleModule{})
 }

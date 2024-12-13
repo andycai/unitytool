@@ -3,6 +3,7 @@ package gamelog
 import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
+	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -11,22 +12,17 @@ var app *core.App
 type gamelogModule struct {
 }
 
-func (u *gamelogModule) Init(a *core.App) error {
+func (m *gamelogModule) Init(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (u *gamelogModule) InitDB() error {
+func (m *gamelogModule) InitDB() error {
 	// 数据迁移
-	return nil
+	return app.DB.AutoMigrate(&models.GameLog{})
 }
 
-func (u *gamelogModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *gamelogModule) InitRouter() error {
+func (m *gamelogModule) InitModule() error {
 	// public
 	app.RouterPublic.Post("/api/gamelog", createLog)
 
@@ -49,5 +45,5 @@ func (u *gamelogModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&gamelogModule{})
+	core.RegisterModule(&gamelogModule{})
 }

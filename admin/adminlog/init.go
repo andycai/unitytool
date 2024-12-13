@@ -3,6 +3,7 @@ package adminlog
 import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
+	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -11,22 +12,17 @@ var app *core.App
 type adminlogModule struct {
 }
 
-func (u *adminlogModule) Init(a *core.App) error {
+func (m *adminlogModule) Init(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (u *adminlogModule) InitDB() error {
+func (m *adminlogModule) InitDB() error {
 	// 数据迁移
-	return nil
+	return app.DB.AutoMigrate(&models.AdminLog{})
 }
 
-func (u *adminlogModule) InitData() error {
-	// 初始化数据
-	return nil
-}
-
-func (u *adminlogModule) InitRouter() error {
+func (m *adminlogModule) InitModule() error {
 	// public
 
 	// admin
@@ -47,5 +43,5 @@ func (u *adminlogModule) InitRouter() error {
 }
 
 func init() {
-	core.RegisterModules(&adminlogModule{})
+	core.RegisterModule(&adminlogModule{})
 }
