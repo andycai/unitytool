@@ -5,25 +5,35 @@ import (
 	"github.com/andycai/unitool/middleware"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-const (
-	KeyDB            = "admin.menu.gorm.db"
-	KeyNoCheckRouter = "admin.menu.router.nocheck"
-	KeyCheckRouter   = "admin.menu.router.check"
-)
-
-var db *gorm.DB
+var app *core.App
 var menuDao *MenuDao
 
-func initDB(dbs []*gorm.DB) {
-	db = dbs[0]
-	menuDao = NewMenuDao(db)
+type menuModule struct {
 }
 
-func initAdminCheckRouter(adminGroup fiber.Router) {
-	adminGroup.Get("/menus", middleware.HasPermission("menu:list"), func(c *fiber.Ctx) error {
+func (u *menuModule) Init(a *core.App) error {
+	app = a
+	menuDao = NewMenuDao()
+	return nil
+}
+
+func (u *menuModule) InitDB() error {
+	// 数据迁移
+	return nil
+}
+
+func (u *menuModule) InitData() error {
+	// 初始化数据
+	return nil
+}
+
+func (u *menuModule) InitRouter() error {
+	// public
+
+	// admin
+	app.RouterAdmin.Get("/menus", middleware.HasPermission("menu:list"), func(c *fiber.Ctx) error {
 		user := c.Locals("user").(models.User)
 		return c.Render("admin/menus", fiber.Map{
 			"Title": "菜单管理",
@@ -33,18 +43,17 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 			"user": user,
 		}, "admin/layout")
 	})
-}
 
-func initAPICheckRouter(apiGroup fiber.Router) {
-	apiGroup.Get("/menus", middleware.HasPermission("menu:list"), listMenus)
-	apiGroup.Get("/menus/tree", middleware.HasPermission("menu:list"), getMenuTree)
-	apiGroup.Post("/menus", middleware.HasPermission("menu:create"), createMenu)
-	apiGroup.Put("/menus/:id", middleware.HasPermission("menu:update"), updateMenu)
-	apiGroup.Delete("/menus/:id", middleware.HasPermission("menu:delete"), deleteMenu)
+	// api
+	app.RouterApi.Get("/menus", middleware.HasPermission("menu:list"), listMenus)
+	app.RouterApi.Get("/menus/tree", middleware.HasPermission("menu:list"), getMenuTree)
+	app.RouterApi.Post("/menus", middleware.HasPermission("menu:create"), createMenu)
+	app.RouterApi.Put("/menus/:id", middleware.HasPermission("menu:update"), updateMenu)
+	app.RouterApi.Delete("/menus/:id", middleware.HasPermission("menu:delete"), deleteMenu)
+
+	return nil
 }
 
 func init() {
-	core.RegisterDatabase(KeyDB, initDB)
-	core.RegisterAdminCheckRouter(KeyCheckRouter, initAdminCheckRouter)
-	core.RegisterAPICheckRouter(KeyCheckRouter, initAPICheckRouter)
+	core.RegisterModules(&menuModule{})
 }

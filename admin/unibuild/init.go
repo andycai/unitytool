@@ -2,24 +2,40 @@ package unibuild
 
 import (
 	"github.com/andycai/unitool/core"
-	"github.com/gofiber/fiber/v2"
 )
 
-const (
-	KeyModule        = "admin.unibuild"
-	KeyNoCheckRouter = "admin.unibuild.router.nocheck"
-)
+var app *core.App
 
-func initModule() {
+type uniBuildModule struct {
 }
 
-func initPublicRouter(publicGroup fiber.Router) {
-	// Unity打包接口
-	publicGroup.Post("/api/unibuild/res", buildResources)
-	publicGroup.Post("/api/unibuild/app", buildApp)
+func (u *uniBuildModule) Init(a *core.App) error {
+	app = a
+	return nil
+}
+
+func (u *uniBuildModule) InitDB() error {
+	// 数据迁移
+	return nil
+}
+
+func (u *uniBuildModule) InitData() error {
+	// 初始化数据
+	return nil
+}
+
+func (u *uniBuildModule) InitRouter() error {
+	// public
+	app.RouterPublic.Post("/api/unibuild/res", buildResources)
+	app.RouterPublic.Post("/api/unibuild/app", buildApp)
+
+	// admin
+
+	// api
+
+	return nil
 }
 
 func init() {
-	core.RegisterModule(KeyModule, initModule)
-	core.RegisterPublicRouter(KeyNoCheckRouter, initPublicRouter)
+	core.RegisterModules(&uniBuildModule{})
 }

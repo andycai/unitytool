@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/andycai/unitool/models"
-	"github.com/andycai/unitool/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -34,7 +33,7 @@ func login(c *fiber.Ctx) error {
 	}
 
 	var user models.User
-	if err := db.Preload("Role.Permissions").Where("username = ?", req.Username).First(&user).Error; err != nil {
+	if err := app.DB.Preload("Role.Permissions").Where("username = ?", req.Username).First(&user).Error; err != nil {
 		return c.Status(401).JSON(fiber.Map{"error": "用户名或密码错误"})
 	}
 
@@ -51,18 +50,18 @@ func login(c *fiber.Ctx) error {
 		"user_id":  user.ID,
 		"username": user.Username,
 		"role_id":  user.RoleID,
-		"exp":      time.Now().Add(time.Duration(utils.GetConfig().Auth.TokenExpire) * time.Second).Unix(),
+		"exp":      time.Now().Add(time.Duration(app.Config.Auth.TokenExpire) * time.Second).Unix(),
 		"iat":      time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(utils.GetConfig().Auth.JWTSecret))
+	tokenString, err := token.SignedString([]byte(app.Config.Auth.JWTSecret))
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "生成token失败"})
 	}
 
 	// 更新最后登录时间
-	db.Model(&user).Update("last_login", time.Now())
+	app.DB.Model(&user).Update("last_login", time.Now())
 
 	// 清除密码字段
 	user.Password = ""
@@ -71,7 +70,7 @@ func login(c *fiber.Ctx) error {
 	cookie := new(fiber.Cookie)
 	cookie.Name = "token"
 	cookie.Value = tokenString
-	cookie.Expires = time.Now().Add(time.Duration(utils.GetConfig().Auth.TokenExpire) * time.Second)
+	cookie.Expires = time.Now().Add(time.Duration(app.Config.Auth.TokenExpire) * time.Second)
 	cookie.HTTPOnly = true
 	cookie.Secure = true // 如果是 HTTPS
 	cookie.Path = "/"
@@ -114,7 +113,7 @@ func changePassword(c *fiber.Ctx) error {
 
 	// 获取用户信息
 	var user models.User
-	if err := db.Where("username = ?", req.Username).First(&user).Error; err != nil {
+	if err := app.DB.Where("username = ?", req.Username).First(&user).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{"error": "用户不存在"})
 	}
 
@@ -136,7 +135,7 @@ func changePassword(c *fiber.Ctx) error {
 		"updated_at":      time.Now(),
 	}
 
-	if err := db.Model(&user).Updates(updates).Error; err != nil {
+	if err := app.DB.Model(&user).Updates(updates).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "更新密码失败"})
 	}
 
@@ -156,5 +155,5 @@ func generateToken(user models.User) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(utils.GetConfig().Auth.JWTSecret))
+	return token.SignedString([]byte(app.Config.Auth.JWTSecret))
 }

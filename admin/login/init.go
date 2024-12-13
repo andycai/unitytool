@@ -3,49 +3,57 @@ package login
 import (
 	"github.com/andycai/unitool/core"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-const (
-	KeyDB            = "admin.login.gorm.db"
-	KeyNoCheckRouter = "admin.login.router.nocheck"
-	KeyCheckRouter   = "admin.login.router.check"
-)
+var app *core.App
 
-var db *gorm.DB
-
-func initDB(dbs []*gorm.DB) {
-	db = dbs[0]
+type loginModule struct {
 }
 
-func initPublicRouter(publicGroup fiber.Router) {
+func (u *loginModule) Init(a *core.App) error {
+	app = a
+	return nil
+}
+
+func (u *loginModule) InitDB() error {
+	// 数据迁移
+	return nil
+}
+
+func (u *loginModule) InitData() error {
+	// 初始化数据
+	return nil
+}
+
+func (u *loginModule) InitRouter() error {
+	// public
 	// 登录页面路由（不需要认证）
-	publicGroup.Get("/login", func(c *fiber.Ctx) error {
+	app.RouterPublic.Get("/login", func(c *fiber.Ctx) error {
 		return c.Render("login", fiber.Map{}, "login")
 	})
 
 	// 登录 API 路由（不需要认证）
-	publicGroup.Post("/api/login", func(c *fiber.Ctx) error {
+	app.RouterPublic.Post("/api/login", func(c *fiber.Ctx) error {
 		return login(c)
 	})
 
 	// 修改密码路由（不需要认证）
-	publicGroup.Post("/api/change-password", func(c *fiber.Ctx) error {
+	app.RouterPublic.Post("/api/change-password", func(c *fiber.Ctx) error {
 		return changePassword(c)
 	})
-}
 
-func initAdminCheckRouter(adminGroup fiber.Router) {
-	// 管理后台主页路由
-	adminGroup.Get("/", func(c *fiber.Ctx) error {
+	// admin
+	app.RouterAdmin.Get("/", func(c *fiber.Ctx) error {
 		return c.Render("admin/index", fiber.Map{
 			"Title": "管理后台",
 		}, "admin/layout")
 	})
+
+	// api
+
+	return nil
 }
 
 func init() {
-	core.RegisterDatabase(KeyDB, initDB)
-	core.RegisterPublicRouter(KeyNoCheckRouter, initPublicRouter)
-	core.RegisterAdminCheckRouter(KeyCheckRouter, initAdminCheckRouter)
+	core.RegisterModules(&loginModule{})
 }

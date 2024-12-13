@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/andycai/unitool/admin/adminlog"
-	"github.com/andycai/unitool/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -136,14 +135,6 @@ type NoticeNum struct {
 	Eject     int `json:"eject"`
 }
 
-// 添加在文件开头的包级变量部分
-var jsonPaths utils.JSONPathConfig
-
-// 添加初始化函数
-func InitJSONPaths(paths utils.JSONPathConfig) {
-	jsonPaths = paths
-}
-
 // 读取 JSON 文件
 func readJSONFile(path string, v interface{}) error {
 	data, err := os.ReadFile(path)
@@ -181,7 +172,7 @@ func writeJSONFile(path string, v interface{}) error {
 // 获取服务器列表
 func getServerList(c *fiber.Ctx) error {
 	var serverList ServerList
-	if err := readJSONFile(jsonPaths.ServerList, &serverList); err != nil {
+	if err := readJSONFile(app.Config.JSONPaths.ServerList, &serverList); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(serverList)
@@ -194,7 +185,7 @@ func updateServerList(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
 	}
 
-	if err := writeJSONFile(jsonPaths.ServerList, serverList); err != nil {
+	if err := writeJSONFile(app.Config.JSONPaths.ServerList, serverList); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -207,7 +198,7 @@ func updateServerList(c *fiber.Ctx) error {
 // 获取最后登录服务器
 func getLastServer(c *fiber.Ctx) error {
 	var lastServer LastServer
-	if err := readJSONFile(jsonPaths.LastServer, &lastServer); err != nil {
+	if err := readJSONFile(app.Config.JSONPaths.LastServer, &lastServer); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(lastServer)
@@ -220,7 +211,7 @@ func updateLastServer(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
 	}
 
-	if err := writeJSONFile(jsonPaths.LastServer, lastServer); err != nil {
+	if err := writeJSONFile(app.Config.JSONPaths.LastServer, lastServer); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -233,7 +224,7 @@ func updateLastServer(c *fiber.Ctx) error {
 // 获取服务器信息
 func getServerInfo(c *fiber.Ctx) error {
 	var data map[string]interface{}
-	if err := readJSONFile(jsonPaths.ServerInfo, &data); err != nil {
+	if err := readJSONFile(app.Config.JSONPaths.ServerInfo, &data); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -271,7 +262,7 @@ func updateServerInfo(c *fiber.Ctx) error {
 	}
 
 	// 保存时只保存实际的字段值，不保存 fields 数组
-	if err := writeJSONFile(jsonPaths.ServerInfo, config.ToMap()); err != nil {
+	if err := writeJSONFile(app.Config.JSONPaths.ServerInfo, config.ToMap()); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -284,7 +275,7 @@ func updateServerInfo(c *fiber.Ctx) error {
 // 获取公告列表
 func getNoticeList(c *fiber.Ctx) error {
 	var noticeList NoticeList
-	if err := readJSONFile(jsonPaths.NoticeList, &noticeList); err != nil {
+	if err := readJSONFile(app.Config.JSONPaths.NoticeList, &noticeList); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(noticeList)
@@ -297,7 +288,7 @@ func updateNoticeList(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
 	}
 
-	if err := writeJSONFile(jsonPaths.NoticeList, noticeList); err != nil {
+	if err := writeJSONFile(app.Config.JSONPaths.NoticeList, noticeList); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -310,7 +301,7 @@ func updateNoticeList(c *fiber.Ctx) error {
 // 获取公告数量
 func getNoticeNum(c *fiber.Ctx) error {
 	var noticeNum NoticeNum
-	if err := readJSONFile(jsonPaths.NoticeNum, &noticeNum); err != nil {
+	if err := readJSONFile(app.Config.JSONPaths.NoticeNum, &noticeNum); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(noticeNum)
@@ -328,7 +319,7 @@ func updateNoticeNum(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "eject 必须是非负整数"})
 	}
 
-	if err := writeJSONFile(jsonPaths.NoticeNum, noticeNum); err != nil {
+	if err := writeJSONFile(app.Config.JSONPaths.NoticeNum, noticeNum); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 

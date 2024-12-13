@@ -24,7 +24,7 @@ type UpdatePermissionRequest struct {
 // getPermissions 获取权限列表
 func getPermissions(c *fiber.Ctx) error {
 	var permissions []models.Permission
-	if err := db.Find(&permissions).Error; err != nil {
+	if err := app.DB.Find(&permissions).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "获取权限列表失败"})
 	}
 	return c.JSON(permissions)
@@ -39,7 +39,7 @@ func createPermission(c *fiber.Ctx) error {
 
 	// 检查权限编码是否已存在
 	var count int64
-	db.Model(&models.Permission{}).Where("code = ?", req.Code).Count(&count)
+	app.DB.Model(&models.Permission{}).Where("code = ?", req.Code).Count(&count)
 	if count > 0 {
 		return c.Status(400).JSON(fiber.Map{"error": "权限编码已存在"})
 	}
@@ -52,7 +52,7 @@ func createPermission(c *fiber.Ctx) error {
 		UpdatedAt:   time.Now(),
 	}
 
-	if err := db.Create(&permission).Error; err != nil {
+	if err := app.DB.Create(&permission).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "创建权限失败"})
 	}
 
@@ -71,7 +71,7 @@ func updatePermission(c *fiber.Ctx) error {
 	}
 
 	var permission models.Permission
-	if err := db.First(&permission, id).Error; err != nil {
+	if err := app.DB.First(&permission, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{"error": "权限不存在"})
 	}
 
@@ -85,7 +85,7 @@ func updatePermission(c *fiber.Ctx) error {
 	if req.Code != "" {
 		// 检查新的权限编码是否已存在
 		var count int64
-		db.Model(&models.Permission{}).Where("code = ? AND id != ?", req.Code, id).Count(&count)
+		app.DB.Model(&models.Permission{}).Where("code = ? AND id != ?", req.Code, id).Count(&count)
 		if count > 0 {
 			return c.Status(400).JSON(fiber.Map{"error": "权限编码已存在"})
 		}
@@ -95,7 +95,7 @@ func updatePermission(c *fiber.Ctx) error {
 		updates["description"] = req.Description
 	}
 
-	if err := db.Model(&permission).Updates(updates).Error; err != nil {
+	if err := app.DB.Model(&permission).Updates(updates).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "更新权限失败"})
 	}
 
@@ -111,7 +111,7 @@ func deletePermission(c *fiber.Ctx) error {
 
 	// 检查权限是否被角色使用
 	var count int64
-	if err := db.Table("role_permissions").Where("permission_id = ?", id).Count(&count).Error; err != nil {
+	if err := app.DB.Table("role_permissions").Where("permission_id = ?", id).Count(&count).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "检查权限使用状态失败"})
 	}
 
@@ -120,11 +120,11 @@ func deletePermission(c *fiber.Ctx) error {
 	}
 
 	var permission models.Permission
-	if err := db.First(&permission, id).Error; err != nil {
+	if err := app.DB.First(&permission, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{"error": "权限不存在"})
 	}
 
-	if err := db.Delete(&permission).Error; err != nil {
+	if err := app.DB.Delete(&permission).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "删除权限失败"})
 	}
 

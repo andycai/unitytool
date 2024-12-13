@@ -4,23 +4,33 @@ import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-const (
-	KeyDB            = "admin.role.gorm.db"
-	KeyNoCheckRouter = "admin.role.router.nocheck"
-	KeyCheckRouter   = "admin.role.router.check"
-)
+var app *core.App
 
-var db *gorm.DB
-
-func initDB(dbs []*gorm.DB) {
-	db = dbs[0]
+type roleModule struct {
 }
 
-func initAdminCheckRouter(adminGroup fiber.Router) {
-	adminGroup.Get("/roles", middleware.HasPermission("role:list"), func(c *fiber.Ctx) error {
+func (u *roleModule) Init(a *core.App) error {
+	app = a
+	return nil
+}
+
+func (u *roleModule) InitDB() error {
+	// 数据迁移
+	return nil
+}
+
+func (u *roleModule) InitData() error {
+	// 初始化数据
+	return nil
+}
+
+func (u *roleModule) InitRouter() error {
+	// public
+
+	// admin
+	app.RouterAdmin.Get("/roles", middleware.HasPermission("role:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/roles", fiber.Map{
 			"Title": "角色管理",
 			"Scripts": []string{
@@ -28,17 +38,16 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 			},
 		}, "admin/layout")
 	})
-}
 
-func initAPICheckRouter(apiGroup fiber.Router) {
-	apiGroup.Get("/roles", middleware.HasPermission("role:list"), getRoles)
-	apiGroup.Post("/roles", middleware.HasPermission("role:create"), createRole)
-	apiGroup.Put("/roles/:id", middleware.HasPermission("role:update"), updateRole)
-	apiGroup.Delete("/roles/:id", middleware.HasPermission("role:delete"), deleteRole)
+	// api
+	app.RouterApi.Get("/roles", middleware.HasPermission("role:list"), getRoles)
+	app.RouterApi.Post("/roles", middleware.HasPermission("role:create"), createRole)
+	app.RouterApi.Put("/roles/:id", middleware.HasPermission("role:update"), updateRole)
+	app.RouterApi.Delete("/roles/:id", middleware.HasPermission("role:delete"), deleteRole)
+
+	return nil
 }
 
 func init() {
-	core.RegisterDatabase(KeyDB, initDB)
-	core.RegisterAdminCheckRouter(KeyCheckRouter, initAdminCheckRouter)
-	core.RegisterAPICheckRouter(KeyCheckRouter, initAPICheckRouter)
+	core.RegisterModules(&roleModule{})
 }

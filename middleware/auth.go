@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
-	"github.com/andycai/unitool/models"
-	"github.com/andycai/unitool/utils"
 )
 
 // AuthMiddleware 认证中间件
-func AuthMiddleware(db *gorm.DB) fiber.Handler {
+func AuthMiddleware(db *gorm.DB, JWTSecret string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// 首先从请求头获取 token
 		authHeader := c.Get("Authorization")
@@ -43,7 +42,7 @@ func AuthMiddleware(db *gorm.DB) fiber.Handler {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
-			return []byte(utils.GetConfig().Auth.JWTSecret), nil
+			return []byte(JWTSecret), nil
 		})
 
 		// token 验证失败

@@ -4,24 +4,33 @@ import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-const (
-	KeyDB            = "admin.adminlog.gorm.db"
-	KeyNoCheckRouter = "admin.adminlog.router.nocheck"
-	KeyCheckRouter   = "admin.adminlog.router.check"
-)
+var app *core.App
 
-var db *gorm.DB
-
-func initDB(dbs []*gorm.DB) {
-	db = dbs[0]
+type adminlogModule struct {
 }
 
-func initAdminCheckRouter(adminGroup fiber.Router) {
-	// 管理员日志页面
-	adminGroup.Get("/adminlog", middleware.HasPermission("adminlog:list"), func(c *fiber.Ctx) error {
+func (u *adminlogModule) Init(a *core.App) error {
+	app = a
+	return nil
+}
+
+func (u *adminlogModule) InitDB() error {
+	// 数据迁移
+	return nil
+}
+
+func (u *adminlogModule) InitData() error {
+	// 初始化数据
+	return nil
+}
+
+func (u *adminlogModule) InitRouter() error {
+	// public
+
+	// admin
+	app.RouterAdmin.Get("/adminlog", middleware.HasPermission("adminlog:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/adminlog", fiber.Map{
 			"Title": "操作日志",
 			"Scripts": []string{
@@ -29,18 +38,14 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 			},
 		}, "admin/layout")
 	})
-}
 
-func initAPICheckRouter(apiGroup fiber.Router) {
-	// 获取日志列表
-	apiGroup.Get("/adminlog", middleware.HasPermission("adminlog:list"), getAdminLogs)
+	// api
+	app.RouterApi.Get("/adminlog", middleware.HasPermission("adminlog:list"), getAdminLogs)
+	app.RouterApi.Delete("/adminlog", middleware.HasPermission("adminlog:delete"), deleteAdminLogs)
 
-	// 删除日志
-	apiGroup.Delete("/adminlog", middleware.HasPermission("adminlog:delete"), deleteAdminLogs)
+	return nil
 }
 
 func init() {
-	core.RegisterDatabase(KeyDB, initDB)
-	core.RegisterAdminCheckRouter(KeyCheckRouter, initAdminCheckRouter)
-	core.RegisterAPICheckRouter(KeyCheckRouter, initAPICheckRouter)
+	core.RegisterModules(&adminlogModule{})
 }

@@ -9,7 +9,6 @@ import (
 	_ "github.com/andycai/unitool/admin"
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/lib/database"
-	"github.com/andycai/unitool/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
 	"gorm.io/gorm"
@@ -17,20 +16,20 @@ import (
 
 func main() {
 	// 加载配置文件
-	if err := utils.LoadConfig(); err != nil {
+	if err := core.LoadConfig(); err != nil {
 		log.Fatalf("无法加载配置文件: %v", err)
 	}
 
 	// 初始化数据库
-	db, err := database.InitDatabase()
+	db, err := database.InitDatabase(core.GetConfig().Database.DSN, core.GetConfig().Database.Driver)
 	if err != nil {
 		log.Fatalf("数据库初始化失败: %v", err)
 	}
 
 	// 初始化模板引擎
 	engine := html.New("./templates", ".html")
-	// engine.Reload(true) // 开发模式下启用模板重载
-	// engine.Debug(true)  // 开发模式下启用调试信息
+	engine.Reload(true) // 开发模式下启用模板重载
+	engine.Debug(true)  // 开发模式下启用调试信息
 
 	// 添加模板函数
 	engine.AddFunc("yield", func() string { return "" })
@@ -52,7 +51,7 @@ func main() {
 	})
 
 	// 创建 Fiber 应用，并配置模板引擎
-	app := fiber.New(fiber.Config{
+	fiberApp := fiber.New(fiber.Config{
 		Views: engine,
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			code := fiber.StatusInternalServerError
@@ -72,20 +71,17 @@ func main() {
 		},
 	})
 
+	app := core.NewApp()
+	app.Init([]*gorm.DB{db}, fiberApp)
+
 	// 注册静态路由
-	serverConfig := utils.GetServerConfig()
+	serverConfig := app.Config.Server
 	for _, staticPath := range serverConfig.StaticPaths {
-		app.Static(staticPath.Route, staticPath.Path)
+		fiberApp.Static(staticPath.Route, staticPath.Path)
 	}
 
-	// 初始化数据库和模块
-	dbs := []*gorm.DB{db}
-	core.SetupDatabase(dbs)
-	core.InitModules()
-
-	// 设置路由
-	core.SetupRouter(app, db)
+	core.InitModule(app)
 
 	// 启动服务器
-	app.Listen(fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port))
+	fiberApp.Listen(fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port))
 }

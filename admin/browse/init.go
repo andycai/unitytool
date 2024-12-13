@@ -9,30 +9,35 @@ import (
 
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
-	"github.com/andycai/unitool/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
-const (
-	KeyModule        = "admin.browse"
-	KeyDB            = "admin.browse.gorm.db"
-	KeyNoCheckRouter = "admin.browse.router.nocheck"
-	KeyCheckRouter   = "admin.browse.router.check"
-)
+var app *core.App
 
-// var db *gorm.DB
-
-// func initDB(dbs []*gorm.DB) {
-// 	db = dbs[0]
-// }
-
-func initModule() {
-	initFTP(utils.GetFTPConfig())
+type browseModule struct {
 }
 
-func initAdminCheckRouter(adminGroup fiber.Router) {
+func (u *browseModule) Init(a *core.App) error {
+	app = a
+	return nil
+}
+
+func (u *browseModule) InitDB() error {
+	// 数据迁移
+	return nil
+}
+
+func (u *browseModule) InitData() error {
+	// 初始化数据
+	return nil
+}
+
+func (u *browseModule) InitRouter() error {
+	// public
+
+	// admin
 	// 浏览目录和文件的路由
-	adminGroup.Get("/browse/*", middleware.HasPermission("file:list"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Get("/browse/*", middleware.HasPermission("file:list"), func(c *fiber.Ctx) error {
 		path := c.Params("*")
 		if path == "" {
 			path = "."
@@ -45,7 +50,7 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 		}
 
 		// 获取配置的根目录的绝对路径
-		rootDir := utils.GetServerConfig().Output
+		rootDir := app.Config.Server.Output
 		absRootDir, err := filepath.Abs(rootDir)
 		if err != nil {
 			return c.Status(500).SendString("Invalid root directory configuration")
@@ -80,7 +85,7 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 	})
 
 	// 文件删除路由
-	adminGroup.Delete("/browse/*", middleware.HasPermission("file:delete"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Delete("/browse/*", middleware.HasPermission("file:delete"), func(c *fiber.Ctx) error {
 		path := c.Params("*")
 		if path == "" {
 			return c.Status(400).SendString("Path is required")
@@ -93,7 +98,7 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 		}
 
 		// 获取配置的根目录的绝对路径
-		rootDir := utils.GetServerConfig().Output
+		rootDir := app.Config.Server.Output
 		absRootDir, err := filepath.Abs(rootDir)
 		if err != nil {
 			return c.Status(500).SendString("Invalid root directory configuration")
@@ -126,17 +131,15 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 	})
 
 	// FTP 上传路由
-	adminGroup.Post("/ftp/upload", middleware.HasPermission("file:ftp"), func(c *fiber.Ctx) error {
-		return uploadByFTP(c, utils.GetServerConfig().Output)
+	app.RouterAdmin.Post("/ftp/upload", middleware.HasPermission("file:ftp"), func(c *fiber.Ctx) error {
+		return uploadByFTP(c, app.Config.Server.Output)
 	})
-}
 
-func initAPICheckRouter(apiGroup fiber.Router) {
+	// api
+
+	return nil
 }
 
 func init() {
-	core.RegisterModule(KeyModule, initModule)
-	// core.RegisterDatabase(KeyDB, initDB)
-	core.RegisterAdminCheckRouter(KeyCheckRouter, initAdminCheckRouter)
-	core.RegisterAPICheckRouter(KeyCheckRouter, initAPICheckRouter)
+	core.RegisterModules(&browseModule{})
 }

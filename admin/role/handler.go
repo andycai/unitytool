@@ -24,7 +24,7 @@ type UpdateRoleRequest struct {
 // getRoles 获取角色列表
 func getRoles(c *fiber.Ctx) error {
 	var roles []models.Role
-	if err := db.Preload("Permissions").Find(&roles).Error; err != nil {
+	if err := app.DB.Preload("Permissions").Find(&roles).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "获取角色列表失败"})
 	}
 	return c.JSON(roles)
@@ -39,13 +39,13 @@ func createRole(c *fiber.Ctx) error {
 
 	// 检查角色名是否已存在
 	var count int64
-	db.Model(&models.Role{}).Where("name = ?", req.Name).Count(&count)
+	app.DB.Model(&models.Role{}).Where("name = ?", req.Name).Count(&count)
 	if count > 0 {
 		return c.Status(400).JSON(fiber.Map{"error": "角色名已存在"})
 	}
 
 	// 开始事务
-	tx := db.Begin()
+	tx := app.DB.Begin()
 
 	role := models.Role{
 		Name:        req.Name,
@@ -90,12 +90,12 @@ func updateRole(c *fiber.Ctx) error {
 	}
 
 	var role models.Role
-	if err := db.First(&role, id).Error; err != nil {
+	if err := app.DB.First(&role, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{"error": "角色不存在"})
 	}
 
 	// 开始事务
-	tx := db.Begin()
+	tx := app.DB.Begin()
 
 	updates := map[string]interface{}{
 		"updated_at": time.Now(),
@@ -141,7 +141,7 @@ func deleteRole(c *fiber.Ctx) error {
 
 	// 检查是否有用户使用此角色
 	var count int64
-	if err := db.Model(&models.User{}).Where("role_id = ?", id).Count(&count).Error; err != nil {
+	if err := app.DB.Model(&models.User{}).Where("role_id = ?", id).Count(&count).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "检查角色使用状态失败"})
 	}
 
@@ -150,12 +150,12 @@ func deleteRole(c *fiber.Ctx) error {
 	}
 
 	var role models.Role
-	if err := db.First(&role, id).Error; err != nil {
+	if err := app.DB.First(&role, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{"error": "角色不存在"})
 	}
 
 	// 开始事务
-	tx := db.Begin()
+	tx := app.DB.Begin()
 
 	// 清除权限关联
 	if err := tx.Model(&role).Association("Permissions").Clear(); err != nil {

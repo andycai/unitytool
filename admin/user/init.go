@@ -4,24 +4,33 @@ import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-const (
-	KeyDB            = "admin.user.gorm.db"
-	KeyNoCheckRouter = "admin.user.router.nocheck"
-	KeyCheckRouter   = "admin.user.router.check"
-)
+var app *core.App
 
-var db *gorm.DB
-
-func initDB(dbs []*gorm.DB) {
-	db = dbs[0]
+type userModule struct {
 }
 
-func initAdminCheckRouter(adminGroup fiber.Router) {
-	// 其他管理后台页面路由
-	adminGroup.Get("/users", middleware.HasPermission("user:list"), func(c *fiber.Ctx) error {
+func (u *userModule) Init(a *core.App) error {
+	app = a
+	return nil
+}
+
+func (u *userModule) InitDB() error {
+	// 数据迁移
+	return nil
+}
+
+func (u *userModule) InitData() error {
+	// 初始化数据
+	return nil
+}
+
+func (u *userModule) InitRouter() error {
+	// public
+
+	// admin
+	app.RouterAdmin.Get("/users", middleware.HasPermission("user:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/users", fiber.Map{
 			"Title": "用户管理",
 			"Scripts": []string{
@@ -29,17 +38,16 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 			},
 		}, "admin/layout")
 	})
-}
 
-func initAPICheckRouter(apiGroup fiber.Router) {
-	apiGroup.Get("/users", middleware.HasPermission("user:list"), getUsers)
-	apiGroup.Post("/users", middleware.HasPermission("user:create"), createUser)
-	apiGroup.Put("/users/:id", middleware.HasPermission("user:update"), updateUser)
-	apiGroup.Delete("/users/:id", middleware.HasPermission("user:delete"), deleteUser)
+	// api
+	app.RouterApi.Get("/users", middleware.HasPermission("user:list"), getUsers)
+	app.RouterApi.Post("/users", middleware.HasPermission("user:create"), createUser)
+	app.RouterApi.Put("/users/:id", middleware.HasPermission("user:update"), updateUser)
+	app.RouterApi.Delete("/users/:id", middleware.HasPermission("user:delete"), deleteUser)
+
+	return nil
 }
 
 func init() {
-	core.RegisterDatabase(KeyDB, initDB)
-	core.RegisterAdminCheckRouter(KeyCheckRouter, initAdminCheckRouter)
-	core.RegisterAPICheckRouter(KeyCheckRouter, initAPICheckRouter)
+	core.RegisterModules(&userModule{})
 }

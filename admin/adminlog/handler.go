@@ -24,10 +24,10 @@ func CreateAdminLog(c *fiber.Ctx, action string, resource string, resourceID uin
 		Details:    details,
 		IP:         c.IP(),
 		UserAgent:  c.Get("User-Agent"),
-		CreatedAt:  db.NowFunc(),
+		CreatedAt:  app.DB.NowFunc(),
 	}
 
-	if err := db.Create(&log).Error; err != nil {
+	if err := app.DB.Create(&log).Error; err != nil {
 		return err
 	}
 
@@ -48,7 +48,7 @@ func getAdminLogs(c *fiber.Ctx) error {
 	endDate := c.Query("endDate")
 
 	// 构建查询
-	query := db.Model(&models.AdminLog{})
+	query := app.DB.Model(&models.AdminLog{})
 
 	if username != "" {
 		query = query.Where("username LIKE ?", "%"+username+"%")
@@ -95,7 +95,7 @@ func deleteAdminLogs(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := db.Where("created_at < ?", beforeDate).Delete(&models.AdminLog{}).Error; err != nil {
+	if err := app.DB.Where("created_at < ?", beforeDate).Delete(&models.AdminLog{}).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "删除操作日志失败",
 		})

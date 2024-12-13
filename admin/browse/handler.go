@@ -16,13 +16,6 @@ import (
 	"github.com/jlaffaye/ftp"
 )
 
-var ftpConfig utils.FTPConfig
-
-// initFTP 初始化 FTP 配置
-func initFTP(config utils.FTPConfig) {
-	ftpConfig = config
-}
-
 // FileEntry 存储文件信息的结构体
 type FileEntry struct {
 	Name     string    // 文件名
@@ -70,7 +63,7 @@ func handleBrowseDirectory(c *fiber.Ctx, path string) error {
 	})
 
 	// 获取相对于根目录的路径
-	rootDir := utils.GetServerConfig().Output
+	rootDir := app.Config.Server.Output
 	absRootDir, err := filepath.Abs(rootDir)
 	if err != nil {
 		return c.Status(500).SendString("Error resolving root path")
@@ -117,7 +110,7 @@ func handleBrowseFile(c *fiber.Ctx, path string) error {
 	}
 
 	// 获取相对于根目录的路径
-	rootDir := utils.GetServerConfig().Output
+	rootDir := app.Config.Server.Output
 	absRootDir, err := filepath.Abs(rootDir)
 	if err != nil {
 		return c.Status(500).SendString("Error resolving root path")
@@ -210,14 +203,14 @@ func uploadByFTP(c *fiber.Ctx, rootPath string) error {
 // 上传文件到 FTP
 func uploadToFTP(localPath string, fileType string) error {
 	// 连接 FTP
-	conn, err := ftp.Dial(fmt.Sprintf("%s:%s", ftpConfig.Host, ftpConfig.Port))
+	conn, err := ftp.Dial(fmt.Sprintf("%s:%s", app.Config.FTP.Host, app.Config.FTP.Port))
 	if err != nil {
 		writeUploadLog(localPath, fileType, false, fmt.Sprintf("FTP连接失败: %v", err))
 		return fmt.Errorf("FTP连接失败: %v", err)
 	}
 	defer conn.Quit()
 
-	username, password, err := utils.ReadFromBinaryFile(utils.GetServerConfig().UserDataPath)
+	username, password, err := utils.ReadFromBinaryFile(app.Config.Server.UserDataPath)
 	if err != nil {
 		writeUploadLog(localPath, fileType, false, fmt.Sprintf("读取用户数据失败: %v", err))
 		return fmt.Errorf("读取用户数据失败: %v", err)
@@ -230,9 +223,9 @@ func uploadToFTP(localPath string, fileType string) error {
 	}
 
 	// 根据文件类型选择上传路径
-	remotePath := ftpConfig.APKPath
+	remotePath := app.Config.FTP.APKPath
 	if fileType == "zip" {
-		remotePath = ftpConfig.ZIPPath
+		remotePath = app.Config.FTP.ZIPPath
 	}
 
 	// 打开本地文件
@@ -259,7 +252,7 @@ func uploadToFTP(localPath string, fileType string) error {
 // 添加日志写入函数
 func writeUploadLog(localPath, fileType string, success bool, message string) error {
 	// 确保日志目录存在
-	if err := os.MkdirAll(ftpConfig.LogDir, 0755); err != nil {
+	if err := os.MkdirAll(app.Config.FTP.LogDir, 0755); err != nil {
 		return fmt.Errorf("创建日志目录失败: %v", err)
 	}
 
@@ -273,7 +266,7 @@ func writeUploadLog(localPath, fileType string, success bool, message string) er
 	)
 
 	// 获取当前日志文件路径
-	logFile := filepath.Join(ftpConfig.LogDir, fmt.Sprintf("ftpupload_%s.log", time.Now().Format("20060102150405")))
+	logFile := filepath.Join(app.Config.FTP.LogDir, fmt.Sprintf("ftpupload_%s.log", time.Now().Format("20060102150405")))
 
 	// 追加写入日志
 	f, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

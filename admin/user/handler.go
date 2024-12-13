@@ -27,7 +27,7 @@ type UpdateUserRequest struct {
 // getUsers 获取用户列表
 func getUsers(c *fiber.Ctx) error {
 	var users []models.User
-	if err := db.Preload("Role").Find(&users).Error; err != nil {
+	if err := app.DB.Preload("Role").Find(&users).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "获取用户列表失败"})
 	}
 	return c.JSON(users)
@@ -42,7 +42,7 @@ func createUser(c *fiber.Ctx) error {
 
 	// 检查用户名是否已存在
 	var count int64
-	db.Model(&models.User{}).Where("username = ?", req.Username).Count(&count)
+	app.DB.Model(&models.User{}).Where("username = ?", req.Username).Count(&count)
 	if count > 0 {
 		return c.Status(400).JSON(fiber.Map{"error": "用户名已存在"})
 	}
@@ -63,7 +63,7 @@ func createUser(c *fiber.Ctx) error {
 		UpdatedAt: time.Now(),
 	}
 
-	if err := db.Create(&user).Error; err != nil {
+	if err := app.DB.Create(&user).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "创建用户失败"})
 	}
 
@@ -103,11 +103,11 @@ func updateUser(c *fiber.Ctx) error {
 	}
 
 	var user models.User
-	if err := db.First(&user, id).Error; err != nil {
+	if err := app.DB.First(&user, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{"error": "用户不存在"})
 	}
 
-	if err := db.Model(&user).Updates(updates).Error; err != nil {
+	if err := app.DB.Model(&user).Updates(updates).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "更新用户失败"})
 	}
 
@@ -122,13 +122,13 @@ func deleteUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var user models.User
 
-	if err := db.First(&user, id).Error; err != nil {
+	if err := app.DB.First(&user, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error": "用户不存在",
 		})
 	}
 
-	if err := db.Delete(&user).Error; err != nil {
+	if err := app.DB.Delete(&user).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "删除用户失败",
 		})

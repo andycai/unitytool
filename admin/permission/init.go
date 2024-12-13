@@ -4,23 +4,33 @@ import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-const (
-	KeyDB            = "admin.permission.gorm.db"
-	KeyNoCheckRouter = "admin.permission.router.nocheck"
-	KeyCheckRouter   = "admin.permission.router.check"
-)
+var app *core.App
 
-var db *gorm.DB
-
-func initDB(dbs []*gorm.DB) {
-	db = dbs[0]
+type permissionModule struct {
 }
 
-func initAdminCheckRouter(adminGroup fiber.Router) {
-	adminGroup.Get("/permissions", middleware.HasPermission("permission:list"), func(c *fiber.Ctx) error {
+func (u *permissionModule) Init(a *core.App) error {
+	app = a
+	return nil
+}
+
+func (u *permissionModule) InitDB() error {
+	// 数据迁移
+	return nil
+}
+
+func (u *permissionModule) InitData() error {
+	// 初始化数据
+	return nil
+}
+
+func (u *permissionModule) InitRouter() error {
+	// public
+
+	// admin
+	app.RouterAdmin.Get("/permissions", middleware.HasPermission("permission:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/permissions", fiber.Map{
 			"Title": "权限管理",
 			"Scripts": []string{
@@ -28,17 +38,16 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 			},
 		}, "admin/layout")
 	})
-}
 
-func initAPICheckRouter(apiGroup fiber.Router) {
-	apiGroup.Get("/permissions", middleware.HasPermission("permission:list"), getPermissions)
-	apiGroup.Post("/permissions", middleware.HasPermission("permission:create"), createPermission)
-	apiGroup.Put("/permissions/:id", middleware.HasPermission("permission:update"), updatePermission)
-	apiGroup.Delete("/permissions/:id", middleware.HasPermission("permission:delete"), deletePermission)
+	// api
+	app.RouterApi.Get("/permissions", middleware.HasPermission("permission:list"), getPermissions)
+	app.RouterApi.Post("/permissions", middleware.HasPermission("permission:create"), createPermission)
+	app.RouterApi.Put("/permissions/:id", middleware.HasPermission("permission:update"), updatePermission)
+	app.RouterApi.Delete("/permissions/:id", middleware.HasPermission("permission:delete"), deletePermission)
+
+	return nil
 }
 
 func init() {
-	core.RegisterDatabase(KeyDB, initDB)
-	core.RegisterAdminCheckRouter(KeyCheckRouter, initAdminCheckRouter)
-	core.RegisterAPICheckRouter(KeyCheckRouter, initAPICheckRouter)
+	core.RegisterModules(&permissionModule{})
 }

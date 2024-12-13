@@ -34,7 +34,7 @@ func createLog(c *fiber.Ctx) error {
 		logReq.Logs[i].CreateAt = time.Now().UnixMilli()
 	}
 
-	result := db.CreateInBatches(logReq.Logs, len(logReq.Logs))
+	result := app.DB.CreateInBatches(logReq.Logs, len(logReq.Logs))
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to create log"})
 	}
@@ -54,7 +54,7 @@ func getLogs(c *fiber.Ctx) error {
 	var logs []models.GameLog
 	var total int64
 
-	query := db.Model(&models.GameLog{})
+	query := app.DB.Model(&models.GameLog{})
 
 	if search != "" {
 		query = query.Where("role_name LIKE ? OR log_message LIKE ?", "%"+search+"%", "%"+search+"%")
@@ -94,7 +94,7 @@ func deleteLogsBefore(c *fiber.Ctx) error {
 	endOfDayMilli := endOfDay.UnixMilli()
 
 	// Delete logs before the end of the selected day
-	result := db.Where("create_at < ?", endOfDayMilli).Delete(&models.GameLog{})
+	result := app.DB.Where("create_at < ?", endOfDayMilli).Delete(&models.GameLog{})
 
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"code": 3, "error": "Failed to delete logs"})
@@ -115,11 +115,11 @@ func deleteLog(c *fiber.Ctx) error {
 
 	// 获取日志信息用于记录
 	var log models.GameLog
-	if err := db.First(&log, id).Error; err != nil {
+	if err := app.DB.First(&log, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{"code": 6, "error": "Log not found"})
 	}
 
-	result := db.Delete(&log)
+	result := app.DB.Delete(&log)
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"code": 5, "error": "Failed to delete log"})
 	}

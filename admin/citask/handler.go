@@ -52,7 +52,7 @@ func initCron() {
 
 	// 从数据库加载定时任务
 	var tasks []models.Task
-	if err := db.Where("enable_cron = ? AND status = ?", true, "active").Find(&tasks).Error; err != nil {
+	if err := app.DB.Where("enable_cron = ? AND status = ?", true, "active").Find(&tasks).Error; err != nil {
 		fmt.Printf("加载定时任务失败: %v\n", err)
 		return
 	}
@@ -69,7 +69,7 @@ func initCron() {
 // 加载定时任务
 func loadCronTasks() {
 	var tasks []models.Task
-	if err := db.Where("enable_cron = ? AND status = ?", 1, "active").Find(&tasks).Error; err != nil {
+	if err := app.DB.Where("enable_cron = ? AND status = ?", 1, "active").Find(&tasks).Error; err != nil {
 		fmt.Printf("加载定时任务失败: %v\n", err)
 		return
 	}
@@ -95,7 +95,7 @@ func scheduleCronTask(task *models.Task) error {
 			Status:    "running",
 		}
 
-		if err := db.Create(taskLog).Error; err != nil {
+		if err := app.DB.Create(taskLog).Error; err != nil {
 			fmt.Printf("创建任务日志失败: %v\n", err)
 			return
 		}
@@ -123,7 +123,7 @@ func scheduleCronTask(task *models.Task) error {
 			taskLog.Status = progress.Status
 			taskLog.Output = progress.Output
 			taskLog.Error = progress.Error
-			if err := db.Save(taskLog).Error; err != nil {
+			if err := app.DB.Save(taskLog).Error; err != nil {
 				fmt.Printf("更新任务日志失败: %v\n", err)
 			}
 		}()
@@ -144,7 +144,7 @@ func scheduleCronTask(task *models.Task) error {
 // getTasks 获取任务列表
 func getTasks(c *fiber.Ctx) error {
 	var tasks []models.Task
-	if err := db.Order("created_at desc").Find(&tasks).Error; err != nil {
+	if err := app.DB.Order("created_at desc").Find(&tasks).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": fmt.Sprintf("获取任务列表失败: %v", err),
 		})
@@ -175,7 +175,7 @@ func createTask(c *fiber.Ctx) error {
 		}
 	}
 
-	if err := db.Create(&task).Error; err != nil {
+	if err := app.DB.Create(&task).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": fmt.Sprintf("创建任务失败: %v", err),
 		})
@@ -197,7 +197,7 @@ func createTask(c *fiber.Ctx) error {
 func getTask(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var task models.Task
-	if err := db.First(&task, id).Error; err != nil {
+	if err := app.DB.First(&task, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error": fmt.Sprintf("任务不存在: %v", err),
 		})
@@ -223,7 +223,7 @@ func updateTask(c *fiber.Ctx) error {
 
 	// 获取原有任务信息
 	var task models.Task
-	if err := db.First(&task, id).Error; err != nil {
+	if err := app.DB.First(&task, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error": fmt.Sprintf("任务不存在: %v", err),
 		})
@@ -248,7 +248,7 @@ func updateTask(c *fiber.Ctx) error {
 	}
 
 	// 更新任务信息
-	if err := db.Model(&task).Updates(updates).Update("enable_cron", updates.EnableCron).Error; err != nil {
+	if err := app.DB.Model(&task).Updates(updates).Update("enable_cron", updates.EnableCron).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": fmt.Sprintf("更新任务失败: %v", err),
 		})
@@ -287,13 +287,13 @@ func updateTask(c *fiber.Ctx) error {
 func deleteTask(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var task models.Task
-	if err := db.First(&task, id).Error; err != nil {
+	if err := app.DB.First(&task, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error": fmt.Sprintf("任务不存在: %v", err),
 		})
 	}
 
-	if err := db.Delete(&task).Error; err != nil {
+	if err := app.DB.Delete(&task).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": fmt.Sprintf("删除任务失败: %v", err),
 		})
@@ -309,7 +309,7 @@ func deleteTask(c *fiber.Ctx) error {
 func runTask(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var task models.Task
-	if err := db.First(&task, id).Error; err != nil {
+	if err := app.DB.First(&task, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error": fmt.Sprintf("任务不存在: %v", err),
 		})
@@ -321,7 +321,7 @@ func runTask(c *fiber.Ctx) error {
 		Status:    "running",
 		StartTime: time.Now(),
 	}
-	if err := db.Create(&taskLog).Error; err != nil {
+	if err := app.DB.Create(&taskLog).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": fmt.Sprintf("创建任务日志失败: %v", err),
 		})
@@ -353,7 +353,7 @@ func runTask(c *fiber.Ctx) error {
 func getTaskLogs(c *fiber.Ctx) error {
 	taskID := c.Params("id")
 	var logs []models.TaskLog
-	if err := db.Where("task_id = ?", taskID).Order("created_at desc").Find(&logs).Error; err != nil {
+	if err := app.DB.Where("task_id = ?", taskID).Order("created_at desc").Find(&logs).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": fmt.Sprintf("获取任务日志失败: %v", err),
 		})
@@ -365,7 +365,7 @@ func getTaskLogs(c *fiber.Ctx) error {
 func getTaskStatus(c *fiber.Ctx) error {
 	logID := c.Query("log_id")
 	var log models.TaskLog
-	if err := db.First(&log, logID).Error; err != nil {
+	if err := app.DB.First(&log, logID).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error": fmt.Sprintf("日志不存在: %v", err),
 		})
@@ -411,7 +411,7 @@ func executeTask(task *models.Task, log *models.TaskLog) {
 		log.Duration = int(log.EndTime.Sub(log.StartTime).Seconds())
 
 		// 执行完成任务，保存任务日志到数据库
-		db.Save(log)
+		app.DB.Save(log)
 
 		// 更新并清理进度信息
 		if progress != nil {
@@ -901,7 +901,7 @@ func GetRunningTasks(c *fiber.Ctx) error {
 		if progress.Status == "running" {
 			// 查询任务信息
 			var taskLog models.TaskLog
-			if err := db.First(&taskLog, id).Error; err != nil {
+			if err := app.DB.First(&taskLog, id).Error; err != nil {
 				continue
 			}
 
@@ -968,7 +968,7 @@ func searchTasks(c *fiber.Ctx) error {
 	}
 
 	var tasks []models.Task
-	if err := db.Where("name LIKE ?", "%"+keyword+"%").
+	if err := app.DB.Where("name LIKE ?", "%"+keyword+"%").
 		Order("created_at desc").
 		Limit(10).
 		Find(&tasks).Error; err != nil {

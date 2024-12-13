@@ -24,8 +24,8 @@ func CreateStats(c *fiber.Ctx) error {
 	record.CreatedAt = time.Now().UnixMilli()
 
 	var existingRecord models.StatsRecord
-	if err := db.Where("login_id = ?", record.LoginID).First(&existingRecord).Error; err != nil {
-		if err := db.Create(&record).Error; err != nil {
+	if err := app.DB.Where("login_id = ?", record.LoginID).First(&existingRecord).Error; err != nil {
+		if err := app.DB.Create(&record).Error; err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot create stats record"})
 		}
 	}
@@ -68,7 +68,7 @@ func CreateStats(c *fiber.Ctx) error {
 		info.Pic = filepath.Join("/uploads/stats", filename)
 	}
 
-	if err := db.Create(&info).Error; err != nil {
+	if err := app.DB.Create(&info).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot create stats record"})
 	}
 
@@ -85,7 +85,7 @@ func getStats(c *fiber.Ctx) error {
 	searchQuery := c.Query("search", "")
 	dateStr := c.Query("date", "")
 
-	query := db.Model(&models.StatsRecord{})
+	query := app.DB.Model(&models.StatsRecord{})
 
 	if searchQuery != "" {
 		query = query.Where("login_id LIKE ? OR role_name LIKE ?", "%"+searchQuery+"%", "%"+searchQuery+"%")
@@ -132,14 +132,14 @@ func deleteStatsBefore(c *fiber.Ctx) error {
 	timestamp := date.UnixNano() / int64(time.Millisecond)
 
 	// Delete from stats_record table
-	if err := db.Where("created_at <= ?", timestamp).Delete(&models.StatsRecord{}).Error; err != nil {
+	if err := app.DB.Where("created_at <= ?", timestamp).Delete(&models.StatsRecord{}).Error; err != nil {
 		fmt.Println("err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": 3, "error": "cannot delete stats records"})
 	}
 
 	// Fetch stats_info records to delete
 	var statsInfo []models.StatsInfo
-	if err := db.Where("created_at <= ?", timestamp).Find(&statsInfo).Error; err != nil {
+	if err := app.DB.Where("created_at <= ?", timestamp).Find(&statsInfo).Error; err != nil {
 		fmt.Println("err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": 4, "error": "cannot fetch stats info records"})
 	}
@@ -157,7 +157,7 @@ func deleteStatsBefore(c *fiber.Ctx) error {
 	}
 
 	// Delete from stats_info table
-	result := db.Where("created_at <= ?", timestamp).Delete(&models.StatsInfo{})
+	result := app.DB.Where("created_at <= ?", timestamp).Delete(&models.StatsInfo{})
 	if result.Error != nil {
 		fmt.Println("err", result.Error)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": 6, "error": "cannot delete stats info records"})
@@ -177,12 +177,12 @@ func getStatDetails(c *fiber.Ctx) error {
 	}
 
 	var statsRecord models.StatsRecord
-	if err := db.Where("login_id = ?", loginID).First(&statsRecord).Error; err != nil {
+	if err := app.DB.Where("login_id = ?", loginID).First(&statsRecord).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "stats record not found"})
 	}
 
 	var statsInfo []models.StatsInfo
-	if err := db.Where("login_id = ?", loginID).Order("id desc").Limit(1000).Find(&statsInfo).Error; err != nil {
+	if err := app.DB.Where("login_id = ?", loginID).Order("id desc").Limit(1000).Find(&statsInfo).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "cannot fetch stats info"})
 	}
 
@@ -200,13 +200,13 @@ func deleteStat(c *fiber.Ctx) error {
 	}
 
 	var statsRecord models.StatsRecord
-	if err := db.First(&statsRecord, id).Error; err != nil {
+	if err := app.DB.First(&statsRecord, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{"code": 8, "error": "Stat record not found"})
 	}
 
 	// 获取关联的 StatsInfo 记录
 	var statsInfoList []models.StatsInfo
-	if err := db.Where("login_id = ?", statsRecord.LoginID).Find(&statsInfoList).Error; err != nil {
+	if err := app.DB.Where("login_id = ?", statsRecord.LoginID).Find(&statsInfoList).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"code": 9, "error": "Failed to fetch associated stats info"})
 	}
 
@@ -222,12 +222,12 @@ func deleteStat(c *fiber.Ctx) error {
 	}
 
 	// 删除关联的 StatsInfo 记录
-	if err := db.Where("login_id = ?", statsRecord.LoginID).Delete(&models.StatsInfo{}).Error; err != nil {
+	if err := app.DB.Where("login_id = ?", statsRecord.LoginID).Delete(&models.StatsInfo{}).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"code": 10, "error": "Failed to delete associated stats info"})
 	}
 
 	// 删除 StatsRecord
-	if err := db.Delete(&statsRecord).Error; err != nil {
+	if err := app.DB.Delete(&statsRecord).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"code": 11, "error": "Failed to delete stat record"})
 	}
 

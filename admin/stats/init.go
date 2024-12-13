@@ -4,27 +4,34 @@ import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-const (
-	KeyDB            = "admin.stats.gorm.db"
-	KeyNoCheckRouter = "admin.stats.router.nocheck"
-	KeyCheckRouter   = "admin.stats.router.check"
-)
+var app *core.App
 
-var db *gorm.DB
-
-func initDB(dbs []*gorm.DB) {
-	db = dbs[0]
+type statsModule struct {
 }
 
-func initPublicRouter(publicGroup fiber.Router) {
-	publicGroup.Post("/api/stats", CreateStats)
+func (u *statsModule) Init(a *core.App) error {
+	app = a
+	return nil
 }
 
-func initAdminCheckRouter(adminGroup fiber.Router) {
-	adminGroup.Get("/stats", middleware.HasPermission("stats:list"), func(c *fiber.Ctx) error {
+func (u *statsModule) InitDB() error {
+	// 数据迁移
+	return nil
+}
+
+func (u *statsModule) InitData() error {
+	// 初始化数据
+	return nil
+}
+
+func (u *statsModule) InitRouter() error {
+	// public
+	app.RouterPublic.Post("/api/stats", CreateStats)
+
+	// admin
+	app.RouterAdmin.Get("/stats", middleware.HasPermission("stats:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/stats", fiber.Map{
 			"Title": "游戏统计",
 			"Scripts": []string{
@@ -36,18 +43,16 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 			},
 		}, "admin/layout")
 	})
-}
 
-func initAPICheckRouter(apiGroup fiber.Router) {
-	apiGroup.Get("/stats", middleware.HasPermission("stats:list"), getStats)
-	apiGroup.Delete("/stats/before", middleware.HasPermission("stats:delete"), deleteStatsBefore)
-	apiGroup.Get("/stats/details", middleware.HasPermission("stats:list"), getStatDetails)
-	apiGroup.Delete("/stats/:id", middleware.HasPermission("stats:delete"), deleteStat)
+	// api
+	app.RouterApi.Get("/stats", middleware.HasPermission("stats:list"), getStats)
+	app.RouterApi.Delete("/stats/before", middleware.HasPermission("stats:delete"), deleteStatsBefore)
+	app.RouterApi.Get("/stats/details", middleware.HasPermission("stats:list"), getStatDetails)
+	app.RouterApi.Delete("/stats/:id", middleware.HasPermission("stats:delete"), deleteStat)
+
+	return nil
 }
 
 func init() {
-	core.RegisterDatabase(KeyDB, initDB)
-	core.RegisterPublicRouter(KeyNoCheckRouter, initPublicRouter)
-	core.RegisterAdminCheckRouter(KeyCheckRouter, initAdminCheckRouter)
-	core.RegisterAPICheckRouter(KeyCheckRouter, initAPICheckRouter)
+	core.RegisterModules(&statsModule{})
 }

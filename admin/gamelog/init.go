@@ -4,27 +4,34 @@ import (
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/middleware"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-const (
-	KeyDB            = "admin.gamelog.gorm.db"
-	KeyNoCheckRouter = "admin.gamelog.router.nocheck"
-	KeyCheckRouter   = "admin.gamelog.router.check"
-)
+var app *core.App
 
-var db *gorm.DB
-
-func initDB(dbs []*gorm.DB) {
-	db = dbs[0]
+type gamelogModule struct {
 }
 
-func initPublicRouter(publicGroup fiber.Router) {
-	publicGroup.Post("/api/gamelog", createLog)
+func (u *gamelogModule) Init(a *core.App) error {
+	app = a
+	return nil
 }
 
-func initAdminCheckRouter(adminGroup fiber.Router) {
-	adminGroup.Get("/gamelog", middleware.HasPermission("gamelog:list"), func(c *fiber.Ctx) error {
+func (u *gamelogModule) InitDB() error {
+	// 数据迁移
+	return nil
+}
+
+func (u *gamelogModule) InitData() error {
+	// 初始化数据
+	return nil
+}
+
+func (u *gamelogModule) InitRouter() error {
+	// public
+	app.RouterPublic.Post("/api/gamelog", createLog)
+
+	// admin
+	app.RouterAdmin.Get("/gamelog", middleware.HasPermission("gamelog:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/gamelog", fiber.Map{
 			"Title": "游戏日志",
 			"Scripts": []string{
@@ -32,17 +39,15 @@ func initAdminCheckRouter(adminGroup fiber.Router) {
 			},
 		}, "admin/layout")
 	})
-}
 
-func initAPICheckRouter(apiGroup fiber.Router) {
-	apiGroup.Get("/gamelog", middleware.HasPermission("gamelog:list"), getLogs)
-	apiGroup.Delete("/gamelog/before", middleware.HasPermission("gamelog:delete"), deleteLogsBefore)
-	apiGroup.Delete("/gamelog/:id", middleware.HasPermission("gamelog:list"), deleteLog)
+	// api
+	app.RouterApi.Get("/gamelog", middleware.HasPermission("gamelog:list"), getLogs)
+	app.RouterApi.Delete("/gamelog/before", middleware.HasPermission("gamelog:delete"), deleteLogsBefore)
+	app.RouterApi.Delete("/gamelog/:id", middleware.HasPermission("gamelog:list"), deleteLog)
+
+	return nil
 }
 
 func init() {
-	core.RegisterDatabase(KeyDB, initDB)
-	core.RegisterPublicRouter(KeyNoCheckRouter, initPublicRouter)
-	core.RegisterAdminCheckRouter(KeyCheckRouter, initAdminCheckRouter)
-	core.RegisterAPICheckRouter(KeyCheckRouter, initAPICheckRouter)
+	core.RegisterModules(&gamelogModule{})
 }
