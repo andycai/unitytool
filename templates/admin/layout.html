@@ -127,7 +127,7 @@
     </div>
 
     <!-- 移动端菜单遮罩 -->
-    <div x-show="mobileMenuOpen" 
+    <div x-cloak x-show="mobileMenuOpen" 
          class="fixed inset-0 z-20 bg-gray-900/50 lg:hidden"
          @click="mobileMenuOpen = false"
          x-transition:enter="transition-opacity ease-linear duration-300"
@@ -146,7 +146,7 @@
         </svg>
     </button>
 
-    <div class="flex h-screen">
+    <div x-cloak class="flex h-screen">
         <!-- 左侧菜单 -->
         <div :class="{
                 'w-56': !collapsed,
@@ -383,7 +383,7 @@
                             </div>
                             
                             <!-- 搜索结果下拉框 -->
-                            <div x-show="searchOpen" 
+                            <div x-cloak x-show="searchOpen" 
                                  @mouseenter="searchFocused = true"
                                  @mouseleave="searchFocused = false"
                                  @click.stop=""
@@ -396,24 +396,6 @@
                                  class="absolute right-0 mt-2 w-96 rounded-lg shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
                                 <div class="p-2">
                                     <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">快速导航</div>
-                                    <a href="/admin/users" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                                        <div class="flex items-center">
-                                            <span x-html="menuIcons.users" class="w-5 h-5 text-gray-400 mr-3"></span>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900 dark:text-white">用户管理</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">管理系统用户账号</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a href="/admin/roles" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                                        <div class="flex items-center">
-                                            <span x-html="menuIcons.roles" class="w-5 h-5 text-gray-400 mr-3"></span>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900 dark:text-white">角色管理</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">管理用户角色和权限</div>
-                                            </div>
-                                        </div>
-                                    </a>
                                     <a href="/admin/menus" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <div class="flex items-center">
                                             <span x-html="menuIcons.menu" class="w-5 h-5 text-gray-400 mr-3"></span>
@@ -479,7 +461,7 @@
                         </button>
 
                         <!-- 下拉菜单 -->
-                        <div x-show="open" 
+                        <div x-cloak x-show="open" 
                              @click.away="open = false"
                              x-transition:enter="transition ease-out duration-100"
                              x-transition:enter-start="transform opacity-0 scale-95"
