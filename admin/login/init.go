@@ -33,6 +33,9 @@ func (m *loginModule) InitModule() error {
 	})
 
 	// 退出登录 API 路由（不需要认证）
+	app.RouterPublic.Get("/logout", func(c *fiber.Ctx) error {
+		return logoutAction(c)
+	})
 	app.RouterPublic.Post("/logout", func(c *fiber.Ctx) error {
 		return logoutAction(c)
 	})

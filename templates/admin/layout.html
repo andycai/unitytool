@@ -778,7 +778,8 @@
                 logout() {
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
-                    window.location.href = '/login';
+                    // post 请求 /logout
+                    window.location.href = '/logout';
                 },
                 init() {
                     // 检查登录状态
