@@ -13,6 +13,7 @@ import (
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Remember bool   `json:"remember"`
 }
 
 type LoginResponse struct {
@@ -42,16 +43,21 @@ func loginAction(c *fiber.Ctx) error {
 		return c.Status(401).JSON(fiber.Map{"error": "用户名或密码错误"})
 	}
 
-	// 打印用户信息用于调试
-	// fmt.Printf("User info: %+v\n", user)
+	// 根据记住我选项设置不同的过期时间
+	var expireTime time.Time
+	if req.Remember {
+		expireTime = time.Now().Add(time.Hour * 24 * 30) // 30天
+	} else {
+		expireTime = time.Now().Add(time.Duration(app.Config.Auth.TokenExpire) * time.Second)
+	}
 
 	// 生成 JWT token
 	claims := jwt.MapClaims{
-		"sub":      user.ID, // 使用标准声明
+		"sub":      user.ID,
 		"user_id":  user.ID,
 		"username": user.Username,
 		"role_id":  user.RoleID,
-		"exp":      time.Now().Add(time.Duration(app.Config.Auth.TokenExpire) * time.Second).Unix(),
+		"exp":      expireTime.Unix(),
 		"iat":      time.Now().Unix(),
 	}
 

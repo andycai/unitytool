@@ -167,6 +167,15 @@
                 passwordLoading: false,
                 passwordError: '',
 
+                init() {
+                    // 从localStorage读取上次保存的用户名
+                    const savedUsername = localStorage.getItem('saved_username');
+                    if (savedUsername) {
+                        this.form.username = savedUsername;
+                        this.form.remember = true;
+                    }
+                },
+
                 async submitForm() {
                     this.loading = true;
                     this.error = '';
@@ -192,21 +201,23 @@
                         }
 
                         const { token, user } = data.data;
-                        console.log('User data:', user);
+
+                        // 根据记住我选项保存或清除用户名
+                        if (this.form.remember) {
+                            localStorage.setItem('saved_username', this.form.username);
+                        } else {
+                            localStorage.removeItem('saved_username');
+                        }
 
                         // 保存 token 和用户信息到 localStorage
                         localStorage.setItem('token', token);
                         localStorage.setItem('user', JSON.stringify(user));
 
                         // 检查是否需要修改密码
-                        console.log('Has changed password:', user.has_changed_pwd);
                         if (user.has_changed_pwd === false) {
-                            console.log('Showing password change modal');
                             this.showChangePasswordModal = true;
                             this.passwordForm.oldPassword = this.form.password;
                         } else {
-                            console.log('Redirecting to admin page');
-                            // 正常登录，重定向到首页
                             window.location.href = '/admin';
                         }
                     } catch (error) {
