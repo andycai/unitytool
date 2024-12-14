@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/andycai/unitool/core"
-	"github.com/andycai/unitool/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -32,7 +31,7 @@ func (m *browseModule) InitModule() error {
 
 	// admin
 	// 浏览目录和文件的路由
-	app.RouterAdmin.Get("/browse/*", middleware.HasPermission("browse:list"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Get("/browse/*", app.HasPermission("browse:list"), func(c *fiber.Ctx) error {
 		path := c.Params("*")
 		if path == "" {
 			path = "."
@@ -80,7 +79,7 @@ func (m *browseModule) InitModule() error {
 	})
 
 	// 文件删除路由
-	app.RouterAdmin.Delete("/browse/*", middleware.HasPermission("browse:delete"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Delete("/browse/*", app.HasPermission("browse:delete"), func(c *fiber.Ctx) error {
 		path := c.Params("*")
 		if path == "" {
 			return c.Status(400).SendString("Path is required")
@@ -126,7 +125,7 @@ func (m *browseModule) InitModule() error {
 	})
 
 	// FTP 上传路由
-	app.RouterAdmin.Post("/ftp/upload", middleware.HasPermission("browse:ftp"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Post("/ftp/upload", app.HasPermission("browse:ftp"), func(c *fiber.Ctx) error {
 		return uploadByFTP(c, app.Config.Server.Output)
 	})
 

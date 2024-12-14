@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/andycai/unitool/core"
-	"github.com/andycai/unitool/middleware"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -229,8 +228,9 @@ func (m *menuModule) InitModule() error {
 	// public
 
 	// admin
-	app.RouterAdmin.Get("/menus", middleware.HasPermission("menu:list"), func(c *fiber.Ctx) error {
-		user := c.Locals("user").(models.User)
+	app.RouterAdmin.Get("/menus", app.HasPermission("menu:list"), func(c *fiber.Ctx) error {
+		user := app.CurrentUser(c)
+
 		return c.Render("admin/menus", fiber.Map{
 			"Title": "菜单管理",
 			"Scripts": []string{
@@ -241,11 +241,11 @@ func (m *menuModule) InitModule() error {
 	})
 
 	// api
-	app.RouterApi.Get("/menus", middleware.HasPermission("menu:list"), listMenus)
-	app.RouterApi.Get("/menus/tree", middleware.HasPermission("menu:list"), getMenuTree)
-	app.RouterApi.Post("/menus", middleware.HasPermission("menu:create"), createMenu)
-	app.RouterApi.Put("/menus/:id", middleware.HasPermission("menu:update"), updateMenu)
-	app.RouterApi.Delete("/menus/:id", middleware.HasPermission("menu:delete"), deleteMenu)
+	app.RouterApi.Get("/menus", app.HasPermission("menu:list"), listMenus)
+	app.RouterApi.Get("/menus/tree", app.HasPermission("menu:list"), getMenuTree)
+	app.RouterApi.Post("/menus", app.HasPermission("menu:create"), createMenu)
+	app.RouterApi.Put("/menus/:id", app.HasPermission("menu:update"), updateMenu)
+	app.RouterApi.Delete("/menus/:id", app.HasPermission("menu:delete"), deleteMenu)
 
 	return nil
 }

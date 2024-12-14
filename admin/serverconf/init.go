@@ -2,7 +2,6 @@ package serverconf
 
 import (
 	"github.com/andycai/unitool/core"
-	"github.com/andycai/unitool/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -35,7 +34,7 @@ func (m *serverconfModule) InitModule() error {
 	app.RouterPublic.Get("/api/noticenum", getNoticeNum)
 
 	// admin
-	app.RouterAdmin.Get("/serverconf", middleware.HasPermission("serverconf:list"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Get("/serverconf", app.HasPermission("serverconf:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/serverconf", fiber.Map{
 			"Title": "服务器配置",
 			"Scripts": []string{
@@ -45,11 +44,11 @@ func (m *serverconfModule) InitModule() error {
 	})
 
 	// api
-	app.RouterApi.Post("/game/serverlist", middleware.HasPermission("serverconf:update"), updateServerList)
-	app.RouterApi.Post("/game/lastserver", middleware.HasPermission("serverconf:update"), updateLastServer)
-	app.RouterApi.Post("/game/serverinfo", middleware.HasPermission("serverconf:update"), updateServerInfo)
-	app.RouterApi.Post("/game/noticelist", middleware.HasPermission("serverconf:update"), updateNoticeList)
-	app.RouterApi.Post("/game/noticenum", middleware.HasPermission("serverconf:update"), updateNoticeNum)
+	app.RouterApi.Post("/game/serverlist", app.HasPermission("serverconf:update"), updateServerList)
+	app.RouterApi.Post("/game/lastserver", app.HasPermission("serverconf:update"), updateLastServer)
+	app.RouterApi.Post("/game/serverinfo", app.HasPermission("serverconf:update"), updateServerInfo)
+	app.RouterApi.Post("/game/noticelist", app.HasPermission("serverconf:update"), updateNoticeList)
+	app.RouterApi.Post("/game/noticenum", app.HasPermission("serverconf:update"), updateNoticeNum)
 
 	return nil
 }

@@ -2,7 +2,6 @@ package permission
 
 import (
 	"github.com/andycai/unitool/core"
-	"github.com/andycai/unitool/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -25,7 +24,7 @@ func (m *permissionModule) InitModule() error {
 	// public
 
 	// admin
-	app.RouterAdmin.Get("/permissions", middleware.HasPermission("permission:list"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Get("/permissions", app.HasPermission("permission:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/permissions", fiber.Map{
 			"Title": "权限管理",
 			"Scripts": []string{
@@ -35,10 +34,10 @@ func (m *permissionModule) InitModule() error {
 	})
 
 	// api
-	app.RouterApi.Get("/permissions", middleware.HasPermission("permission:list"), getPermissions)
-	app.RouterApi.Post("/permissions", middleware.HasPermission("permission:create"), createPermission)
-	app.RouterApi.Put("/permissions/:id", middleware.HasPermission("permission:update"), updatePermission)
-	app.RouterApi.Delete("/permissions/:id", middleware.HasPermission("permission:delete"), deletePermission)
+	app.RouterApi.Get("/permissions", app.HasPermission("permission:list"), getPermissions)
+	app.RouterApi.Post("/permissions", app.HasPermission("permission:create"), createPermission)
+	app.RouterApi.Put("/permissions/:id", app.HasPermission("permission:update"), updatePermission)
+	app.RouterApi.Delete("/permissions/:id", app.HasPermission("permission:delete"), deletePermission)
 
 	return nil
 }

@@ -5,14 +5,27 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/andycai/unitool/lib/authentication"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 )
 
+func AuthMiddleware(c *fiber.Ctx) error {
+	isAuthenticated, _ := authentication.AuthGet(c)
+
+	if isAuthenticated {
+		return c.Next()
+	}
+
+	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		"error": "未授权访问",
+	})
+}
+
 // AuthMiddleware 认证中间件
-func AuthMiddleware(db *gorm.DB, JWTSecret string) fiber.Handler {
+func AuthMiddleware2(db *gorm.DB, JWTSecret string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// 首先从请求头获取 token
 		authHeader := c.Get("Authorization")
@@ -79,16 +92,16 @@ func AuthMiddleware(db *gorm.DB, JWTSecret string) fiber.Handler {
 }
 
 // HasPermission 权限检查中间件
-func HasPermission(permissionCode string) fiber.Handler {
+func HasPermission(permissionCode string, userFunc func(c *fiber.Ctx) *models.User) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		if c.Locals("user") == nil {
+		if userFunc == nil || userFunc(c) == nil {
 			return errors.New("请先登录")
 		}
-		user := c.Locals("user").(models.User)
+		currentUser := userFunc(c)
 
 		// 检查用户权限
 		hasPermission := false
-		for _, perm := range user.Role.Permissions {
+		for _, perm := range currentUser.Role.Permissions {
 			if perm.Code == permissionCode {
 				hasPermission = true
 				break

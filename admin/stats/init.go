@@ -2,7 +2,6 @@ package stats
 
 import (
 	"github.com/andycai/unitool/core"
-	"github.com/andycai/unitool/middleware"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -27,7 +26,7 @@ func (m *statsModule) InitModule() error {
 	app.RouterPublic.Post("/api/stats", CreateStats)
 
 	// admin
-	app.RouterAdmin.Get("/stats", middleware.HasPermission("stats:list"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Get("/stats", app.HasPermission("stats:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/stats", fiber.Map{
 			"Title": "游戏统计",
 			"Scripts": []string{
@@ -41,10 +40,10 @@ func (m *statsModule) InitModule() error {
 	})
 
 	// api
-	app.RouterApi.Get("/stats", middleware.HasPermission("stats:list"), getStats)
-	app.RouterApi.Delete("/stats/before", middleware.HasPermission("stats:delete"), deleteStatsBefore)
-	app.RouterApi.Get("/stats/details", middleware.HasPermission("stats:list"), getStatDetails)
-	app.RouterApi.Delete("/stats/:id", middleware.HasPermission("stats:delete"), deleteStat)
+	app.RouterApi.Get("/stats", app.HasPermission("stats:list"), getStats)
+	app.RouterApi.Delete("/stats/before", app.HasPermission("stats:delete"), deleteStatsBefore)
+	app.RouterApi.Get("/stats/details", app.HasPermission("stats:list"), getStatDetails)
+	app.RouterApi.Delete("/stats/:id", app.HasPermission("stats:delete"), deleteStat)
 
 	return nil
 }

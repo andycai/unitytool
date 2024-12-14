@@ -9,15 +9,15 @@ import (
 
 // CreateAdminLog 创建操作日志
 func CreateAdminLog(c *fiber.Ctx, action string, resource string, resourceID uint, details string) error {
-	user := c.Locals("user").(models.User)
+	currentUser := app.CurrentUser(c)
 
-	if user.ID == 0 {
+	if currentUser.ID == 0 {
 		return fmt.Errorf("登录已过期，请重新登录")
 	}
 
 	log := models.AdminLog{
-		UserID:     user.ID,
-		Username:   user.Username,
+		UserID:     currentUser.ID,
+		Username:   currentUser.Username,
 		Action:     action,
 		Resource:   resource,
 		ResourceID: resourceID,

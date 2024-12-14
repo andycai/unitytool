@@ -172,7 +172,7 @@
                     this.error = '';
 
                     try {
-                        const response = await fetch('/api/login', {
+                        const response = await fetch('/login', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -231,7 +231,7 @@
                     this.passwordError = '';
 
                     try {
-                        const response = await fetch('/api/change-password', {
+                        const response = await fetch('/change-password', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

@@ -2,7 +2,6 @@ package role
 
 import (
 	"github.com/andycai/unitool/core"
-	"github.com/andycai/unitool/middleware"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -26,7 +25,7 @@ func (m *roleModule) InitModule() error {
 	// public
 
 	// admin
-	app.RouterAdmin.Get("/roles", middleware.HasPermission("role:list"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Get("/roles", app.HasPermission("role:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/roles", fiber.Map{
 			"Title": "角色管理",
 			"Scripts": []string{
@@ -36,10 +35,10 @@ func (m *roleModule) InitModule() error {
 	})
 
 	// api
-	app.RouterApi.Get("/roles", middleware.HasPermission("role:list"), getRoles)
-	app.RouterApi.Post("/roles", middleware.HasPermission("role:create"), createRole)
-	app.RouterApi.Put("/roles/:id", middleware.HasPermission("role:update"), updateRole)
-	app.RouterApi.Delete("/roles/:id", middleware.HasPermission("role:delete"), deleteRole)
+	app.RouterApi.Get("/roles", app.HasPermission("role:list"), getRoles)
+	app.RouterApi.Post("/roles", app.HasPermission("role:create"), createRole)
+	app.RouterApi.Put("/roles/:id", app.HasPermission("role:update"), updateRole)
+	app.RouterApi.Delete("/roles/:id", app.HasPermission("role:delete"), deleteRole)
 
 	return nil
 }

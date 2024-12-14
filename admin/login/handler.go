@@ -3,6 +3,7 @@ package login
 import (
 	"time"
 
+	"github.com/andycai/unitool/lib/authentication"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -25,8 +26,8 @@ type ChangePasswordRequest struct {
 	NewPassword string `json:"new_password"`
 }
 
-// login 处理登录请求
-func login(c *fiber.Ctx) error {
+// loginAction 处理登录请求
+func loginAction(c *fiber.Ctx) error {
 	var req LoginRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
@@ -62,19 +63,10 @@ func login(c *fiber.Ctx) error {
 
 	// 更新最后登录时间
 	app.DB.Model(&user).Update("last_login", time.Now())
+	authentication.AuthStore(c, user.ID)
 
 	// 清除密码字段
 	user.Password = ""
-
-	// 生成 token 后，设置 cookie
-	cookie := new(fiber.Cookie)
-	cookie.Name = "token"
-	cookie.Value = tokenString
-	cookie.Expires = time.Now().Add(time.Duration(app.Config.Auth.TokenExpire) * time.Second)
-	cookie.HTTPOnly = true
-	cookie.Secure = true // 如果是 HTTPS
-	cookie.Path = "/"
-	c.Cookie(cookie)
 
 	// 构建响应数据
 	responseData := fiber.Map{
@@ -104,8 +96,20 @@ func login(c *fiber.Ctx) error {
 	return c.JSON(responseData)
 }
 
-// changePassword 修改密码
-func changePassword(c *fiber.Ctx) error {
+// logoutAction 处理退出登录请求
+func logoutAction(c *fiber.Ctx) error {
+	isAuthenticated, _ := authentication.AuthGet(c)
+	if !isAuthenticated {
+		return c.Redirect("/login")
+	}
+
+	authentication.AuthDestroy(c)
+
+	return c.Redirect("/login")
+}
+
+// changePasswordAction 修改密码
+func changePasswordAction(c *fiber.Ctx) error {
 	var req ChangePasswordRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "无效的请求数据"})
@@ -156,4 +160,20 @@ func generateToken(user models.User) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(app.Config.Auth.JWTSecret))
+}
+
+// Current 获取当前用户
+func CurrentUser(c *fiber.Ctx) *models.User {
+	isAuthenticated, userID := authentication.AuthGet(c)
+
+	if !isAuthenticated {
+		return nil
+	}
+
+	var vo models.User
+	app.DB.Model(&vo).
+		Where("id", userID).
+		First(&vo)
+
+	return &vo
 }

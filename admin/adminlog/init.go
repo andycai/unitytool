@@ -2,7 +2,6 @@ package adminlog
 
 import (
 	"github.com/andycai/unitool/core"
-	"github.com/andycai/unitool/middleware"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -26,7 +25,7 @@ func (m *adminlogModule) InitModule() error {
 	// public
 
 	// admin
-	app.RouterAdmin.Get("/adminlog", middleware.HasPermission("adminlog:list"), func(c *fiber.Ctx) error {
+	app.RouterAdmin.Get("/adminlog", app.HasPermission("adminlog:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/adminlog", fiber.Map{
 			"Title": "操作日志",
 			"Scripts": []string{
@@ -36,8 +35,8 @@ func (m *adminlogModule) InitModule() error {
 	})
 
 	// api
-	app.RouterApi.Get("/adminlog", middleware.HasPermission("adminlog:list"), getAdminLogs)
-	app.RouterApi.Delete("/adminlog", middleware.HasPermission("adminlog:delete"), deleteAdminLogs)
+	app.RouterApi.Get("/adminlog", app.HasPermission("adminlog:list"), getAdminLogs)
+	app.RouterApi.Delete("/adminlog", app.HasPermission("adminlog:delete"), deleteAdminLogs)
 
 	return nil
 }
