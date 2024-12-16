@@ -5,8 +5,8 @@ go 1.23.0
 require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/gofiber/fiber/v2 v2.52.5
+	github.com/gofiber/storage/memory v1.3.4
 	github.com/gofiber/storage/mysql/v2 v2.0.1
-	github.com/gofiber/storage/sqlite3 v1.3.8
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/robfig/cron/v3 v3.0.1
 	golang.org/x/crypto v0.14.0
@@ -23,7 +23,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	golang.org/x/text v0.14.0 // indirect
 	modernc.org/libc v1.22.5 // indirect

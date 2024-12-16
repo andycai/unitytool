@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/storage/memory"
 	"github.com/gofiber/storage/mysql/v2"
-	"github.com/gofiber/storage/sqlite3"
 )
 
 var (
@@ -23,17 +23,16 @@ const (
 func SessionSetup(dbDriver string, db *sql.DB, dsn, tableName string) {
 	var storage fiber.Storage
 
-	// 根据数据库类型选择存储方式
-	if dbDriver == "mysql" {
+	// 默认使用内存存储，适用于所有平台
+	storageConfig := memory.Config{
+		GCInterval: 10 * time.Second,
+	}
+	storage = memory.New(storageConfig)
+
+	// 仅在使用MySQL且提供了数据库连接时使用MySQL存储
+	if dbDriver == "mysql" && db != nil {
 		storage = mysql.New(mysql.Config{
 			Db:         db,
-			Table:      tableName,
-			Reset:      false,
-			GCInterval: 10 * time.Second,
-		})
-	} else {
-		storage = sqlite3.New(sqlite3.Config{
-			Database:   dsn,
 			Table:      tableName,
 			Reset:      false,
 			GCInterval: 10 * time.Second,
