@@ -68,6 +68,10 @@ func main() {
 
 			// 根据错误码返回对应的错误页面
 			switch code {
+			case fiber.StatusBadRequest:
+				return c.Status(code).Render("errors/400", fiber.Map{}, "")
+			case fiber.StatusUnauthorized:
+				return c.Status(code).Render("errors/401", fiber.Map{}, "")
 			case fiber.StatusForbidden:
 				return c.Status(code).Render("errors/403", fiber.Map{}, "")
 			case fiber.StatusNotFound:

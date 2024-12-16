@@ -62,12 +62,12 @@ func (m *browseModule) AddAuthRouters() error {
 
 		// 确保访问路径在根目录内
 		if !strings.HasPrefix(absPath, absRootDir) {
-			return c.Status(403).SendString("Access denied: Path outside root directory")
+			return fiber.NewError(fiber.StatusForbidden, "Access denied: Path outside root directory")
 		}
 
 		fileInfo, err := os.Stat(absPath)
 		if err != nil {
-			return c.Status(404).SendString(fmt.Sprintf("File not found: %s", decodedPath))
+			return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("File not found: %s", decodedPath))
 		}
 
 		// 如果是目录，显示目录内容
@@ -83,20 +83,20 @@ func (m *browseModule) AddAuthRouters() error {
 	app.RouterAdmin.Delete("/browse/*", app.HasPermission("browse:delete"), func(c *fiber.Ctx) error {
 		path := c.Params("*")
 		if path == "" {
-			return c.Status(400).SendString("Path is required")
+			return c.Status(fiber.StatusBadRequest).SendString("Path is required")
 		}
 
 		// URL 解码路径
 		decodedPath, err := url.QueryUnescape(path)
 		if err != nil {
-			return c.Status(400).SendString("Invalid path encoding")
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid path encoding")
 		}
 
 		// 获取配置的根目录的绝对路径
 		rootDir := app.Config.Server.Output
 		absRootDir, err := filepath.Abs(rootDir)
 		if err != nil {
-			return c.Status(500).SendString("Invalid root directory configuration")
+			return c.Status(fiber.StatusInternalServerError).SendString("Invalid root directory configuration")
 		}
 
 		// 构建完整路径
@@ -110,16 +110,16 @@ func (m *browseModule) AddAuthRouters() error {
 
 		// 确保删除路径在根目录内
 		if !strings.HasPrefix(absPath, absRootDir) {
-			return c.Status(403).SendString("Access denied: Path outside root directory")
+			return fiber.NewError(fiber.StatusForbidden, "Access denied: Path outside root directory")
 		}
 
 		// 检查是否是目录
 		fileInfo, err := os.Stat(absPath)
 		if err != nil {
-			return c.Status(404).SendString("File not found")
+			return c.Status(fiber.StatusNotFound).SendString("File not found")
 		}
 		if fileInfo.IsDir() {
-			return c.Status(400).SendString("Cannot delete directories")
+			return c.Status(fiber.StatusBadRequest).SendString("Cannot delete directories")
 		}
 
 		return handleBrowseDelete(c, absPath)

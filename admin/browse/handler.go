@@ -100,13 +100,13 @@ func handleBrowseDirectory(c *fiber.Ctx, path string) error {
 func handleBrowseFile(c *fiber.Ctx, path string) error {
 	// 检查文件是否存在
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return c.Status(404).SendString("File not found")
+		return fiber.NewError(fiber.StatusNotFound, "File not found")
 	}
 
 	// 读取文件内容
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return c.Status(500).SendString("Error reading file")
+		return fiber.NewError(fiber.StatusInternalServerError, "Error reading file")
 	}
 
 	// 获取相对于根目录的路径

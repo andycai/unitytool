@@ -31,9 +31,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
-	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-		"error": "未授权访问",
-	})
+	return fiber.NewError(fiber.StatusUnauthorized, "未授权访问")
 }
 
 // AuthMiddleware 认证中间件
@@ -121,7 +119,7 @@ func HasPermission(permissionCode string, userFunc func(c *fiber.Ctx) *models.Us
 		}
 
 		if !hasPermission {
-			return c.Status(403).JSON(fiber.Map{"error": "没有权限"})
+			return fiber.NewError(fiber.StatusForbidden, "没有权限")
 		}
 
 		return c.Next()
