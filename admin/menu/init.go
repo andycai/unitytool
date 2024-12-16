@@ -225,6 +225,7 @@ func (m *menuModule) Start() error {
 }
 
 func (m *menuModule) AddPublicRouters() error {
+	app.RouterPublicApi.Get("/menus/public/tree", getMenuTree)
 	return nil
 }
 

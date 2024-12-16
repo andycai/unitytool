@@ -587,7 +587,7 @@
                 },
                 async loadMenus() {
                     try {
-                        const response = await fetch('/api/menus/tree');
+                        const response = await fetch('/api/menus/public/tree');
                         if (!response.ok) throw new Error('加载菜单失败');
                         this.menuTree = await response.json();
                         
