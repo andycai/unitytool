@@ -3,7 +3,7 @@ package login
 import (
 	"time"
 
-	"github.com/andycai/unitool/lib/authentication"
+	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -47,7 +47,7 @@ func loginAction(c *fiber.Ctx) error {
 	var expireTime time.Time
 	if req.Remember {
 		expireTime = time.Now().Add(time.Hour * 24 * 30) // 30天
-		authentication.SetSessionExpiration(c, time.Hour*24*30)
+		core.SetSessionExpiration(c, time.Hour*24*30)
 	} else {
 		expireTime = time.Now().Add(time.Duration(app.Config.Auth.TokenExpire) * time.Second)
 	}
@@ -72,7 +72,7 @@ func loginAction(c *fiber.Ctx) error {
 	app.DB.Model(&user).Update("last_login", time.Now())
 
 	// 存储会话
-	if err := authentication.AuthStore(c, user.ID); err != nil {
+	if err := core.StoreSession(c, user.ID); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "会话创建失败"})
 	}
 
@@ -105,12 +105,12 @@ func loginAction(c *fiber.Ctx) error {
 
 // logoutAction 处理退出登录请求
 func logoutAction(c *fiber.Ctx) error {
-	isAuthenticated, _ := authentication.AuthGet(c)
+	isAuthenticated, _ := core.GetSession(c)
 	if !isAuthenticated {
 		return c.Redirect("/login")
 	}
 
-	authentication.AuthDestroy(c)
+	core.DestroySession(c)
 
 	return c.Redirect("/login")
 }
@@ -171,7 +171,7 @@ func generateToken(user models.User) (string, error) {
 
 // Current 获取当前用户
 func CurrentUser(c *fiber.Ctx) *models.User {
-	isAuthenticated, userID := authentication.AuthGet(c)
+	isAuthenticated, userID := core.GetSession(c)
 
 	if !isAuthenticated {
 		return nil

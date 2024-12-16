@@ -1,8 +1,6 @@
 package core
 
 import (
-	"github.com/andycai/unitool/lib/authentication"
-	"github.com/andycai/unitool/middleware"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -30,7 +28,7 @@ func (a *App) Start(dbs []*gorm.DB, fiberApp *fiber.App) {
 	a.App = fiberApp
 
 	sqlDb, _ := a.DB.DB()
-	authentication.SessionSetup(config.Database.Driver, sqlDb, config.Database.DSN, "sessions")
+	SessionSetup(config.Database.Driver, sqlDb, config.Database.DSN, "sessions")
 
 	// 注册静态路由
 	serverConfig := a.Config.Server
@@ -47,21 +45,21 @@ func (a *App) Start(dbs []*gorm.DB, fiberApp *fiber.App) {
 
 	// 初始化API路由
 	a.RouterApi = fiberApp.Group("/api")
-	a.RouterApi.Use(middleware.AuthMiddleware)
+	a.RouterApi.Use(AuthMiddleware)
 
 	// 初始化管理员路由
 	a.RouterAdmin = fiberApp.Group("/admin")
-	a.RouterAdmin.Use(middleware.AuthMiddleware)
+	a.RouterAdmin.Use(AuthMiddleware)
 	InitAuthRouters()
 }
 
 func (a *App) HasPermission(permissionCode string) fiber.Handler {
-	return middleware.HasPermission(permissionCode, a.CurrentUser)
+	return HasPermission(permissionCode, a.CurrentUser)
 }
 
 // Current 获取当前用户
 func (a *App) CurrentUser(c *fiber.Ctx) *models.User {
-	isAuthenticated, userID := authentication.AuthGet(c)
+	isAuthenticated, userID := GetSession(c)
 
 	if !isAuthenticated {
 		return nil

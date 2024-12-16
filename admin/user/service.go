@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/andycai/unitool/lib/authentication"
+	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -17,7 +17,7 @@ func GetByID(id uint) *models.User {
 }
 
 func Current(c *fiber.Ctx) *models.User {
-	isAuthenticated, userID := authentication.AuthGet(c)
+	isAuthenticated, userID := core.GetSession(c)
 
 	if !isAuthenticated {
 		return nil

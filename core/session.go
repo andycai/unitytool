@@ -1,8 +1,7 @@
-package authentication
+package core
 
 import (
 	"database/sql"
-	"os"
 	"time"
 
 	"github.com/glebarez/sqlite"
@@ -143,26 +142,21 @@ func SessionSetup(dbDriver string, db *sql.DB, dsn, tableName string) {
 		})
 	}
 
-	isDev := true
-	if v := os.Getenv("GO_ENV"); v == "production" {
-		isDev = false
-	}
-
 	// 创建session存储
 	store = session.New(session.Config{
 		Storage:        storage,
 		Expiration:     24 * time.Hour, // 默认session过期时间
 		KeyLookup:      "cookie:" + sessionName,
-		CookieSecure:   !isDev, // 在生产环境中启用secure
-		CookieHTTPOnly: false,
+		CookieSecure:   IsSecureMode(), // 根据安全模式配置决定是否启用secure
+		CookieHTTPOnly: true,
 		CookieSameSite: "Lax",
 		CookiePath:     "/", // 确保cookie在所有路径下可用
 		CookieDomain:   "",  // 自动使用当前域名
 	})
 }
 
-// AuthStore 存储用户认证信息
-func AuthStore(c *fiber.Ctx, userID uint) error {
+// StoreSession 存储用户认证信息
+func StoreSession(c *fiber.Ctx, userID uint) error {
 	sess, err := store.Get(c)
 	if err != nil {
 		return err
@@ -172,8 +166,8 @@ func AuthStore(c *fiber.Ctx, userID uint) error {
 	return sess.Save()
 }
 
-// AuthGet 获取用户认证信息
-func AuthGet(c *fiber.Ctx) (bool, uint) {
+// GetSession 获取用户认证信息
+func GetSession(c *fiber.Ctx) (bool, uint) {
 	sess, err := store.Get(c)
 	if err != nil {
 		return false, 0
@@ -197,8 +191,8 @@ func AuthGet(c *fiber.Ctx) (bool, uint) {
 	return false, 0
 }
 
-// AuthDestroy 销毁用户认证信息
-func AuthDestroy(c *fiber.Ctx) error {
+// DestroySession 销毁用户认证信息
+func DestroySession(c *fiber.Ctx) error {
 	sess, err := store.Get(c)
 	if err != nil {
 		return err

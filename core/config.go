@@ -2,11 +2,13 @@ package core
 
 import (
 	"flag"
+	"time"
 
 	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
+	App       AppConfig      `toml:"app"`
 	Server    ServerConfig   `toml:"server"`
 	Database  DatabaseConfig `toml:"database"`
 	JSONPaths JSONPathConfig `toml:"json_paths"`
@@ -26,8 +28,11 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Driver string `toml:"driver"`
-	DSN    string `toml:"dsn"`
+	Driver          string        `toml:"driver"`
+	DSN             string        `toml:"dsn"`
+	MaxOpenConns    int           `toml:"max_open_conns"`
+	MaxIdleConns    int           `toml:"max_idle_conns"`
+	ConnMaxLifetime time.Duration `toml:"conn_max_lifetime"`
 }
 
 type FTPConfig struct {
@@ -59,6 +64,11 @@ type AuthConfig struct {
 	TokenExpire int    `toml:"token_expire"`
 }
 
+type AppConfig struct {
+	IsDev    bool `toml:"is_dev"`    // 是否为开发环境
+	IsSecure bool `toml:"is_secure"` // 是否启用安全模式
+}
+
 var config Config
 
 func LoadConfig() error {
@@ -76,6 +86,7 @@ func LoadConfig() error {
 	ftpPass := flag.String("ftp_pass", "", "FTP密码")
 	ftpApkPath := flag.String("ftp_apk_path", "", "FTP APK上传路径")
 	ftpZipPath := flag.String("ftp_zip_path", "", "FTP ZIP上传路径")
+	isDev := flag.Bool("dev", false, "是否为开发环境")
 
 	flag.Parse()
 
@@ -83,6 +94,18 @@ func LoadConfig() error {
 		return err
 	}
 
+	// 设置默认值
+	if config.Database.MaxOpenConns == 0 {
+		config.Database.MaxOpenConns = 100 // 默认最大连接数
+	}
+	if config.Database.MaxIdleConns == 0 {
+		config.Database.MaxIdleConns = 10 // 默认最大空闲连接数
+	}
+	if config.Database.ConnMaxLifetime == 0 {
+		config.Database.ConnMaxLifetime = time.Hour // 默认连接生命周期为1小时
+	}
+
+	// 命令行参数覆盖配置文件
 	if *host != "" {
 		config.Server.Host = *host
 	}
@@ -119,6 +142,9 @@ func LoadConfig() error {
 	if *ftpZipPath != "" {
 		config.FTP.ZIPPath = *ftpZipPath
 	}
+	if *isDev {
+		config.App.IsDev = true
+	}
 
 	return nil
 }
@@ -153,4 +179,14 @@ func UpdateDatabaseConfig(newConfig DatabaseConfig) {
 
 func UpdateFTPConfig(newConfig FTPConfig) {
 	config.FTP = newConfig
+}
+
+// IsDevelopment 返回是否为开发环境
+func IsDevelopment() bool {
+	return config.App.IsDev
+}
+
+// IsSecureMode 返回是否为安全模式
+func IsSecureMode() bool {
+	return config.App.IsSecure
 }

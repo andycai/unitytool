@@ -21,7 +21,14 @@ func main() {
 	}
 
 	// 初始化数据库
-	db, err := database.InitDatabase(core.GetConfig().Database.DSN, core.GetConfig().Database.Driver)
+	dbConfig := core.GetDatabaseConfig()
+	db, err := database.InitDatabase(
+		dbConfig.DSN,
+		dbConfig.Driver,
+		dbConfig.MaxOpenConns,
+		dbConfig.MaxIdleConns,
+		int64(dbConfig.ConnMaxLifetime.Seconds()),
+	)
 	if err != nil {
 		log.Fatalf("数据库初始化失败: %v", err)
 	}

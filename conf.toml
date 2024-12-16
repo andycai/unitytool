@@ -1,3 +1,9 @@
+# 应用配置
+[app]
+is_dev = true     # 是否为开发环境
+is_secure = false # 是否启用安全模式（HTTPS）
+
+# 服务器配置
 [server]
 host = "0.0.0.0"
 port = 3000
@@ -15,6 +21,9 @@ static_paths = [
 [database]
 driver = "sqlite"
 dsn = "data/unitool.db"
+max_open_conns = 100     # 最大打开连接数
+max_idle_conns = 10      # 最大空闲连接数
+conn_max_lifetime = 3600 # 连接最大生命周期（秒）
 
 [json_paths]
 server_list = "data/serverlist.json"
@@ -36,5 +45,5 @@ log_dir = "output/logs/ftp"
 max_log_size = 20971520
 
 [auth]
-jwt_secret = "your-secret-key-here"
-token_expire = 86400                # 24小时
+jwt_secret = "your-secret-key"
+token_expire = 259200          # 72小时

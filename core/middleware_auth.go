@@ -1,11 +1,10 @@
-package middleware
+package core
 
 import (
 	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/andycai/unitool/lib/authentication"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -26,7 +25,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
-	isAuthenticated, _ := authentication.AuthGet(c)
+	isAuthenticated, _ := GetSession(c)
 
 	if isAuthenticated {
 		return c.Next()
