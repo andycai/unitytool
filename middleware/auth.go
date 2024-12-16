@@ -12,7 +12,20 @@ import (
 	"gorm.io/gorm"
 )
 
+// SkipAuth 用于标记不需要认证的路由
+var skipAuthRoutes = make(map[string]bool)
+
+// SkipAuthRoute 添加不需要认证的路由
+func SkipAuthRoute(path string) {
+	skipAuthRoutes[path] = true
+}
+
 func AuthMiddleware(c *fiber.Ctx) error {
+	// 检查是否是不需要认证的路由
+	if skipAuthRoutes[c.Path()] {
+		return c.Next()
+	}
+
 	isAuthenticated, _ := authentication.AuthGet(c)
 
 	if isAuthenticated {
