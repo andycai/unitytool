@@ -585,6 +585,9 @@
                     package: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>',
                     citask: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>'
                 },
+                get recentTabsKey() {
+                    return 'recentTabs_'+this.user.id;
+                },
                 async loadMenus() {
                     try {
                         const response = await fetch('/api/menus/public/tree');
@@ -608,7 +611,7 @@
                 },
                 initializeTabs() {
                     // 从 localStorage 获取保存的标签
-                    const savedTabs = JSON.parse(localStorage.getItem('recentTabs') || '[]');
+                    const savedTabs = JSON.parse(localStorage.getItem(this.recentTabsKey) || '[]');
                     this.recentTabs = savedTabs;
                 },
                 hasPermission(permission) {
@@ -690,7 +693,7 @@
                     }
 
                     // 保存到 localStorage
-                    localStorage.setItem('recentTabs', JSON.stringify(this.recentTabs));
+                    localStorage.setItem(this.recentTabsKey, JSON.stringify(this.recentTabs));
                 },
                 // 检查路径是否在菜单中定义
                 isPathInMenu(path) {
@@ -719,7 +722,7 @@
                     if (index === -1) return;
 
                     this.recentTabs.splice(index, 1);
-                    localStorage.setItem('recentTabs', JSON.stringify(this.recentTabs));
+                    localStorage.setItem(this.recentTabsKey, JSON.stringify(this.recentTabs));
 
                     // 如果关闭的是当前标签，导航到前一个标签
                     if (path === this.currentPath) {
@@ -853,7 +856,7 @@
                                 this.recentTabs.shift();
                             }
                             // 保存到 localStorage
-                            localStorage.setItem('recentTabs', JSON.stringify(this.recentTabs));
+                            localStorage.setItem(this.recentTabsKey, JSON.stringify(this.recentTabs));
                         }
                     }
 
