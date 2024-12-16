@@ -47,6 +47,7 @@ func loginAction(c *fiber.Ctx) error {
 	var expireTime time.Time
 	if req.Remember {
 		expireTime = time.Now().Add(time.Hour * 24 * 30) // 30天
+		authentication.SetSessionExpiration(c, time.Hour*24*30)
 	} else {
 		expireTime = time.Now().Add(time.Duration(app.Config.Auth.TokenExpire) * time.Second)
 	}
@@ -69,7 +70,11 @@ func loginAction(c *fiber.Ctx) error {
 
 	// 更新最后登录时间
 	app.DB.Model(&user).Update("last_login", time.Now())
-	authentication.AuthStore(c, user.ID)
+
+	// 存储会话
+	if err := authentication.AuthStore(c, user.ID); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "会话创建失败"})
+	}
 
 	// 清除密码字段
 	user.Password = ""
@@ -95,10 +100,6 @@ func loginAction(c *fiber.Ctx) error {
 		},
 	}
 
-	// 打印响应数据用于调试
-	// fmt.Printf("Response data: %+v\n", responseData)
-
-	// 返回响应
 	return c.JSON(responseData)
 }
 
