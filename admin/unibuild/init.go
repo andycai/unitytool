@@ -9,25 +9,24 @@ var app *core.App
 type uniBuildModule struct {
 }
 
-func (m *uniBuildModule) Init(a *core.App) error {
+func (m *uniBuildModule) Awake(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (m *uniBuildModule) InitDB() error {
-	// 数据迁移
+func (m *uniBuildModule) Start() error {
 	return nil
 }
 
-func (m *uniBuildModule) InitModule() error {
+func (m *uniBuildModule) AddPublicRouters() error {
 	// public
-	app.RouterPublic.Post("/api/unibuild/res", buildResources)
-	app.RouterPublic.Post("/api/unibuild/app", buildApp)
+	app.RouterPublicApi.Post("/unibuild/res", buildResources)
+	app.RouterPublicApi.Post("/unibuild/app", buildApp)
 
-	// admin
+	return nil
+}
 
-	// api
-
+func (m *uniBuildModule) AddAuthRouters() error {
 	return nil
 }
 

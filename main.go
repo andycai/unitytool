@@ -72,16 +72,8 @@ func main() {
 	})
 
 	app := core.NewApp()
-	app.Init([]*gorm.DB{db}, fiberApp)
-
-	// 注册静态路由
-	serverConfig := app.Config.Server
-	for _, staticPath := range serverConfig.StaticPaths {
-		fiberApp.Static(staticPath.Route, staticPath.Path)
-	}
-
-	core.InitModules(app)
+	app.Start([]*gorm.DB{db}, fiberApp)
 
 	// 启动服务器
-	fiberApp.Listen(fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port))
+	fiberApp.Listen(fmt.Sprintf("%s:%d", app.Config.Server.Host, app.Config.Server.Port))
 }

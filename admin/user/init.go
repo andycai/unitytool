@@ -16,20 +16,14 @@ var app *core.App
 type userModule struct {
 }
 
-func (m *userModule) Init(a *core.App) error {
+func (m *userModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
-
-func (m *userModule) InitDB() error {
 	// 数据迁移
 	if err := app.DB.AutoMigrate(&models.User{}); err != nil {
 		return err
 	}
 
-	initData()
-
-	return nil
+	return initData()
 }
 
 func initData() error {
@@ -330,9 +324,15 @@ func initData() error {
 	})
 }
 
-func (m *userModule) InitModule() error {
-	// public
+func (m *userModule) Start() error {
+	return nil
+}
 
+func (m *userModule) AddPublicRouters() error {
+	return nil
+}
+
+func (m *userModule) AddAuthRouters() error {
 	// admin
 	app.RouterAdmin.Get("/users", app.HasPermission("user:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/users", fiber.Map{

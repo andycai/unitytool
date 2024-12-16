@@ -9,20 +9,21 @@ import (
 )
 
 type App struct {
-	App          *fiber.App
-	DB           *gorm.DB
-	DBs          []*gorm.DB
-	Config       *Config
-	RouterPublic fiber.Router
-	RouterAdmin  fiber.Router
-	RouterApi    fiber.Router
+	App             *fiber.App
+	DB              *gorm.DB
+	DBs             []*gorm.DB
+	Config          *Config
+	RouterPublic    fiber.Router
+	RouterPublicApi fiber.Router
+	RouterApi       fiber.Router
+	RouterAdmin     fiber.Router
 }
 
 func NewApp() *App {
 	return &App{}
 }
 
-func (a *App) Init(dbs []*gorm.DB, fiberApp *fiber.App) {
+func (a *App) Start(dbs []*gorm.DB, fiberApp *fiber.App) {
 	a.Config = &config
 	a.DBs = dbs
 	a.DB = dbs[0]
@@ -31,11 +32,27 @@ func (a *App) Init(dbs []*gorm.DB, fiberApp *fiber.App) {
 	sqlDb, _ := a.DB.DB()
 	authentication.SessionSetup(config.Database.Driver, sqlDb, config.Database.DSN, "sessions")
 
+	// 注册静态路由
+	serverConfig := a.Config.Server
+	for _, staticPath := range serverConfig.StaticPaths {
+		fiberApp.Static(staticPath.Route, staticPath.Path)
+	}
+
+	AwakeModules(a)
+
+	// 初始化公共路由
 	a.RouterPublic = fiberApp.Group("/")
+	a.RouterPublicApi = fiberApp.Group("/api")
+	InitPublicRouters()
+
+	// 初始化API路由
 	a.RouterApi = fiberApp.Group("/api")
 	a.RouterApi.Use(middleware.AuthMiddleware)
+
+	// 初始化管理员路由
 	a.RouterAdmin = fiberApp.Group("/admin")
 	a.RouterAdmin.Use(middleware.AuthMiddleware)
+	InitAuthRouters()
 }
 
 func (a *App) HasPermission(permissionCode string) fiber.Handler {

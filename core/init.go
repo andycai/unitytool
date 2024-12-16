@@ -1,29 +1,42 @@
 package core
 
 type Module interface {
-	Init(*App) error
-	InitDB() error
-	InitModule() error
+	Awake(*App) error
+	Start() error
+	AddPublicRouters() error
+	AddAuthRouters() error
 }
 
 var modules []Module
 
+// RegisterModule 注册模块
 func RegisterModule(module Module) {
 	modules = append(modules, module)
 }
 
-func InitModules(app *App) {
+// InitPublicRouters 初始化公共路由
+func InitPublicRouters() {
 	for _, module := range modules {
-		module.Init(app)
+		module.AddPublicRouters()
+	}
+}
+
+// InitAuthRouters 初始化管理员路由
+func InitAuthRouters() {
+	for _, module := range modules {
+		module.AddAuthRouters()
+	}
+}
+
+// AwakeModules 模块初始化
+func AwakeModules(app *App) {
+	// 模块初始化
+	for _, module := range modules {
+		module.Awake(app)
 	}
 
-	// 初始化数据库和数据
+	// 模块启动
 	for _, module := range modules {
-		module.InitDB()
-	}
-
-	// 初始化模块
-	for _, module := range modules {
-		module.InitModule()
+		module.Start()
 	}
 }

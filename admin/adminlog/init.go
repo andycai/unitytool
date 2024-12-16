@@ -11,19 +11,20 @@ var app *core.App
 type adminlogModule struct {
 }
 
-func (m *adminlogModule) Init(a *core.App) error {
+func (m *adminlogModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
-
-func (m *adminlogModule) InitDB() error {
-	// 数据迁移
 	return app.DB.AutoMigrate(&models.AdminLog{})
 }
 
-func (m *adminlogModule) InitModule() error {
-	// public
+func (m *adminlogModule) Start() error {
+	return nil
+}
 
+func (m *adminlogModule) AddPublicRouters() error {
+	return nil
+}
+
+func (m *adminlogModule) AddAuthRouters() error {
 	// admin
 	app.RouterAdmin.Get("/adminlog", app.HasPermission("adminlog:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/adminlog", fiber.Map{

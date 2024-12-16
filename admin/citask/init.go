@@ -11,22 +11,22 @@ var app *core.App
 type taskModule struct {
 }
 
-func (m *taskModule) Init(a *core.App) error {
+func (m *taskModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
-
-func (m *taskModule) InitDB() error {
-	// 数据迁移
 	return app.DB.AutoMigrate(&models.Task{}, &models.TaskLog{})
 }
 
-func (m *taskModule) InitModule() error {
-	// logic
+func (m *taskModule) Start() error {
 	initCron()
 
-	// public
+	return nil
+}
 
+func (m *taskModule) AddPublicRouters() error {
+	return nil
+}
+
+func (m *taskModule) AddAuthRouters() error {
 	// admin
 	app.RouterAdmin.Get("/citask", app.HasPermission("citask:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/citask", fiber.Map{

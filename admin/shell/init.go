@@ -10,26 +10,25 @@ var app *core.App
 type shellModule struct {
 }
 
-func (m *shellModule) Init(a *core.App) error {
+func (m *shellModule) Awake(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (m *shellModule) InitDB() error {
-	// 数据迁移
+func (m *shellModule) Start() error {
 	return nil
 }
 
-func (m *shellModule) InitModule() error {
+func (m *shellModule) AddPublicRouters() error {
 	// public
-	app.RouterPublic.Post("/api/shell", func(c *fiber.Ctx) error {
+	app.RouterPublicApi.Post("/shell", func(c *fiber.Ctx) error {
 		return execShell(c, app.Config.Server.ScriptPath)
 	})
 
-	// admin
+	return nil
+}
 
-	// api
-
+func (m *shellModule) AddAuthRouters() error {
 	return nil
 }
 

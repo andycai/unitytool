@@ -16,19 +16,20 @@ var app *core.App
 type browseModule struct {
 }
 
-func (m *browseModule) Init(a *core.App) error {
+func (m *browseModule) Awake(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (m *browseModule) InitDB() error {
-	// 数据迁移
+func (m *browseModule) Start() error {
 	return nil
 }
 
-func (m *browseModule) InitModule() error {
-	// public
+func (m *browseModule) AddPublicRouters() error {
+	return nil
+}
 
+func (m *browseModule) AddAuthRouters() error {
 	// admin
 	// 浏览目录和文件的路由
 	app.RouterAdmin.Get("/browse/*", app.HasPermission("browse:list"), func(c *fiber.Ctx) error {

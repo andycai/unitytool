@@ -10,29 +10,32 @@ var app *core.App
 type serverconfModule struct {
 }
 
-func (m *serverconfModule) Init(a *core.App) error {
+func (m *serverconfModule) Awake(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (m *serverconfModule) InitDB() error {
-	// 数据迁移
+func (m *serverconfModule) Start() error {
 	return nil
 }
 
-func (m *serverconfModule) InitModule() error {
+func (m *serverconfModule) AddPublicRouters() error {
 	// public
-	app.RouterPublic.Get("/api/game/serverlist", getServerList)
-	app.RouterPublic.Get("/api/game/lastserver", getLastServer)
-	app.RouterPublic.Get("/api/game/serverinfo", getServerInfo)
-	app.RouterPublic.Get("/api/game/noticelist", getNoticeList)
-	app.RouterPublic.Get("/api/game/noticenum", getNoticeNum)
-	app.RouterPublic.Get("/api/serverlist", getServerList)
-	app.RouterPublic.Get("/api/lastserver", getLastServer)
-	app.RouterPublic.Get("/api/serverinfo", getServerInfo)
-	app.RouterPublic.Get("/api/noticelist", getNoticeList)
-	app.RouterPublic.Get("/api/noticenum", getNoticeNum)
+	app.RouterPublicApi.Get("/game/serverlist", getServerList)
+	app.RouterPublicApi.Get("/game/lastserver", getLastServer)
+	app.RouterPublicApi.Get("/game/serverinfo", getServerInfo)
+	app.RouterPublicApi.Get("/game/noticelist", getNoticeList)
+	app.RouterPublicApi.Get("/game/noticenum", getNoticeNum)
+	app.RouterPublicApi.Get("/serverlist", getServerList)
+	app.RouterPublicApi.Get("/lastserver", getLastServer)
+	app.RouterPublicApi.Get("/serverinfo", getServerInfo)
+	app.RouterPublicApi.Get("/noticelist", getNoticeList)
+	app.RouterPublicApi.Get("/noticenum", getNoticeNum)
 
+	return nil
+}
+
+func (m *serverconfModule) AddAuthRouters() error {
 	// admin
 	app.RouterAdmin.Get("/serverconf", app.HasPermission("serverconf:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/serverconf", fiber.Map{

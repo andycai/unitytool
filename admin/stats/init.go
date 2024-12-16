@@ -11,19 +11,30 @@ var app *core.App
 type statsModule struct {
 }
 
-func (m *statsModule) Init(a *core.App) error {
+func (m *statsModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
 
-func (m *statsModule) InitDB() error {
 	// 数据迁移
 	return app.DB.AutoMigrate(&models.StatsRecord{}, &models.StatsInfo{})
 }
 
-func (m *statsModule) InitModule() error {
+func (m *statsModule) Start() error {
+	return nil
+}
+
+func (m *statsModule) AddPublicRouters() error {
 	// public
-	app.RouterPublic.Post("/api/stats", CreateStats)
+	app.RouterPublicApi.Post("/stats", CreateStats)
+
+	return nil
+}
+
+func (m *statsModule) AddAuthRouters() error {
+	// api
+	app.RouterApi.Get("/stats", app.HasPermission("stats:list"), getStats)
+	app.RouterApi.Delete("/stats/before", app.HasPermission("stats:delete"), deleteStatsBefore)
+	app.RouterApi.Get("/stats/details", app.HasPermission("stats:list"), getStatDetails)
+	app.RouterApi.Delete("/stats/:id", app.HasPermission("stats:delete"), deleteStat)
 
 	// admin
 	app.RouterAdmin.Get("/stats", app.HasPermission("stats:list"), func(c *fiber.Ctx) error {
@@ -38,12 +49,6 @@ func (m *statsModule) InitModule() error {
 			},
 		}, "admin/layout")
 	})
-
-	// api
-	app.RouterApi.Get("/stats", app.HasPermission("stats:list"), getStats)
-	app.RouterApi.Delete("/stats/before", app.HasPermission("stats:delete"), deleteStatsBefore)
-	app.RouterApi.Get("/stats/details", app.HasPermission("stats:list"), getStatDetails)
-	app.RouterApi.Delete("/stats/:id", app.HasPermission("stats:delete"), deleteStat)
 
 	return nil
 }

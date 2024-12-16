@@ -10,19 +10,20 @@ var app *core.App
 type permissionModule struct {
 }
 
-func (m *permissionModule) Init(a *core.App) error {
+func (m *permissionModule) Awake(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (m *permissionModule) InitDB() error {
-	// 数据迁移
+func (m *permissionModule) Start() error {
 	return nil
 }
 
-func (m *permissionModule) InitModule() error {
-	// public
+func (m *permissionModule) AddPublicRouters() error {
+	return nil
+}
 
+func (m *permissionModule) AddAuthRouters() error {
 	// admin
 	app.RouterAdmin.Get("/permissions", app.HasPermission("permission:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/permissions", fiber.Map{

@@ -11,20 +11,23 @@ var app *core.App
 type gamelogModule struct {
 }
 
-func (m *gamelogModule) Init(a *core.App) error {
+func (m *gamelogModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
 
-func (m *gamelogModule) InitDB() error {
-	// 数据迁移
 	return app.DB.AutoMigrate(&models.GameLog{})
 }
 
-func (m *gamelogModule) InitModule() error {
-	// public
-	app.RouterPublic.Post("/api/gamelog", createLog)
+func (m *gamelogModule) Start() error {
+	return nil
+}
 
+func (m *gamelogModule) AddPublicRouters() error {
+	// public
+	app.RouterPublicApi.Post("/gamelog", createLog)
+	return nil
+}
+
+func (m *gamelogModule) AddAuthRouters() error {
 	// admin
 	app.RouterAdmin.Get("/gamelog", app.HasPermission("gamelog:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/gamelog", fiber.Map{

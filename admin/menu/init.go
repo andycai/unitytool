@@ -14,12 +14,8 @@ var menuDao *MenuDao
 type menuModule struct {
 }
 
-func (m *menuModule) Init(a *core.App) error {
+func (m *menuModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
-
-func (m *menuModule) InitDB() error {
 	// 数据迁移
 	if err := app.DB.AutoMigrate(&models.Menu{}); err != nil {
 		return err
@@ -224,9 +220,15 @@ func initData() error {
 	return nil
 }
 
-func (m *menuModule) InitModule() error {
-	// public
+func (m *menuModule) Start() error {
+	return nil
+}
 
+func (m *menuModule) AddPublicRouters() error {
+	return nil
+}
+
+func (m *menuModule) AddAuthRouters() error {
 	// admin
 	app.RouterAdmin.Get("/menus", app.HasPermission("menu:list"), func(c *fiber.Ctx) error {
 		user := app.CurrentUser(c)

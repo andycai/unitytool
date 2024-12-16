@@ -11,19 +11,20 @@ var app *core.App
 type roleModule struct {
 }
 
-func (m *roleModule) Init(a *core.App) error {
+func (m *roleModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
-
-func (m *roleModule) InitDB() error {
-	// 数据迁移
 	return app.DB.AutoMigrate(&models.Role{}, &models.Permission{}, &models.RolePermission{})
 }
 
-func (m *roleModule) InitModule() error {
-	// public
+func (m *roleModule) Start() error {
+	return nil
+}
 
+func (m *roleModule) AddPublicRouters() error {
+	return nil
+}
+
+func (m *roleModule) AddAuthRouters() error {
 	// admin
 	app.RouterAdmin.Get("/roles", app.HasPermission("role:list"), func(c *fiber.Ctx) error {
 		return c.Render("admin/roles", fiber.Map{

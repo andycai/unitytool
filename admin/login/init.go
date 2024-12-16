@@ -10,18 +10,16 @@ var app *core.App
 type loginModule struct {
 }
 
-func (m *loginModule) Init(a *core.App) error {
+func (m *loginModule) Awake(a *core.App) error {
 	app = a
 	return nil
 }
 
-func (m *loginModule) InitDB() error {
-	// 数据迁移
+func (m *loginModule) Start() error {
 	return nil
 }
 
-func (m *loginModule) InitModule() error {
-	// public
+func (m *loginModule) AddPublicRouters() error {
 	// 登录页面路由（不需要认证）
 	app.RouterPublic.Get("/login", func(c *fiber.Ctx) error {
 		return c.Render("login", fiber.Map{}, "login")
@@ -45,6 +43,10 @@ func (m *loginModule) InitModule() error {
 		return changePasswordAction(c)
 	})
 
+	return nil
+}
+
+func (m *loginModule) AddAuthRouters() error {
 	// admin
 	app.RouterAdmin.Get("/", func(c *fiber.Ctx) error {
 		return c.Render("admin/index", fiber.Map{
