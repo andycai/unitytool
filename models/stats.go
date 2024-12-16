@@ -2,18 +2,18 @@ package models
 
 type StatsRecord struct {
 	ID          uint   `json:"id" gorm:"primaryKey"`
-	LoginID     int64  `json:"login_id" gorm:"uniqueIndex"`
+	LoginID     int64  `json:"login_id" gorm:"index:idx_role_at,priority:1,uniqueIndex"`
 	AppID       int    `json:"app_id"`
 	Package     string `json:"package_name"`
 	ProductName string `json:"product_name"`
-	RoleName    string `json:"role_name"`
+	RoleName    string `json:"role_name" gorm:"index:idx_role_at,priority:2"`
 	Device      string `json:"device_name"`
 	CPU         string `json:"system_cpu"`
 	GPU         string `json:"graphics_divice"`
 	Memory      int    `json:"system_mem"`
 	GPUMemory   int    `json:"graphics_mem"`
 	StatTime    int64  `json:"mtime" gorm:"index"`
-	CreatedAt   int64  `json:"created_at" gorm:"index"`
+	CreatedAt   int64  `json:"created_at" gorm:"index:idx_role_at,priority:3"`
 }
 
 type StatsInfo struct {
