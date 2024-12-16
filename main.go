@@ -35,8 +35,11 @@ func main() {
 
 	// 初始化模板引擎
 	engine := html.New("./templates", ".html")
-	engine.Reload(true) // 开发模式下启用模板重载
-	engine.Debug(true)  // 开发模式下启用调试信息
+
+	if core.IsDevelopment() {
+		engine.Reload(true) // 开发模式下启用模板重载
+		engine.Debug(true)  // 开发模式下启用调试信息
+	}
 
 	// 添加模板函数
 	engine.AddFunc("yield", func() string { return "" })
@@ -45,11 +48,14 @@ func main() {
 	})
 	// 添加 hasSuffix 函数用于检查文件扩展名
 	engine.AddFunc("hasSuffix", strings.HasSuffix)
-	// 添加 splitPath 函数用于分割路径
+	// 添加 splitPath 函数用于分割路径，同时处理 Windows 和 Unix 风格的路径分隔符
 	engine.AddFunc("splitPath", func(path string) []string {
 		if path == "" {
 			return []string{}
 		}
+		// 先将所有反斜杠转换为正斜杠
+		path = strings.ReplaceAll(path, "\\", "/")
+		// 分割路径
 		return strings.Split(path, "/")
 	})
 	// 添加 sub 函数用于数字减法

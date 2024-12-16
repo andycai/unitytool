@@ -40,7 +40,7 @@ func createLog(c *fiber.Ctx) error {
 	}
 
 	// 记录操作日志
-	adminlog.CreateAdminLog(c, "create", "gamelog", 0, fmt.Sprintf("批量创建游戏日志，角色：%s，数量：%d", logReq.RoleName, len(logReq.Logs)))
+	// adminlog.CreateAdminLog(c, "create", "gamelog", 0, fmt.Sprintf("批量创建游戏日志，角色：%s，数量：%d", logReq.RoleName, len(logReq.Logs)))
 
 	return c.Status(201).JSON(logReq.Logs)
 }

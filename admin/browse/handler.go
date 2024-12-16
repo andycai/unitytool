@@ -25,6 +25,11 @@ type FileEntry struct {
 	FileType string    // 文件类型
 }
 
+// 规范化路径分隔符，将反斜杠转换为正斜杠
+func normalizePath(path string) string {
+	return strings.ReplaceAll(path, "\\", "/")
+}
+
 // handleBrowseDirectory 处理目录浏览请求
 func handleBrowseDirectory(c *fiber.Ctx, path string) error {
 	files, err := ioutil.ReadDir(path)
@@ -83,6 +88,9 @@ func handleBrowseDirectory(c *fiber.Ctx, path string) error {
 		relPath = ""
 	}
 
+	// 规范化路径分隔符
+	relPath = normalizePath(relPath)
+
 	rootPath := "/admin/browse"
 
 	return c.Render("admin/directory", fiber.Map{
@@ -126,8 +134,8 @@ func handleBrowseFile(c *fiber.Ctx, path string) error {
 		return c.Status(500).SendString("Error calculating relative path")
 	}
 
-	// 获取目录路径
-	dirPath := filepath.Dir(relPath)
+	// 获取目录路径并规范化分隔符
+	dirPath := normalizePath(filepath.Dir(relPath))
 	if dirPath == "." {
 		dirPath = ""
 	}

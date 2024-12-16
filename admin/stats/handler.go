@@ -73,7 +73,7 @@ func CreateStats(c *fiber.Ctx) error {
 	}
 
 	// 记录操作日志
-	adminlog.CreateAdminLog(c, "create", "stats", record.ID, fmt.Sprintf("创建统计记录：%d", record.LoginID))
+	// adminlog.CreateAdminLog(c, "create", "stats", record.ID, fmt.Sprintf("创建统计记录：%d", record.LoginID))
 
 	return c.Status(fiber.StatusCreated).JSON(record)
 }
