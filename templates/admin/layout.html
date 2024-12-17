@@ -177,10 +177,10 @@
             </div>
 
             <!-- 侧边栏菜单 -->
-            <nav class="flex-1 px-2 py-2 space-y-1 overflow-y-auto" x-data>
+            <nav class="flex-1 px-2 py-2 space-y-1 overflow-y-auto overflow-x-hidden" x-data>
                 <!-- 首页菜单项 -->
                 <a href="/admin"
-                    class="flex items-center h-11 px-3 text-sm font-medium rounded-lg group relative"
+                    class="flex items-center h-11 px-3 text-sm font-medium rounded-lg group relative min-w-[4rem]"
                     :class="currentPath === '/admin' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'"
                     @click.prevent="navigate('/admin')">
                     <span x-html="menuIcons.home" class="w-6 h-6 flex-shrink-0"></span>
@@ -208,7 +208,7 @@
                          x-show="hasMenuPermission(menu)">
                         <!-- 菜单组标题 -->
                         <button @click="!collapsed ? toggleMenuGroup(menu.menu.id) : null"
-                            class="w-full flex items-center h-11 px-3 text-sm font-medium rounded-lg group relative"
+                            class="w-full flex items-center h-11 px-3 text-sm font-medium rounded-lg group relative min-w-[4rem]"
                             :class="{
                                 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white': expandedGroup !== menu.menu.id,
                                 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400': expandedGroup === menu.menu.id
