@@ -98,7 +98,23 @@ function showTextContent(content, filePath) {
     contentWrapper.className = 'flex-1 p-4 overflow-auto';
     
     const pre = document.createElement('pre');
-    pre.className = 'whitespace-pre-wrap break-words text-sm font-mono dark:text-gray-300';
+    pre.className = 'whitespace-pre-wrap break-words text-sm font-mono dark:text-gray-300 max-w-full';
+    pre.style.cssText = `
+        white-space: pre-wrap;       /* 保留空格和换行，自动换行 */
+        word-wrap: break-word;       /* 允许在单词内换行 */
+        word-break: break-all;       /* 在任意字符间换行 */
+        overflow-wrap: break-word;   /* 在需要时在单词内换行 */
+        tab-size: 4;                 /* 设置制表符宽度 */
+        -moz-tab-size: 4;
+        line-height: 1.5;           /* 增加行高提高可读性 */
+        padding: 1rem;              /* 添加内边距 */
+        margin: 0;                  /* 移除默认外边距 */
+        max-width: 100%;            /* 确保不会超出容器 */
+        box-sizing: border-box;     /* 包含padding在内的宽度计算 */
+    `;
+    
+    // 处理Windows换行符
+    content = content.replace(/\r\n/g, '\n'); // 统一换行符
     pre.textContent = content;
     
     contentWrapper.appendChild(pre);

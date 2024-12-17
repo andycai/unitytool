@@ -15,7 +15,22 @@
         <!-- 文件内容 -->
         <div class="p-4">
             <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">文件：{{.Path}}</h2>
-            <pre class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg whitespace-pre-wrap break-words overflow-x-auto text-sm font-mono text-gray-700 dark:text-gray-300">{{.Content}}</pre>
+            <style>
+                .file-content {
+                    white-space: pre-wrap !important;
+                    word-wrap: break-word !important;
+                    word-break: break-all !important;
+                    overflow-wrap: anywhere !important;
+                    max-width: 100% !important;
+                    display: block !important;
+                }
+                .file-content::after {
+                    content: "";
+                    display: block;
+                    clear: both;
+                }
+            </style>
+            <pre class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg whitespace-pre-wrap break-words overflow-x-auto text-sm font-mono text-gray-700 dark:text-gray-300 file-content">{{.Content}}</pre>
         </div>
     </div>
 </div>
