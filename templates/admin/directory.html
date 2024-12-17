@@ -45,12 +45,13 @@
                         <span class="mr-2">📁</span>
                         <span>{{.Name}}</span>
                     </a>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 shrink-0 hidden sm:inline">{{.ModTime.Format "2006-01-02 15:04:05"}}</span>
                     {{else}}
                     <a href="{{$.RootPath}}/{{if eq $.Path ""}}{{.Name}}{{else}}{{$.Path}}/{{.Name}}{{end}}" class="flex items-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200">
                         <span class="mr-2">📄</span>
                         <span>{{.Name}}</span>
                     </a>
-                    <span class="text-sm text-gray-500 dark:text-gray-400 shrink-0">{{.Size}} bytes</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 shrink-0">{{.FormatedSize}}</span>
                     <span class="text-sm text-gray-500 dark:text-gray-400 shrink-0 hidden sm:inline">{{.ModTime.Format "2006-01-02 15:04:05"}}</span>
                     {{end}}
                 </div>

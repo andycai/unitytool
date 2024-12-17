@@ -18,16 +18,31 @@ import (
 
 // FileEntry 存储文件信息的结构体
 type FileEntry struct {
-	Name     string    // 文件名
-	Size     int64     // 文件大小
-	ModTime  time.Time // 修改时间
-	IsDir    bool      // 是否是目录
-	FileType string    // 文件类型
+	Name         string    // 文件名
+	Size         int64     // 文件大小
+	FormatedSize string    // 格式化后的文件大小
+	ModTime      time.Time // 修改时间
+	IsDir        bool      // 是否是目录
+	FileType     string    // 文件类型
 }
 
 // 规范化路径分隔符，将反斜杠转换为正斜杠
 func normalizePath(path string) string {
 	return strings.ReplaceAll(path, "\\", "/")
+}
+
+// formatFileSize 格式化文件大小
+func formatFileSize(size int64) string {
+	const unit = 1024
+	if size < unit {
+		return fmt.Sprintf("%d B", size)
+	}
+	div, exp := int64(unit), 0
+	for n := size / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(size)/float64(div), "KMGTPE"[exp])
 }
 
 // handleBrowseDirectory 处理目录浏览请求
@@ -51,20 +66,24 @@ func handleBrowseDirectory(c *fiber.Ctx, path string) error {
 		}
 
 		entries = append(entries, FileEntry{
-			Name:     file.Name(),
-			Size:     file.Size(),
-			ModTime:  file.ModTime(),
-			IsDir:    file.IsDir(),
-			FileType: fileType,
+			Name:         file.Name(),
+			Size:         file.Size(),
+			FormatedSize: formatFileSize(file.Size()),
+			ModTime:      file.ModTime(),
+			IsDir:        file.IsDir(),
+			FileType:     fileType,
 		})
 	}
 
 	// 按照文件夹在前，文件在后的顺序排序
+	// 同类型按修改时间倒序排序
 	sort.Slice(entries, func(i, j int) bool {
+		// 如果一个是目录一个是文件，目录排在前面
 		if entries[i].IsDir != entries[j].IsDir {
 			return entries[i].IsDir
 		}
-		return entries[i].Name < entries[j].Name
+		// 如果都是目录或都是文件，按修改时间倒序排序
+		return entries[i].ModTime.After(entries[j].ModTime)
 	})
 
 	// 获取相对于根目录的路径
