@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/andycai/unitool/admin/adminlog"
+	"github.com/andycai/unitool/modules/adminlog"
 	"github.com/andycai/unitool/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jlaffaye/ftp"

@@ -2,6 +2,7 @@ package note
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 )
 
 var app *core.App
@@ -10,7 +11,7 @@ type noteModule struct {
 }
 
 func init() {
-	core.RegisterModule(&noteModule{}, 700)
+	core.RegisterModule(&noteModule{}, enum.ModulePriorityNote)
 }
 
 func (m *noteModule) Awake(a *core.App) error {

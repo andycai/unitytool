@@ -72,3 +72,11 @@ func (a *App) CurrentUser(c *fiber.Ctx) *models.User {
 
 	return &vo
 }
+
+// 如果模块已初始化，则跳过
+func (a *App) IsInitializedModule(module string) bool {
+	if err := a.DB.Model(&models.ModuleInit{}).Where("module = ?", module).First(&models.ModuleInit{}).Error; err != nil {
+		return false
+	}
+	return true
+}

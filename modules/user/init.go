@@ -2,12 +2,17 @@ package user
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/gofiber/fiber/v2"
 )
 
 var app *core.App
 
 type userModule struct {
+}
+
+func init() {
+	core.RegisterModule(&userModule{}, enum.ModulePriorityUser)
 }
 
 func (m *userModule) Awake(a *core.App) error {
@@ -46,8 +51,4 @@ func (m *userModule) AddAuthRouters() error {
 	app.RouterApi.Delete("/users/:id", app.HasPermission("user:delete"), deleteUserAction)
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&userModule{}, 1000)
 }

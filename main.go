@@ -6,9 +6,9 @@ import (
 	"log"
 	"strings"
 
-	_ "github.com/andycai/unitool/admin"
 	"github.com/andycai/unitool/core"
 	"github.com/andycai/unitool/lib/database"
+	_ "github.com/andycai/unitool/modules"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
 	"gorm.io/gorm"

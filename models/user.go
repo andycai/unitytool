@@ -44,3 +44,12 @@ type RolePermission struct {
 	RoleID       uint `gorm:"primaryKey"`
 	PermissionID uint `gorm:"primaryKey"`
 }
+
+// ModuleInit 模块是否初始化的数据库表
+type ModuleInit struct {
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	Module      string    `json:"module" gorm:"size:50;index"`
+	Initialized uint8     `json:"initialized" gorm:"type:tinyint(1);default:0"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
