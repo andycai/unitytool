@@ -2,6 +2,7 @@ package menu
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -9,6 +10,10 @@ var app *core.App
 var menuDao *MenuDao
 
 type menuModule struct {
+}
+
+func init() {
+	core.RegisterModule(&menuModule{}, enum.ModulePriorityMenu)
 }
 
 func (m *menuModule) Awake(a *core.App) error {
@@ -52,8 +57,4 @@ func (m *menuModule) AddAuthRouters() error {
 	app.RouterApi.Delete("/menus/:id", app.HasPermission("menu:delete"), deleteMenu)
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&menuModule{}, 997)
 }

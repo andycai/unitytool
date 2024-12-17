@@ -2,12 +2,17 @@ package serverconf
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/gofiber/fiber/v2"
 )
 
 var app *core.App
 
 type serverconfModule struct {
+}
+
+func init() {
+	core.RegisterModule(&serverconfModule{}, enum.ModulePriorityServerconf)
 }
 
 func (m *serverconfModule) Awake(a *core.App) error {
@@ -54,8 +59,4 @@ func (m *serverconfModule) AddAuthRouters() error {
 	app.RouterApi.Post("/game/noticenum", app.HasPermission("serverconf:update"), updateNoticeNum)
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&serverconfModule{}, 802)
 }

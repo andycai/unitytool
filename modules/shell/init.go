@@ -2,12 +2,17 @@ package shell
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/gofiber/fiber/v2"
 )
 
 var app *core.App
 
 type shellModule struct {
+}
+
+func init() {
+	core.RegisterModule(&shellModule{}, enum.ModulePriorityShell)
 }
 
 func (m *shellModule) Awake(a *core.App) error {
@@ -30,8 +35,4 @@ func (m *shellModule) AddPublicRouters() error {
 
 func (m *shellModule) AddAuthRouters() error {
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&shellModule{}, 803)
 }

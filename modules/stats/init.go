@@ -2,6 +2,7 @@ package stats
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -9,6 +10,10 @@ import (
 var app *core.App
 
 type statsModule struct {
+}
+
+func init() {
+	core.RegisterModule(&statsModule{}, enum.ModulePriorityStats)
 }
 
 func (m *statsModule) Awake(a *core.App) error {
@@ -51,8 +56,4 @@ func (m *statsModule) AddAuthRouters() error {
 	})
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&statsModule{}, 800)
 }

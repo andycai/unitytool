@@ -2,12 +2,17 @@ package gamelog
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/gofiber/fiber/v2"
 )
 
 var app *core.App
 
 type gamelogModule struct {
+}
+
+func init() {
+	core.RegisterModule(&gamelogModule{}, enum.ModulePriorityGamelog)
 }
 
 func (m *gamelogModule) Awake(a *core.App) error {
@@ -43,8 +48,4 @@ func (m *gamelogModule) AddAuthRouters() error {
 	app.RouterApi.Delete("/gamelog/:id", app.HasPermission("gamelog:list"), deleteLog)
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&gamelogModule{}, 801)
 }

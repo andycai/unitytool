@@ -8,12 +8,17 @@ import (
 	"strings"
 
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/gofiber/fiber/v2"
 )
 
 var app *core.App
 
 type browseModule struct {
+}
+
+func init() {
+	core.RegisterModule(&browseModule{}, enum.ModulePriorityBrowse)
 }
 
 func (m *browseModule) Awake(a *core.App) error {
@@ -133,8 +138,4 @@ func (m *browseModule) AddAuthRouters() error {
 	// api
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&browseModule{}, 804)
 }

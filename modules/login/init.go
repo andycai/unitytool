@@ -2,12 +2,17 @@ package login
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/gofiber/fiber/v2"
 )
 
 var app *core.App
 
 type loginModule struct {
+}
+
+func init() {
+	core.RegisterModule(&loginModule{}, enum.ModulePriorityLogin)
 }
 
 func (m *loginModule) Awake(a *core.App) error {
@@ -57,8 +62,4 @@ func (m *loginModule) AddAuthRouters() error {
 	// api
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&loginModule{}, 900)
 }

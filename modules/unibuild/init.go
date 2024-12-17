@@ -2,11 +2,16 @@ package unibuild
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 )
 
 var app *core.App
 
 type uniBuildModule struct {
+}
+
+func init() {
+	core.RegisterModule(&uniBuildModule{}, enum.ModulePriorityUnibuild)
 }
 
 func (m *uniBuildModule) Awake(a *core.App) error {
@@ -28,8 +33,4 @@ func (m *uniBuildModule) AddPublicRouters() error {
 
 func (m *uniBuildModule) AddAuthRouters() error {
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&uniBuildModule{}, 806)
 }

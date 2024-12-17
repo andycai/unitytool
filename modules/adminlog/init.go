@@ -2,6 +2,7 @@ package adminlog
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -9,6 +10,10 @@ import (
 var app *core.App
 
 type adminlogModule struct {
+}
+
+func init() {
+	core.RegisterModule(&adminlogModule{}, enum.ModulePriorityAdminlog)
 }
 
 func (m *adminlogModule) Awake(a *core.App) error {
@@ -40,8 +45,4 @@ func (m *adminlogModule) AddAuthRouters() error {
 	app.RouterApi.Delete("/adminlog", app.HasPermission("adminlog:delete"), deleteAdminLogs)
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&adminlogModule{}, 996)
 }

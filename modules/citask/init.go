@@ -2,12 +2,17 @@ package citask
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/gofiber/fiber/v2"
 )
 
 var app *core.App
 
 type taskModule struct {
+}
+
+func init() {
+	core.RegisterModule(&taskModule{}, enum.ModulePriorityCitask)
 }
 
 func (m *taskModule) Awake(a *core.App) error {
@@ -51,8 +56,4 @@ func (m *taskModule) AddAuthRouters() error {
 	app.RouterApi.Post("/citask/stop/:logId", app.HasPermission("citask:run"), stopTask)            // 停止任务
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&taskModule{}, 805)
 }

@@ -2,12 +2,17 @@ package permission
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/gofiber/fiber/v2"
 )
 
 var app *core.App
 
 type permissionModule struct {
+}
+
+func init() {
+	core.RegisterModule(&permissionModule{}, enum.ModulePriorityPermission)
 }
 
 func (m *permissionModule) Awake(a *core.App) error {
@@ -41,8 +46,4 @@ func (m *permissionModule) AddAuthRouters() error {
 	app.RouterApi.Delete("/permissions/:id", app.HasPermission("permission:delete"), deletePermission)
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&permissionModule{}, 998)
 }

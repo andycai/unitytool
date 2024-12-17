@@ -2,12 +2,17 @@ package role
 
 import (
 	"github.com/andycai/unitool/core"
+	"github.com/andycai/unitool/enum"
 	"github.com/gofiber/fiber/v2"
 )
 
 var app *core.App
 
 type roleModule struct {
+}
+
+func init() {
+	core.RegisterModule(&roleModule{}, enum.ModulePriorityRole)
 }
 
 func (m *roleModule) Awake(a *core.App) error {
@@ -41,8 +46,4 @@ func (m *roleModule) AddAuthRouters() error {
 	app.RouterApi.Delete("/roles/:id", app.HasPermission("role:delete"), deleteRole)
 
 	return nil
-}
-
-func init() {
-	core.RegisterModule(&roleModule{}, 999)
 }
