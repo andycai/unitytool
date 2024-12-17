@@ -255,6 +255,24 @@ func uploadToFTP(localPath string, fileType string) error {
 		remotePath = app.Config.FTP.ZIPPath
 	}
 
+	// 确保远程路径使用正斜杠
+	remotePath = strings.ReplaceAll(remotePath, "\\", "/")
+	if !strings.HasPrefix(remotePath, "/") {
+		remotePath = "/" + remotePath
+	}
+	if !strings.HasSuffix(remotePath, "/") {
+		remotePath = remotePath + "/"
+	}
+
+	// 尝试切换到目标目录
+	if err := conn.ChangeDir(remotePath); err != nil {
+		// 如果目录不存在，尝试创建
+		if err := createRemoteDirectories(conn, remotePath); err != nil {
+			writeUploadLog(localPath, fileType, false, fmt.Sprintf("创建远程目录失败: %v", err))
+			return fmt.Errorf("创建远程目录失败: %v", err)
+		}
+	}
+
 	// 打开本地文件
 	file, err := os.Open(localPath)
 	if err != nil {
@@ -263,9 +281,16 @@ func uploadToFTP(localPath string, fileType string) error {
 	}
 	defer file.Close()
 
-	// 上传文件
+	// 获取文件名并确保它是有效的
 	fileName := filepath.Base(localPath)
-	err = conn.Stor(filepath.Join(remotePath, fileName), file)
+	fileName = strings.TrimSpace(fileName)
+	if fileName == "" || fileName == "." || fileName == ".." {
+		writeUploadLog(localPath, fileType, false, "无效的文件名")
+		return fmt.Errorf("无效的文件名: %s", fileName)
+	}
+
+	// 上传文件
+	err = conn.Stor(fileName, file)
 	if err != nil {
 		writeUploadLog(localPath, fileType, false, fmt.Sprintf("上传文件失败: %v", err))
 		return fmt.Errorf("上传文件失败: %v", err)
@@ -273,6 +298,34 @@ func uploadToFTP(localPath string, fileType string) error {
 
 	// 记录成功日志
 	writeUploadLog(localPath, fileType, true, "上传成功")
+	return nil
+}
+
+// createRemoteDirectories 递归创建远程目录
+func createRemoteDirectories(conn *ftp.ServerConn, path string) error {
+	path = strings.Trim(path, "/")
+	dirs := strings.Split(path, "/")
+	currentPath := "/"
+
+	for _, dir := range dirs {
+		if dir == "" {
+			continue
+		}
+		currentPath = filepath.Join(currentPath, dir)
+		currentPath = strings.ReplaceAll(currentPath, "\\", "/")
+
+		err := conn.ChangeDir(currentPath)
+		if err != nil {
+			// 如果目录不存在，创建它
+			if err := conn.MakeDir(currentPath); err != nil {
+				return fmt.Errorf("无法创建目录 %s: %v", currentPath, err)
+			}
+			// 创建后切换到该目录
+			if err := conn.ChangeDir(currentPath); err != nil {
+				return fmt.Errorf("无法切换到目录 %s: %v", currentPath, err)
+			}
+		}
+	}
 	return nil
 }
 
