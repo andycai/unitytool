@@ -14,6 +14,8 @@ import (
 	"github.com/andycai/unitool/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jlaffaye/ftp"
+	"github.com/saintfish/chardet"
+	"golang.org/x/text/encoding/ianaindex"
 )
 
 // FileEntry 存储文件信息的结构体
@@ -123,54 +125,117 @@ func handleBrowseDirectory(c *fiber.Ctx, path string) error {
 	}, "admin/layout")
 }
 
-// handleBrowseFile 处理文件内容显示请求
-func handleBrowseFile(c *fiber.Ctx, path string) error {
-	// 检查文件是否存在
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return fiber.NewError(fiber.StatusNotFound, "File not found")
+// isTextFile 检查文件是否为文本文件
+func isTextFile(filename string) bool {
+	textExtensions := map[string]bool{
+		".txt":  true,
+		".log":  true,
+		".json": true,
+		".xml":  true,
+		".yml":  true,
+		".yaml": true,
+		".md":   true,
+		".ini":  true,
+		".conf": true,
+		".cfg":  true,
+		".html": true,
+		".css":  true,
+		".js":   true,
+		".ts":   true,
+		".go":   true,
+		".py":   true,
+		".java": true,
+		".php":  true,
+		".sh":   true,
+		".bat":  true,
+		".ps1":  true,
+		".sql":  true,
+		".csv":  true,
 	}
+	ext := strings.ToLower(filepath.Ext(filename))
+	return textExtensions[ext]
+}
 
-	// 读取文件内容
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, "Error reading file")
+// handleBrowseFile 处理文件浏览请求
+func handleBrowseFile(c *fiber.Ctx, path string) error {
+	if path == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "文件路径不能为空")
 	}
 
 	// 获取相对于根目录的路径
 	rootDir := app.Config.Server.Output
 	absRootDir, err := filepath.Abs(rootDir)
 	if err != nil {
-		return c.Status(500).SendString("Error resolving root path")
+		return fiber.NewError(fiber.StatusInternalServerError, "获取根目录失败")
 	}
 
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return c.Status(500).SendString("Error resolving file path")
+		return fiber.NewError(fiber.StatusInternalServerError, "获取文件路径失败")
 	}
 
-	relPath, err := filepath.Rel(absRootDir, absPath)
-	if err != nil {
-		return c.Status(500).SendString("Error calculating relative path")
+	// 检查文件是否存在
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fiber.NewError(fiber.StatusInternalServerError, "文件不存在")
 	}
 
-	// 获取目录路径并规范化分隔符
-	dirPath := normalizePath(filepath.Dir(relPath))
-	if dirPath == "." {
-		dirPath = ""
+	// 检查是否为文本文件
+	if isTextFile(path) {
+		// 读取文件内容
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "读取文件失败")
+		}
+
+		relPath, err := filepath.Rel(absRootDir, absPath)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "计算相对路径失败")
+		}
+
+		// 获取目录路径并规范化分隔符
+		dirPath := normalizePath(filepath.Dir(relPath))
+		if dirPath == "." {
+			dirPath = ""
+		}
+
+		// 检测文件编码
+		detector := chardet.NewTextDetector()
+		result, err := detector.DetectBest(content)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "检测文件编码失败")
+		}
+
+		// 如果是非UTF-8编码，进行转换
+		if result.Charset != "UTF-8" {
+			encoding, err := ianaindex.IANA.Encoding(result.Charset)
+			if err == nil && encoding != nil {
+				decoder := encoding.NewDecoder()
+				utf8Content, err := decoder.Bytes(content)
+				if err == nil {
+					content = utf8Content
+				}
+			}
+		}
+
+		// 记录操作日志
+		adminlog.CreateAdminLog(c, "view", "browse", 0, fmt.Sprintf("查看文件：%s", path))
+
+		rootPath := "/admin/browse"
+
+		return c.Render("admin/file", fiber.Map{
+			"Title":    "文件内容",
+			"Path":     filepath.Base(relPath),
+			"DirPath":  dirPath,
+			"Content":  string(content),
+			"RootPath": rootPath,
+		}, "admin/layout")
 	}
 
 	// 记录操作日志
-	adminlog.CreateAdminLog(c, "view", "browse", 0, fmt.Sprintf("查看文件：%s", path))
+	adminlog.CreateAdminLog(c, "download", "browse", 0, fmt.Sprintf("下载文件：%s", path))
 
-	rootPath := "/admin/browse"
-
-	return c.Render("admin/file", fiber.Map{
-		"Title":    "文件内容",
-		"Path":     filepath.Base(relPath),
-		"DirPath":  dirPath,
-		"Content":  string(content),
-		"RootPath": rootPath,
-	}, "admin/layout")
+	// 非文本文件，直接下载
+	return c.SendFile(path)
 }
 
 // handleBrowseDelete 处理文件删除请求

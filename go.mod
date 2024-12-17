@@ -9,7 +9,9 @@ require (
 	github.com/gofiber/storage/mysql/v2 v2.0.1
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 	golang.org/x/crypto v0.14.0
+	golang.org/x/text v0.14.0
 )
 
 require (
@@ -24,7 +26,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	golang.org/x/text v0.14.0 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
