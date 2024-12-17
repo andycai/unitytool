@@ -2,7 +2,6 @@ package citask
 
 import (
 	"github.com/andycai/unitool/core"
-	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -13,7 +12,7 @@ type taskModule struct {
 
 func (m *taskModule) Awake(a *core.App) error {
 	app = a
-	return app.DB.AutoMigrate(&models.Task{}, &models.TaskLog{})
+	return autoMigrate()
 }
 
 func (m *taskModule) Start() error {
@@ -55,5 +54,5 @@ func (m *taskModule) AddAuthRouters() error {
 }
 
 func init() {
-	core.RegisterModule(&taskModule{})
+	core.RegisterModule(&taskModule{}, 805)
 }

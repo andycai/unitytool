@@ -57,5 +57,5 @@ func (m *serverconfModule) AddAuthRouters() error {
 }
 
 func init() {
-	core.RegisterModule(&serverconfModule{})
+	core.RegisterModule(&serverconfModule{}, 802)
 }

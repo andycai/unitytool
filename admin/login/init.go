@@ -60,5 +60,5 @@ func (m *loginModule) AddAuthRouters() error {
 }
 
 func init() {
-	core.RegisterModule(&loginModule{})
+	core.RegisterModule(&loginModule{}, 900)
 }

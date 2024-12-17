@@ -45,8 +45,8 @@ var (
 	cronScheduler   *cron.Cron
 )
 
+// 初始化定时任务调度器
 func initCron() {
-	// 初始化定时任务调度器
 	cronScheduler = cron.New()
 	cronScheduler.Start()
 
@@ -62,21 +62,6 @@ func initCron() {
 			fmt.Printf("调度任务失败 [%d]: %v\n", task.ID, err)
 		} else {
 			fmt.Printf("成功加载定时任务 [%d]: %s\n", task.ID, task.Name)
-		}
-	}
-}
-
-// 加载定时任务
-func loadCronTasks() {
-	var tasks []models.Task
-	if err := app.DB.Where("enable_cron = ? AND status = ?", 1, "active").Find(&tasks).Error; err != nil {
-		fmt.Printf("加载定时任务失败: %v\n", err)
-		return
-	}
-
-	for _, task := range tasks {
-		if err := scheduleCronTask(&task); err != nil {
-			fmt.Printf("调度任务失败 [%d]: %v\n", task.ID, err)
 		}
 	}
 }

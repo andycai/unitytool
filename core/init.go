@@ -1,5 +1,9 @@
 package core
 
+import (
+	"github.com/andycai/unitool/core/collections"
+)
+
 type Module interface {
 	Awake(*App) error
 	Start() error
@@ -7,36 +11,40 @@ type Module interface {
 	AddAuthRouters() error
 }
 
-var modules []Module
+var modules = collections.NewPriorityQueue[Module]()
 
 // RegisterModule 注册模块
-func RegisterModule(module Module) {
-	modules = append(modules, module)
+func RegisterModule(module Module, priority int) {
+	modules.Enqueue(module, priority)
 }
 
 // InitPublicRouters 初始化公共路由
 func InitPublicRouters() {
-	for _, module := range modules {
+	modules.ForEach(func(module Module, priority int) bool {
 		module.AddPublicRouters()
-	}
+		return true
+	})
 }
 
 // InitAuthRouters 初始化管理员路由
 func InitAuthRouters() {
-	for _, module := range modules {
+	modules.ForEach(func(module Module, priority int) bool {
 		module.AddAuthRouters()
-	}
+		return true
+	})
 }
 
 // AwakeModules 模块初始化
 func AwakeModules(app *App) {
 	// 模块初始化
-	for _, module := range modules {
+	modules.ForEach(func(module Module, priority int) bool {
 		module.Awake(app)
-	}
+		return true
+	})
 
 	// 模块启动
-	for _, module := range modules {
+	modules.ForEach(func(module Module, priority int) bool {
 		module.Start()
-	}
+		return true
+	})
 }

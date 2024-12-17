@@ -43,5 +43,5 @@ func (m *adminlogModule) AddAuthRouters() error {
 }
 
 func init() {
-	core.RegisterModule(&adminlogModule{})
+	core.RegisterModule(&adminlogModule{}, 996)
 }

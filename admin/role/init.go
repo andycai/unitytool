@@ -2,7 +2,6 @@ package role
 
 import (
 	"github.com/andycai/unitool/core"
-	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -13,7 +12,7 @@ type roleModule struct {
 
 func (m *roleModule) Awake(a *core.App) error {
 	app = a
-	return app.DB.AutoMigrate(&models.Role{}, &models.Permission{}, &models.RolePermission{})
+	return nil
 }
 
 func (m *roleModule) Start() error {
@@ -45,5 +44,5 @@ func (m *roleModule) AddAuthRouters() error {
 }
 
 func init() {
-	core.RegisterModule(&roleModule{})
+	core.RegisterModule(&roleModule{}, 999)
 }

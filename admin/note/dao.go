@@ -21,12 +21,8 @@ func autoMigrate() error {
 }
 
 func initData() error {
-	return nil
-
 	// 检查是否已初始化
-	var count int64
-	app.DB.Model(&models.NoteCategory{}).Count(&count)
-	if count > 0 {
+	if app.IsInitializedModule("note") {
 		log.Println("笔记模块数据库已初始化，跳过")
 		return nil
 	}
@@ -94,6 +90,30 @@ func initData() error {
 		}
 
 		if err := tx.Create(&permissions).Error; err != nil {
+			return err
+		}
+
+		// 初始化笔记类型
+		noteCategories := []models.NoteCategory{
+			{
+				Name:        "笔记",
+				Description: "笔记",
+				CreatedAt:   time.Now(),
+				UpdatedAt:   time.Now(),
+			},
+		}
+
+		if err := tx.Create(&noteCategories).Error; err != nil {
+			return err
+		}
+
+		// 标记模块已初始化
+		if err := tx.Create(&models.ModuleInit{
+			Module:      "note",
+			Initialized: 1,
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		}).Error; err != nil {
 			return err
 		}
 

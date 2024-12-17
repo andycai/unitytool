@@ -1,5 +1,6 @@
 package admin
 
+// 新增的模块必须在这里进行导入，不然模块 init 方法不会执行
 import (
 	_ "github.com/andycai/unitool/admin/adminlog"
 	_ "github.com/andycai/unitool/admin/browse"

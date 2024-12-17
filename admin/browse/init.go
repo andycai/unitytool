@@ -136,5 +136,5 @@ func (m *browseModule) AddAuthRouters() error {
 }
 
 func init() {
-	core.RegisterModule(&browseModule{})
+	core.RegisterModule(&browseModule{}, 804)
 }

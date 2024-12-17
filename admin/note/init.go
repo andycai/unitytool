@@ -10,7 +10,7 @@ type noteModule struct {
 }
 
 func init() {
-	core.RegisterModule(&noteModule{})
+	core.RegisterModule(&noteModule{}, 700)
 }
 
 func (m *noteModule) Awake(a *core.App) error {

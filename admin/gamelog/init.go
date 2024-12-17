@@ -2,7 +2,6 @@ package gamelog
 
 import (
 	"github.com/andycai/unitool/core"
-	"github.com/andycai/unitool/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,7 +13,7 @@ type gamelogModule struct {
 func (m *gamelogModule) Awake(a *core.App) error {
 	app = a
 
-	return app.DB.AutoMigrate(&models.GameLog{})
+	return autoMigrate()
 }
 
 func (m *gamelogModule) Start() error {
@@ -47,5 +46,5 @@ func (m *gamelogModule) AddAuthRouters() error {
 }
 
 func init() {
-	core.RegisterModule(&gamelogModule{})
+	core.RegisterModule(&gamelogModule{}, 801)
 }

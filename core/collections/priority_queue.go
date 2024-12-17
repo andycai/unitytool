@@ -69,12 +69,13 @@ func (pq *PriorityQueue[T]) Pop() any {
 }
 
 // Enqueue 入队
-func (pq *PriorityQueue[T]) Enqueue(value T, priority int) {
+func (pq *PriorityQueue[T]) Enqueue(value T, priority int) *PriorityItem[T] {
 	item := &PriorityItem[T]{
 		Value:    value,
 		Priority: priority,
 	}
 	heap.Push(pq, item)
+	return item
 }
 
 // Dequeue 出队
@@ -117,4 +118,45 @@ func (pq *PriorityQueue[T]) Clear() {
 func (pq *PriorityQueue[T]) UpdatePriority(item *PriorityItem[T], priority int) {
 	item.Priority = priority
 	heap.Fix(pq, item.index)
+}
+
+// ForEach 遍历优先队列（按优先级顺序）
+func (pq *PriorityQueue[T]) ForEach(fn func(value T, priority int) bool) {
+	// 创建临时队列，不影响原队列
+	tempQueue := &PriorityQueue[T]{
+		items: make([]*PriorityItem[T], len(pq.items)),
+	}
+	copy(tempQueue.items, pq.items)
+	heap.Init(tempQueue)
+
+	// 按优先级顺序遍历
+	for !tempQueue.IsEmpty() {
+		value, priority, _ := tempQueue.Dequeue()
+		if !fn(value, priority) {
+			break
+		}
+	}
+}
+
+// ToSlice 转换为切片（按优先级顺序）
+func (pq *PriorityQueue[T]) ToSlice() []T {
+	result := make([]T, 0, pq.Len())
+	pq.ForEach(func(value T, _ int) bool {
+		result = append(result, value)
+		return true
+	})
+	return result
+}
+
+// FromSlice 从切片创建优先队列
+func (pq *PriorityQueue[T]) FromSlice(items []T, priorities []int) error {
+	if len(items) != len(priorities) {
+		return errors.New("items and priorities length mismatch")
+	}
+
+	pq.Clear()
+	for i, item := range items {
+		pq.Enqueue(item, priorities[i])
+	}
+	return nil
 }

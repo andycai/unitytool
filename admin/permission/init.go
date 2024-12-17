@@ -44,5 +44,5 @@ func (m *permissionModule) AddAuthRouters() error {
 }
 
 func init() {
-	core.RegisterModule(&permissionModule{})
+	core.RegisterModule(&permissionModule{}, 998)
 }

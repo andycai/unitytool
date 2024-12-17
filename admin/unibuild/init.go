@@ -31,5 +31,5 @@ func (m *uniBuildModule) AddAuthRouters() error {
 }
 
 func init() {
-	core.RegisterModule(&uniBuildModule{})
+	core.RegisterModule(&uniBuildModule{}, 806)
 }

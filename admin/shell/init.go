@@ -33,5 +33,5 @@ func (m *shellModule) AddAuthRouters() error {
 }
 
 func init() {
-	core.RegisterModule(&shellModule{})
+	core.RegisterModule(&shellModule{}, 803)
 }
