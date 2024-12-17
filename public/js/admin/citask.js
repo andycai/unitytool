@@ -81,12 +81,18 @@ function taskManagement() {
                 const url = this.editMode ? `/api/citask/${this.form.id}` : '/api/citask';
                 const method = this.editMode ? 'PUT' : 'POST';
                 
+                // Create a copy of the form data and remove id field for new tasks
+                const formData = { ...this.form };
+                if (!this.editMode) {
+                    delete formData.id;
+                }
+                
                 const response = await fetch(url, {
                     method,
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(this.form)
+                    body: JSON.stringify(formData)
                 });
 
                 if (!response.ok) {
