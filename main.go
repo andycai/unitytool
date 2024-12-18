@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/andycai/unitool/core"
@@ -22,12 +23,13 @@ func main() {
 
 	// 初始化数据库
 	dbConfig := core.GetDatabaseConfig()
-	db, err := database.InitDatabase(
-		dbConfig.DSN,
+	db, err := database.InitRDBMS(
+		os.Stdout,
 		dbConfig.Driver,
+		dbConfig.DSN,
 		dbConfig.MaxOpenConns,
 		dbConfig.MaxIdleConns,
-		int64(dbConfig.ConnMaxLifetime.Seconds()),
+		dbConfig.ConnMaxLifetime,
 	)
 	if err != nil {
 		log.Fatalf("数据库初始化失败: %v", err)

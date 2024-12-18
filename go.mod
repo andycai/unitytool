@@ -10,8 +10,10 @@ require (
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
-	golang.org/x/crypto v0.14.0
+	golang.org/x/crypto v0.17.0
 	golang.org/x/text v0.14.0
+	gorm.io/driver/mysql v1.5.7
+	gorm.io/driver/postgres v1.5.11
 )
 
 require (
@@ -23,9 +25,14 @@ require (
 	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/pgx/v5 v5.5.5 // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
+	golang.org/x/sync v0.1.0 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect

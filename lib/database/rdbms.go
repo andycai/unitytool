@@ -1,13 +1,15 @@
 package database
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"time"
 
-	// "gorm.io/driver/mysql"
-	// "gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
+
 	// "gorm.io/driver/sqlite"
 	"github.com/glebarez/sqlite" // 没有 cgo
 	"gorm.io/gorm"
@@ -32,7 +34,7 @@ import (
 var db *gorm.DB
 
 // Init database init
-func InitRDBMS(logWriter io.Writer, name, source string, active, idle, idleTimeout int) (*gorm.DB, error) {
+func InitRDBMS(logWriter io.Writer, driver, dsn string, active, idle int, idleTimeout int64) (*gorm.DB, error) {
 	var (
 		gormDB *gorm.DB
 		err    error
@@ -54,21 +56,23 @@ func InitRDBMS(logWriter io.Writer, name, source string, active, idle, idleTimeo
 
 	gormCfg := &gorm.Config{Logger: newLogger, SkipDefaultTransaction: true}
 
-	switch name {
-	// case "mysql":
-	// 	// https://github.com/go-sql-driver/mysql
-	// 	gormDB, err = gorm.Open(mysql.Open(source), gormCfg)
-	// case "postgres":
-	// 	// https://github.com/go-gorm/postgres
-	// 	gormDB, err = gorm.Open(postgres.Open(source), gormCfg)
+	switch driver {
+	case "mysql":
+		// https://github.com/go-sql-driver/mysql
+		gormDB, err = gorm.Open(mysql.Open(dsn), gormCfg)
+	case "postgres":
+		// https://github.com/go-gorm/postgres
+		gormDB, err = gorm.Open(postgres.Open(dsn), gormCfg)
 	case "sqlite":
 		// github.com/mattn/go-sqlite3
-		gormDB, err = gorm.Open(sqlite.Open(source), gormCfg)
+		gormDB, err = gorm.Open(sqlite.Open(dsn), gormCfg)
 		// case "sqlserver":
 		// 	// github.com/denisenkom/go-mssqldb
 		// 	gormDB, err = gorm.Open(sqlserver.Open(source), gormCfg)
 		// case "clickhouse":
 		// 	gormDB, err = gorm.Open(clickhouse.Open(source), gormCfg)
+	default:
+		return nil, fmt.Errorf("不支持的数据库驱动: %s", driver)
 	}
 	if err != nil {
 		return nil, err

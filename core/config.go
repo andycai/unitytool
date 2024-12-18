@@ -2,7 +2,6 @@ package core
 
 import (
 	"flag"
-	"time"
 
 	"github.com/BurntSushi/toml"
 )
@@ -28,11 +27,11 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Driver          string        `toml:"driver"`
-	DSN             string        `toml:"dsn"`
-	MaxOpenConns    int           `toml:"max_open_conns"`
-	MaxIdleConns    int           `toml:"max_idle_conns"`
-	ConnMaxLifetime time.Duration `toml:"conn_max_lifetime"`
+	Driver          string `toml:"driver"`
+	DSN             string `toml:"dsn"`
+	MaxOpenConns    int    `toml:"max_open_conns"`
+	MaxIdleConns    int    `toml:"max_idle_conns"`
+	ConnMaxLifetime int64  `toml:"conn_max_lifetime"`
 }
 
 type FTPConfig struct {
@@ -102,7 +101,7 @@ func LoadConfig() error {
 		config.Database.MaxIdleConns = 10 // 默认最大空闲连接数
 	}
 	if config.Database.ConnMaxLifetime == 0 {
-		config.Database.ConnMaxLifetime = time.Hour // 默认连接生命周期为1小时
+		config.Database.ConnMaxLifetime = 3600 // 默认连接生命周期为1小时
 	}
 
 	// 命令行参数覆盖配置文件
