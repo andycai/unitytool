@@ -2,7 +2,7 @@
 
 SERVICE_NAME=$1
 if [ -z "$1" ]; then
-	SERVICE_NAME="stats_serve_linux"
+	SERVICE_NAME="unitool_serve_linux"
 fi
 
-ps -ef | grep $1 | awk '{print $2}' | xargs kill -15
+ps -ef | grep $SERVICE_NAME | awk '{print $2}' | xargs kill -15
