@@ -9,6 +9,7 @@ import (
 var app *core.App
 
 type userModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -23,14 +24,6 @@ func (m *userModule) Awake(a *core.App) error {
 	}
 
 	return initData()
-}
-
-func (m *userModule) Start() error {
-	return nil
-}
-
-func (m *userModule) AddPublicRouters() error {
-	return nil
 }
 
 func (m *userModule) AddAuthRouters() error {

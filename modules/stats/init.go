@@ -10,6 +10,7 @@ import (
 var app *core.App
 
 type statsModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -21,10 +22,6 @@ func (m *statsModule) Awake(a *core.App) error {
 
 	// 数据迁移
 	return app.DB.AutoMigrate(&models.StatsRecord{}, &models.StatsInfo{})
-}
-
-func (m *statsModule) Start() error {
-	return nil
 }
 
 func (m *statsModule) AddPublicRouters() error {

@@ -9,6 +9,7 @@ import (
 var app *core.App
 
 type serverconfModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -17,10 +18,6 @@ func init() {
 
 func (m *serverconfModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
-
-func (m *serverconfModule) Start() error {
 	return nil
 }
 

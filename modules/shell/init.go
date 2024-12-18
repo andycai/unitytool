@@ -9,6 +9,7 @@ import (
 var app *core.App
 
 type shellModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -20,19 +21,11 @@ func (m *shellModule) Awake(a *core.App) error {
 	return nil
 }
 
-func (m *shellModule) Start() error {
-	return nil
-}
-
 func (m *shellModule) AddPublicRouters() error {
 	// public
 	app.RouterPublicApi.Post("/shell", func(c *fiber.Ctx) error {
 		return execShell(c, app.Config.Server.ScriptPath)
 	})
 
-	return nil
-}
-
-func (m *shellModule) AddAuthRouters() error {
 	return nil
 }

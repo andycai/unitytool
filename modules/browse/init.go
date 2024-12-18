@@ -15,6 +15,7 @@ import (
 var app *core.App
 
 type browseModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -23,14 +24,6 @@ func init() {
 
 func (m *browseModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
-
-func (m *browseModule) Start() error {
-	return nil
-}
-
-func (m *browseModule) AddPublicRouters() error {
 	return nil
 }
 

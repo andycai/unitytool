@@ -10,6 +10,7 @@ import (
 var app *core.App
 
 type adminlogModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -19,14 +20,6 @@ func init() {
 func (m *adminlogModule) Awake(a *core.App) error {
 	app = a
 	return app.DB.AutoMigrate(&models.AdminLog{})
-}
-
-func (m *adminlogModule) Start() error {
-	return nil
-}
-
-func (m *adminlogModule) AddPublicRouters() error {
-	return nil
 }
 
 func (m *adminlogModule) AddAuthRouters() error {

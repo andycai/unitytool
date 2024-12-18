@@ -9,6 +9,7 @@ import (
 var app *core.App
 
 type permissionModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -17,14 +18,6 @@ func init() {
 
 func (m *permissionModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
-
-func (m *permissionModule) Start() error {
-	return nil
-}
-
-func (m *permissionModule) AddPublicRouters() error {
 	return nil
 }
 

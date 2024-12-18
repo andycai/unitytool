@@ -10,6 +10,7 @@ var app *core.App
 var menuDao *MenuDao
 
 type menuModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -24,10 +25,6 @@ func (m *menuModule) Awake(a *core.App) error {
 	menuDao = NewMenuDao()
 
 	return initData()
-}
-
-func (m *menuModule) Start() error {
-	return nil
 }
 
 func (m *menuModule) AddPublicRouters() error {

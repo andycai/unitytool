@@ -9,6 +9,7 @@ import (
 var app *core.App
 
 type gamelogModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -19,10 +20,6 @@ func (m *gamelogModule) Awake(a *core.App) error {
 	app = a
 
 	return autoMigrate()
-}
-
-func (m *gamelogModule) Start() error {
-	return nil
 }
 
 func (m *gamelogModule) AddPublicRouters() error {

@@ -9,6 +9,7 @@ import (
 var app *core.App
 
 type roleModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -17,14 +18,6 @@ func init() {
 
 func (m *roleModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
-
-func (m *roleModule) Start() error {
-	return nil
-}
-
-func (m *roleModule) AddPublicRouters() error {
 	return nil
 }
 

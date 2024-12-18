@@ -11,6 +11,27 @@ type Module interface {
 	AddAuthRouters() error
 }
 
+type BaseModule struct {
+	App *App
+}
+
+func (m *BaseModule) Awake(a *App) error {
+	m.App = a
+	return nil
+}
+
+func (m *BaseModule) Start() error {
+	return nil
+}
+
+func (m *BaseModule) AddPublicRouters() error {
+	return nil
+}
+
+func (m *BaseModule) AddAuthRouters() error {
+	return nil
+}
+
 var modules = collections.NewPriorityQueue[Module]()
 
 // RegisterModule 注册模块

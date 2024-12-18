@@ -8,6 +8,7 @@ import (
 var app *core.App
 
 type noteModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -23,10 +24,6 @@ func (m *noteModule) Awake(a *core.App) error {
 
 	// 初始化数据
 	return initData()
-}
-
-func (m *noteModule) Start() error {
-	return nil
 }
 
 func (m *noteModule) AddPublicRouters() error {

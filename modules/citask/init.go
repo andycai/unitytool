@@ -9,6 +9,7 @@ import (
 var app *core.App
 
 type taskModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -23,10 +24,6 @@ func (m *taskModule) Awake(a *core.App) error {
 func (m *taskModule) Start() error {
 	initCron()
 
-	return nil
-}
-
-func (m *taskModule) AddPublicRouters() error {
 	return nil
 }
 

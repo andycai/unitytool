@@ -8,6 +8,7 @@ import (
 var app *core.App
 
 type uniBuildModule struct {
+	core.BaseModule
 }
 
 func init() {
@@ -16,10 +17,6 @@ func init() {
 
 func (m *uniBuildModule) Awake(a *core.App) error {
 	app = a
-	return nil
-}
-
-func (m *uniBuildModule) Start() error {
 	return nil
 }
 
