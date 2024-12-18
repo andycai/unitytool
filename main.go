@@ -15,6 +15,11 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	Version   string
+	BuildTime string
+)
+
 func main() {
 	// 加载配置文件
 	if err := core.LoadConfig(); err != nil {
