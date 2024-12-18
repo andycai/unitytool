@@ -21,6 +21,7 @@ import (
 	"github.com/andycai/unitool/modules/adminlog"
 	"github.com/gofiber/fiber/v2"
 	"github.com/robfig/cron/v3"
+	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 // TaskProgress 任务进度
@@ -515,7 +516,7 @@ func isUnsafeCommand(script string) (bool, string) {
 	// 检查系统特定的危险重定向
 	if runtime.GOOS == "windows" {
 		windowsPatterns := []string{
-			"> con:", ">con:", // Windows 设备文件
+			"> con:", ">con:", // Windows 设置文件
 			"> prn:", ">prn:",
 			"> aux:", ">aux:",
 			"con:", "prn:", "aux:", // 设备名称
@@ -541,6 +542,30 @@ func isUnsafeCommand(script string) (bool, string) {
 	}
 
 	return false, ""
+}
+
+// 添加 GBK 输出处理器
+type gbkOutputWriter struct {
+	buffer *bytes.Buffer
+}
+
+func (w *gbkOutputWriter) Write(p []byte) (n int, err error) {
+	// 尝试将 GBK 转换为 UTF-8
+	utf8Bytes, err := simplifiedchinese.GB18030.NewDecoder().Bytes(p)
+	if err != nil {
+		// 如果转换失败，尝试使用 GBK 解码
+		if gbkBytes, err := simplifiedchinese.GBK.NewDecoder().Bytes(p); err == nil {
+			return w.buffer.Write(gbkBytes)
+		}
+		// 如果 GBK 也失败，尝试使用 HZ-GB2312 解码
+		if hzBytes, err := simplifiedchinese.HZGB2312.NewDecoder().Bytes(p); err == nil {
+			return w.buffer.Write(hzBytes)
+		}
+		// 所有转换都失败，直接写入原始数据
+		return w.buffer.Write(p)
+	}
+	// 写入转换后的 UTF-8 数据
+	return w.buffer.Write(utf8Bytes)
 }
 
 // executeScriptTask 执行脚本任务
@@ -616,8 +641,15 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 	// 执行脚本
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "/c", tmpFile.Name())
-		fmt.Printf("Windows 命令: cmd /c %s\n", tmpFile.Name())
+		// Windows 下设置代码页和环境变量
+		cmd = exec.Command("cmd", "/c", fmt.Sprintf("chcp 65001 >nul && %s", tmpFile.Name()))
+		// 设置环境变量
+		cmd.Env = append(os.Environ(),
+			"PYTHONIOENCODING=utf8",
+			"PYTHONLEGACYWINDOWSSTDIO=1",
+			"JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8",
+		)
+		fmt.Printf("Windows 命令: %s\n", cmd.String())
 	} else {
 		cmd = exec.Command("/bin/bash", tmpFile.Name())
 		fmt.Printf("Unix 命令: /bin/bash %s\n", tmpFile.Name())
@@ -629,9 +661,9 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 	fmt.Printf("工作目录: %s\n", tmpDir)
 
 	// 创建输出缓冲区
-	var outputBuffer, errorBuffer bytes.Buffer
+	var outputBuffer bytes.Buffer
+	var errorBuffer bytes.Buffer
 
-	// 设置命令的标准输出和错误输出
 	cmd.Stdout = io.MultiWriter(&outputBuffer, os.Stdout)
 	cmd.Stderr = io.MultiWriter(&errorBuffer, os.Stderr)
 
@@ -705,11 +737,6 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 			output := outputBuffer.String()
 			errorOutput := errorBuffer.String()
 
-			fmt.Printf("命令执行完成，输出:\n%s\n", output)
-			if errorOutput != "" {
-				fmt.Printf("错误输出:\n%s\n", errorOutput)
-			}
-
 			if err != nil {
 				log.Status = "failed"
 				log.Error = fmt.Sprintf("执行失败: %v\n%s\n%s", err, output, errorOutput)
@@ -722,11 +749,10 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 				return
 			}
 
+			// 更新任务状态和输出
 			log.Status = "success"
-			log.Output = output
-			if errorOutput != "" {
-				log.Output += "\nError: " + errorOutput
-			}
+			log.Output = outputBuffer.String()
+			log.Error = errorBuffer.String()
 
 			if progress != nil {
 				progress.Status = "success"
@@ -815,6 +841,14 @@ func executeHTTPTask(task *models.Task, log *models.TaskLog, progress *TaskProgr
 		}
 		fmt.Printf("读取HTTP响应失败: %v\n", err)
 		return
+	}
+
+	// 仅在 Windows 系统下尝试转换响应内容的编码
+	if runtime.GOOS == "windows" {
+		gbkOutput := &gbkOutputWriter{buffer: &bytes.Buffer{}}
+		if _, err := gbkOutput.Write(respBody); err == nil && gbkOutput.buffer.Len() > 0 {
+			respBody = gbkOutput.buffer.Bytes()
+		}
 	}
 
 	// 检查响应状态码
