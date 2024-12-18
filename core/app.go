@@ -7,7 +7,7 @@ import (
 )
 
 type App struct {
-	App             *fiber.App
+	FiberApp        *fiber.App
 	DB              *gorm.DB
 	DBs             []*gorm.DB
 	Config          *Config
@@ -25,7 +25,7 @@ func (a *App) Start(dbs []*gorm.DB, fiberApp *fiber.App) {
 	a.Config = &config
 	a.DBs = dbs
 	a.DB = dbs[0]
-	a.App = fiberApp
+	a.FiberApp = fiberApp
 
 	sqlDb, _ := a.DB.DB()
 	SessionSetup(config.Database.Driver, sqlDb, config.Database.DSN, "sessions")
