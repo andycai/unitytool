@@ -383,7 +383,7 @@
                             <!-- 执行输出 -->
                             <div class="mb-4">
                                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">执行输出</h4>
-                                <pre class="mt-1 p-4 bg-gray-100 dark:bg-gray-900 rounded-md overflow-x-auto text-sm font-mono text-gray-800 dark:text-gray-200"
+                                <pre class="mt-1 p-4 bg-gray-100 dark:bg-gray-900 rounded-md overflow-x-auto text-sm font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-all"
                                      x-text="currentTaskLog.output || '无输出'"></pre>
                             </div>
 
@@ -391,7 +391,7 @@
                             <template x-if="currentTaskLog.error">
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">错误信息</h4>
-                                    <pre class="mt-1 p-4 bg-red-50 dark:bg-red-900 rounded-md overflow-x-auto text-sm font-mono text-red-800 dark:text-red-200"
+                                    <pre class="mt-1 p-4 bg-red-50 dark:bg-red-900 rounded-md overflow-x-auto text-sm font-mono text-red-800 dark:text-red-200 whitespace-pre-wrap break-all"
                                          x-text="currentTaskLog.error"></pre>
                                 </div>
                             </template>

@@ -641,15 +641,20 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 	// 执行脚本
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
-		// Windows 下设置代码页和环境变量
-		cmd = exec.Command("cmd", "/c", fmt.Sprintf("chcp 65001 >nul && %s", tmpFile.Name()))
+		// Windows 下���置代码页和环境变量
+		// 使用 /V:ON 启用延迟变量扩展，/D 禁用自动运行命令，/S 禁用命令回显
+		// < NUL 防止等待输入，> NUL 2>&1 重定向标准输出和错误输出
+		cmdStr := fmt.Sprintf("cmd /V:ON /D /S /C \"chcp 65001 > NUL && type \"%s\" > NUL && \"%s\" < NUL\"", tmpFile.Name(), tmpFile.Name())
+		cmd = exec.Command("cmd", "/C", cmdStr)
+
 		// 设置环境变量
 		cmd.Env = append(os.Environ(),
 			"PYTHONIOENCODING=utf8",
 			"PYTHONLEGACYWINDOWSSTDIO=1",
+			"PYTHONUNBUFFERED=1",
 			"JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8",
 		)
-		fmt.Printf("Windows 命令: %s\n", cmd.String())
+		fmt.Printf("Windows 命令: %s\n", cmdStr)
 	} else {
 		cmd = exec.Command("/bin/bash", tmpFile.Name())
 		fmt.Printf("Unix 命令: /bin/bash %s\n", tmpFile.Name())
@@ -663,6 +668,21 @@ func executeScriptTask(task *models.Task, log *models.TaskLog, progress *TaskPro
 	// 创建输出缓冲区
 	var outputBuffer bytes.Buffer
 	var errorBuffer bytes.Buffer
+
+	// 设置标准输入为 null 设备
+	if runtime.GOOS == "windows" {
+		nullFile, err := os.OpenFile("NUL", os.O_RDWR, 0)
+		if err == nil {
+			cmd.Stdin = nullFile
+			defer nullFile.Close()
+		}
+	} else {
+		nullFile, err := os.OpenFile("/dev/null", os.O_RDWR, 0)
+		if err == nil {
+			cmd.Stdin = nullFile
+			defer nullFile.Close()
+		}
+	}
 
 	cmd.Stdout = io.MultiWriter(&outputBuffer, os.Stdout)
 	cmd.Stderr = io.MultiWriter(&errorBuffer, os.Stderr)
