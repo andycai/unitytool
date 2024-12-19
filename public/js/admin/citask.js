@@ -36,7 +36,12 @@ function taskManagement() {
             enable_cron: 0,
             cron_expr: ''
         },
+        userScrolled: false,
+        autoScroll: true,
+        scrollingToBottom: false,
         init() {
+            this.userScrolled = false;
+            this.autoScroll = true;
             this.fetchTasks();
             this.startRunningTasksPolling();
         },
@@ -198,9 +203,11 @@ function taskManagement() {
                     // 更新进度信息
                     this.currentTaskLog = progress;
                     
-                    // 自动滚动到底部
+                    // 根据自动滚动标志决定是否滚动到底部
                     this.$nextTick(() => {
-                        this.scrollOutputToBottom();
+                        if (this.autoScroll) {
+                            this.scrollToBottom(false);
+                        }
                     });
                     
                     // 如果任务已结束，停止轮询
@@ -224,6 +231,7 @@ function taskManagement() {
             this.showProgressModal = false;
             this.currentTask = null;
             this.currentTaskLog = null;
+            this.autoScroll = true;
             this.fetchTasks(); // 刷新任务列表
         },
         getProgressWidth() {
@@ -239,15 +247,27 @@ function taskManagement() {
             if (this.currentTaskLog.status === 'running') return '执行中...';
             return '准备中...';
         },
-        getRunningTime() {
-            if (!this.currentTaskLog?.start_time) return '0秒';
-            const start = new Date(this.currentTaskLog.start_time);
-            const end = this.currentTaskLog.end_time > this.currentTaskLog.start_time ? new Date(this.currentTaskLog.end_time) : new Date();
-            const seconds = Math.floor((end - start) / 1000);
+        getRunningTime(task) {
+            if (!task?.start_time) return '0秒';
+            
+            // 使用 Unix 时间戳（秒）
+            const start = typeof task.start_time === 'number' ? task.start_time : new Date(task.start_time).getTime() / 1000;
+            const now = Math.floor(Date.now() / 1000);
+            const end = task.end_time ? (typeof task.end_time === 'number' ? task.end_time : new Date(task.end_time).getTime() / 1000) : now;
+            
+            const seconds = Math.floor(end - start);
             
             if (seconds < 60) return `${seconds}秒`;
-            if (seconds < 3600) return `${Math.floor(seconds / 60)}分${seconds % 60}秒`;
-            return `${Math.floor(seconds / 3600)}时${Math.floor((seconds % 3600) / 60)}分${seconds % 60}秒`;
+            if (seconds < 3600) {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                return `${minutes}分${remainingSeconds}秒`;
+            }
+            
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = seconds % 60;
+            return `${hours}时${minutes}分${remainingSeconds}秒`;
         },
         scrollOutputToBottom() {
             const outputLog = this.$refs.outputLog;
@@ -461,6 +481,28 @@ function taskManagement() {
         selectTask() {
             if (this.selectedIndex >= 0 && this.selectedIndex < this.searchResults.length) {
                 this.copyTask(this.searchResults[this.selectedIndex]);
+            }
+        },
+        // 添加滚动处理
+        handleScroll(event) {
+            const element = event.target;
+            const isAtBottom = Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 10;
+            
+            // 只有当不是通过点击滚动到底部按钮触发的滚动时，才更新自动滚动状态
+            if (!this.scrollingToBottom) {
+                this.autoScroll = isAtBottom;
+            }
+            this.scrollingToBottom = false;
+        },
+        // 滚动到底部
+        scrollToBottom(userInitiated = false) {
+            this.scrollingToBottom = true;
+            const outputLog = this.$refs.outputLog;
+            if (outputLog) {
+                outputLog.scrollTop = outputLog.scrollHeight;
+                if (userInitiated) {
+                    this.autoScroll = true;  // 用户点击按钮时恢复自动滚动
+                }
             }
         },
     }
